@@ -1,15 +1,20 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Project setup ---------------------------------
-project(sgl)
+project(sgl
+
+	C
+	CXX
+)
 
 # Compiler setup --------------------------------
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -ggdb -O1")
 
 # Code setup ------------------------------------
-### Vendors ###
+## Vendors
 #add_subdirectory(vendor)
 
-### Source code ###
+## Source code
 add_subdirectory(src)
