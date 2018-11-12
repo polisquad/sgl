@@ -1,7 +1,7 @@
 #ifndef SGL_VEC3_H
 #define SGL_VEC3_H
 
-#include "vec.h"
+#include "vec2.h"
 
 /**
  * @struct Vec3 vec3.h
@@ -478,7 +478,7 @@ Vec3<float32>::Vec3(const float32 & x, const float32 & y, const float32 & z) : V
 template<>
 Vec3<float32>::Vec3(const float32 & s) : Vec3()
 {
-	data = _mm_set_ps1(s);
+	data = _mm_set1_ps(s);
 }
 
 template<>
