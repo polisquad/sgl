@@ -38,7 +38,7 @@ public:
 	/**
 	 * @brief Coordinates-constructor
 	 * 
-	 * @param [in] x,y,z coordinates values
+	 * @param [in] x,y coordinates values
 	 */
 	inline Vec2(const T & x, const T & y);
 
@@ -206,7 +206,7 @@ public:
 	 * 
 	 * @param [in] stream output stream
 	 */
-	inline void print(FILE * stream = stdin);
+	inline void print(FILE * stream = stdout);
 };
 
 //////////////////
@@ -630,7 +630,19 @@ Vec2<int32>::Vec2(const int32 & s) : Vec2()
 template<>
 void Vec2<int32>::print(FILE * stream)
 {
-	printf("v3(%d, %d)\n", x, y);
+	fprintf(stream, "v3(%d, %d)\n", x, y);
 }
+
+/////////////////////////////////////////////////
+// Type definitions                            //
+/////////////////////////////////////////////////
+
+/**
+ * @brief Type definitions for common vector types
+ * @{
+ */
+typedef Vec2<float32>	vec2;
+typedef Vec2<int32>		point2;
+/** @} */
 
 #endif

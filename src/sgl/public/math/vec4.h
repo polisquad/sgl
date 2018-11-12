@@ -38,7 +38,7 @@ public:
 	/**
 	 * @brief Coordinates-constructor
 	 * 
-	 * @param [in] x,y,z coordinates values
+	 * @param [in] x,y,z,w coordinates values
 	 */
 	inline Vec4(const T & x, const T & y, const T & z, const T & w);
 
@@ -197,7 +197,7 @@ public:
 	 * 
 	 * @param [in] stream output stream
 	 */
-	inline void print(FILE * stream = stdin);
+	inline void print(FILE * stream = stdout);
 };
 
 //////////////////
@@ -607,7 +607,19 @@ float32 Vec4<float32>::operator&(const Vec4<float32> & v) const
 template<>
 void Vec4<float32>::print(FILE * stream)
 {
-	printf("v4(%.3f, %.3f, %.3f, %.3f)\n", x, y, z, w);
+	fprintf(stream, "v4(%.3f, %.3f, %.3f, %.3f)\n", x, y, z, w);
 }
+
+/////////////////////////////////////////////////
+// Type definitions                            //
+/////////////////////////////////////////////////
+
+/**
+ * @brief Type definitions for common vector types
+ * @{
+ */
+typedef Vec4<float32>	vec4;
+typedef Vec4<int32>		point4;
+/** @} */
 
 #endif

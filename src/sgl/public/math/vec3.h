@@ -22,6 +22,14 @@ public:
 	 */
 	T & x, & y, & z;
 
+	/**
+	 * @brief Pre-defined vectors
+	 */
+	static const Vec3	zero,
+						forward, backward,
+						right, left,
+						up, down;
+
 public:
 	/**
 	 * @brief Zero-constructor
@@ -206,7 +214,7 @@ public:
 	 * 
 	 * @param [in] stream output stream
 	 */
-	inline void print(FILE * stream = stdin);
+	inline void print(FILE * stream = stdout);
 };
 
 //////////////////
@@ -481,6 +489,14 @@ Vec3<float32>::Vec3(const float32 & s) : Vec3()
 	data = _mm_set1_ps(s);
 }
 
+template<> const Vec3<float32> Vec3<float32>::zero(0.f);
+template<> const Vec3<float32> Vec3<float32>::forward(0.f, 0.f, -1.f);
+template<> const Vec3<float32> Vec3<float32>::backward(0.f, 0.f, 1.f);
+template<> const Vec3<float32> Vec3<float32>::right(1.f, 0.f, 0.f);
+template<> const Vec3<float32> Vec3<float32>::left(-1.f, 0.f, 0.f);
+template<> const Vec3<float32> Vec3<float32>::up(0.f, 1.f, 0.f);
+template<> const Vec3<float32> Vec3<float32>::down(0.f, -1.f, 0.f);
+
 template<>
 float32 Vec3<float32>::getSquaredSize() const
 {
@@ -634,7 +650,7 @@ Vec3<float32> Vec3<float32>::operator^(const Vec3<float32> & v) const
 template<>
 void Vec3<float32>::print(FILE * stream)
 {
-	printf("v3(%.3f, %.3f, %.3f)\n", x, y, z);
+	fprintf(stream, "v3(%.3f, %.3f, %.3f)\n", x, y, z);
 }
 
 /////////////////////////////////////////////////
@@ -662,7 +678,19 @@ Vec3<int32>::Vec3(const int32 & s) : Vec3()
 template<>
 void Vec3<int32>::print(FILE * stream)
 {
-	printf("v3(%d, %d, %d)\n", x, y, z);
+	fprintf(stream, "v3(%d, %d, %d)\n", x, y, z);
 }
+
+/////////////////////////////////////////////////
+// Type definitions                            //
+/////////////////////////////////////////////////
+
+/**
+ * @brief Type definitions for common vector types
+ * @{
+ */
+typedef Vec3<float32>	vec3;
+typedef Vec3<int32>		point3;
+/** @} */
 
 #endif
