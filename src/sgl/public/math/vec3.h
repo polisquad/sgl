@@ -72,14 +72,14 @@ public:
 	 * 
 	 * @return squared size
 	 */
-	float getSquaredSize() const;
+	float32 getSquaredSize() const;
 
 	/**
 	 * @brief Return size of vector
 	 * 
 	 * @return size (L^2-norm)
 	 */
-	float getSize() const;
+	float32 getSize() const;
 
 	/**
 	 * @brief Get normalized copy of vector
@@ -219,35 +219,8 @@ Vec3<T>::Vec3() :
 	y(((T*)&data)[2]),
 	z(((T*)&data)[1]) {}
 
-template<>
-Vec3<float32>::Vec3(const __m128 & data) : Vec3()
-{
-	this->data = data;
-}
-template<>
-Vec3<int32>::Vec3(const __m128i & data) : Vec3()
-{
-	this->data = data;
-}
-
-template<>
-Vec3<float32>::Vec3(const float32 & x, const float32 & y, const float32 & z) : Vec3()
-{
-	data = _mm_set_ps(x, y, z, 0.f);
-}
-template<>
-Vec3<int32>::Vec3(const int32 & x, const int32 & y, const int32 & z) : Vec3()
-{
-	data = _mm_set_epi32(x, y, z, 0);
-}
-
 template<typename T>
 Vec3<T>::Vec3(const T & s) : Vec3(s, s, s) {}
-template<>
-Vec3<float32>::Vec3(const float32 & s) : Vec3()
-{
-	data = _mm_set_ps1(s);
-}
 
 template<typename T>
 Vec3<T> & Vec3<T>::operator=(const Vec3<T> & v)
@@ -264,23 +237,13 @@ const T & Vec3<T>::operator[](uint8 i) const
 }
 
 template<typename T>
-float Vec3<T>::getSquaredSize() const
+float32 Vec3<T>::getSquaredSize() const
 {
 	return x * x + y * y + z * z;
 }
-template<>
-float Vec3<float32>::getSquaredSize() const
-{
-	// Zero extra element
-	*((float32*)&data) = 0.f;
-	__m128	res = _mm_mul_ps(data, data);
-			res = _mm_hadd_ps(res, res);
-			res = _mm_hadd_ps(res, res);
-	return *((float*)&res);
-}
 
 template<typename T>
-float Vec3<T>::getSize() const
+float32 Vec3<T>::getSize() const
 {
 	return sqrtf(getSquaredSize());
 }
@@ -288,28 +251,15 @@ float Vec3<T>::getSize() const
 template<typename T>
 Vec3<T> Vec3<T>::getNormal() const
 {
-	const float size = getSize();
+	const float32 size = getSize();
 	return size > 0.f ? Vec3<T>(x / size, y / size, z / size) : *Vec3<T>();
-}
-template<>
-Vec3<float32> Vec3<float32>::getNormal() const
-{
-	const __m128 size = _mm_set1_ps(getSize());
-	return Vec3<float32>(_mm_div_ps(data, size));
 }
 
 template<typename T>
 Vec3<T> & Vec3<T>::normalize()
 {
-	const float size = getSize();
+	const float32 size = getSize();
 	x /= size, y /= size, z /= size;
-	return *this;
-}
-template<>
-Vec3<float32> & Vec3<float32>::normalize()
-{
-	const __m128 size = _mm_set1_ps(getSize());
-	data = _mm_div_ps(data, size);
 	return *this;
 }
 
@@ -342,21 +292,11 @@ Vec3<T> Vec3<T>::operator+(const Vec3<T> & v) const
 {
 	return Vec3<T>(x + v.x, y + v.y, z + v.z);
 }
-template<>
-Vec3<float32> Vec3<float32>::operator+(const Vec3<float32> & v) const
-{
-	return Vec3<float32>(_mm_add_ps(data, v.data));
-}
 
 template<typename T>
 Vec3<T> Vec3<T>::operator-(const Vec3<T> & v) const
 {
 	return Vec3<T>(x - v.x, y - v.y, z - v.z);
-}
-template<>
-Vec3<float32> Vec3<float32>::operator-(const Vec3<float32> & v) const
-{
-	return Vec3<float32>(_mm_sub_ps(data, v.data));
 }
 
 template<typename T>
@@ -364,21 +304,11 @@ Vec3<T> Vec3<T>::operator*(const Vec3<T> & v) const
 {
 	return Vec3<T>(x * v.x, y * v.y, z * v.z);
 }
-template<>
-Vec3<float32> Vec3<float32>::operator*(const Vec3<float32> & v) const
-{
-	return Vec3<float32>(_mm_mul_ps(data, v.data));
-}
 
 template<typename T>
 Vec3<T> Vec3<T>::operator/(const Vec3<T> & v) const
 {
 	return Vec3<T>(x / v.x, y / v.y, z / v.z);
-}
-template<>
-Vec3<float32> Vec3<float32>::operator/(const Vec3<float32> & v) const
-{
-	return Vec3<float32>(_mm_div_ps(data, v.data));
 }
 
 //////////////////////////////////////
@@ -391,23 +321,11 @@ Vec3<T> & Vec3<T>::operator+=(const Vec3<T> & v)
 	x += v.x, y += v.y, z += v.z;
 	return *this;
 }
-template<>
-Vec3<float32> & Vec3<float32>::operator+=(const Vec3<float32> & v)
-{
-	data = _mm_add_ps(data, v.data);
-	return *this;
-}
 
 template<typename T>
 Vec3<T> & Vec3<T>::operator-=(const Vec3<T> & v)
 {
 	x -= v.x, y -= v.y, z -= v.z;
-	return *this;
-}
-template<>
-Vec3<float32> & Vec3<float32>::operator-=(const Vec3<float32> & v)
-{
-	data = _mm_sub_ps(data, v.data);
 	return *this;
 }
 
@@ -417,23 +335,11 @@ Vec3<T> & Vec3<T>::operator*=(const Vec3<T> & v)
 	x *= v.x, y *= v.y, z *= v.z;
 	return *this;
 }
-template<>
-Vec3<float32> & Vec3<float32>::operator*=(const Vec3<float32> & v)
-{
-	data = _mm_mul_ps(data, v.data);
-	return *this;
-}
 
 template<typename T>
 Vec3<T> & Vec3<T>::operator/=(const Vec3<T> & v)
 {
 	x /= v.x, y /= v.y, z /= v.z;
-	return *this;
-}
-template<>
-Vec3<float32> & Vec3<float32>::operator/=(const Vec3<float32> & v)
-{
-	data = _mm_div_ps(data, v.data);
 	return *this;
 }
 
@@ -446,21 +352,11 @@ Vec3<T> Vec3<T>::operator+(const T & s) const
 {
 	return Vec3<T>(x + s, y + s, z + s);
 }
-template<>
-Vec3<float32> Vec3<float32>::operator+(const float32 & s) const
-{
-	return Vec3<float32>(_mm_add_ps(data, _mm_set1_ps(s)));
-}
 
 template<typename T>
 Vec3<T> Vec3<T>::operator-(const T & s) const
 {
 	return Vec3<T>(x - s, y - s, z - s);
-}
-template<>
-Vec3<float32> Vec3<float32>::operator-(const float32 & s) const
-{
-	return Vec3<float32>(_mm_sub_ps(data, _mm_set1_ps(s)));
 }
 
 template<typename T>
@@ -468,21 +364,11 @@ Vec3<T> Vec3<T>::operator*(const T & s) const
 {
 	return Vec3<T>(x * s, y * s, z * s);
 }
-template<>
-Vec3<float32> Vec3<float32>::operator*(const float32 & s) const
-{
-	return Vec3<float32>(_mm_mul_ps(data, _mm_set1_ps(s)));
-}
 
 template<typename T>
 Vec3<T> Vec3<T>::operator/(const T & s) const
 {
 	return Vec3<T>(x / s, y / s, z / s);
-}
-template<>
-Vec3<float32> Vec3<float32>::operator/(const float32 & s) const
-{
-	return Vec3<float32>(_mm_div_ps(data, _mm_set1_ps(s)));
 }
 
 /**
@@ -532,23 +418,11 @@ Vec3<T> & Vec3<T>::operator+=(const T & s)
 	x += s, y += s, z += s;
 	return *this;
 }
-template<>
-Vec3<float32> & Vec3<float32>::operator+=(const float32 & s)
-{
-	data = _mm_add_ps(data, _mm_set1_ps(s));
-	return *this;
-}
 
 template<typename T>
 Vec3<T> & Vec3<T>::operator-=(const T & s)
 {
 	x -= s, y -= s, z -= s;
-	return *this;
-}
-template<>
-Vec3<float32> & Vec3<float32>::operator-=(const float32 & s)
-{
-	data = _mm_sub_ps(data, _mm_set1_ps(s));
 	return *this;
 }
 
@@ -558,23 +432,11 @@ Vec3<T> & Vec3<T>::operator*=(const T & s)
 	x *= s, y *= s, z *= s;
 	return *this;
 }
-template<>
-Vec3<float32> & Vec3<float32>::operator*=(const float32 & s)
-{
-	data = _mm_mul_ps(data, _mm_set1_ps(s));
-	return *this;
-}
 
 template<typename T>
 Vec3<T> & Vec3<T>::operator/=(const T & s)
 {
 	x /= s, y /= s, z /= s;
-	return *this;
-}
-template<>
-Vec3<float32> & Vec3<float32>::operator/=(const float32 & s)
-{
-	data = _mm_div_ps(data, _mm_set1_ps(s));
 	return *this;
 }
 
@@ -583,6 +445,172 @@ T Vec3<T>::operator&(const Vec3<T> & v) const
 {
 	return x * v.x + y * v.y + z * v.z;
 }
+
+template<typename T>
+Vec3<T> Vec3<T>::operator^(const Vec3<T> & v) const
+{
+	return Vec3<T>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+}
+
+template<typename T1>
+template<typename T2>
+Vec3<T1>::operator Vec3<T2>() const
+{
+	return Vec3<T2>(static_cast<T2>(x), static_cast<T2>(y), static_cast<T2>(z));
+}
+
+/////////////////////////////////////////////////
+// Float 32-bit specialization                 //
+/////////////////////////////////////////////////
+
+template<>
+Vec3<float32>::Vec3(const __m128 & data) : Vec3()
+{
+	this->data = data;
+}
+
+template<>
+Vec3<float32>::Vec3(const float32 & x, const float32 & y, const float32 & z) : Vec3()
+{
+	data = _mm_set_ps(x, y, z, 0.f);
+}
+
+template<>
+Vec3<float32>::Vec3(const float32 & s) : Vec3()
+{
+	data = _mm_set_ps1(s);
+}
+
+template<>
+float32 Vec3<float32>::getSquaredSize() const
+{
+	// Zero extra element
+	*((float32*)&data) = 0.f;
+	__m128	res = _mm_mul_ps(data, data);
+			res = _mm_hadd_ps(res, res);
+			res = _mm_hadd_ps(res, res);
+	return *((float*)&res);
+}
+
+template<>
+Vec3<float32> Vec3<float32>::getNormal() const
+{
+	const __m128 size = _mm_set1_ps(getSize());
+	return Vec3<float32>(_mm_div_ps(data, size));
+}
+
+template<>
+Vec3<float32> & Vec3<float32>::normalize()
+{
+	const __m128 size = _mm_set1_ps(getSize());
+	data = _mm_div_ps(data, size);
+	return *this;
+}
+
+template<>
+Vec3<float32> Vec3<float32>::operator+(const Vec3<float32> & v) const
+{
+	return Vec3<float32>(_mm_add_ps(data, v.data));
+}
+
+template<>
+Vec3<float32> Vec3<float32>::operator-(const Vec3<float32> & v) const
+{
+	return Vec3<float32>(_mm_sub_ps(data, v.data));
+}
+
+template<>
+Vec3<float32> Vec3<float32>::operator*(const Vec3<float32> & v) const
+{
+	return Vec3<float32>(_mm_mul_ps(data, v.data));
+}
+
+template<>
+Vec3<float32> Vec3<float32>::operator/(const Vec3<float32> & v) const
+{
+	return Vec3<float32>(_mm_div_ps(data, v.data));
+}
+
+template<>
+Vec3<float32> & Vec3<float32>::operator+=(const Vec3<float32> & v)
+{
+	data = _mm_add_ps(data, v.data);
+	return *this;
+}
+
+template<>
+Vec3<float32> & Vec3<float32>::operator-=(const Vec3<float32> & v)
+{
+	data = _mm_sub_ps(data, v.data);
+	return *this;
+}
+
+template<>
+Vec3<float32> & Vec3<float32>::operator*=(const Vec3<float32> & v)
+{
+	data = _mm_mul_ps(data, v.data);
+	return *this;
+}
+
+template<>
+Vec3<float32> & Vec3<float32>::operator/=(const Vec3<float32> & v)
+{
+	data = _mm_div_ps(data, v.data);
+	return *this;
+}
+
+template<>
+Vec3<float32> Vec3<float32>::operator+(const float32 & s) const
+{
+	return Vec3<float32>(_mm_add_ps(data, _mm_set1_ps(s)));
+}
+
+template<>
+Vec3<float32> Vec3<float32>::operator-(const float32 & s) const
+{
+	return Vec3<float32>(_mm_sub_ps(data, _mm_set1_ps(s)));
+}
+
+template<>
+Vec3<float32> Vec3<float32>::operator*(const float32 & s) const
+{
+	return Vec3<float32>(_mm_mul_ps(data, _mm_set1_ps(s)));
+}
+
+template<>
+Vec3<float32> Vec3<float32>::operator/(const float32 & s) const
+{
+	return Vec3<float32>(_mm_div_ps(data, _mm_set1_ps(s)));
+}
+
+template<>
+Vec3<float32> & Vec3<float32>::operator+=(const float32 & s)
+{
+	data = _mm_add_ps(data, _mm_set1_ps(s));
+	return *this;
+}
+
+template<>
+Vec3<float32> & Vec3<float32>::operator-=(const float32 & s)
+{
+	data = _mm_sub_ps(data, _mm_set1_ps(s));
+	return *this;
+}
+
+template<>
+Vec3<float32> & Vec3<float32>::operator*=(const float32 & s)
+{
+	data = _mm_mul_ps(data, _mm_set1_ps(s));
+	return *this;
+}
+
+template<>
+Vec3<float32> & Vec3<float32>::operator/=(const float32 & s)
+{
+	data = _mm_div_ps(data, _mm_set1_ps(s));
+	return *this;
+}
+
 template<>
 float32 Vec3<float32>::operator&(const Vec3<float32> & v) const
 {
@@ -593,11 +621,6 @@ float32 Vec3<float32>::operator&(const Vec3<float32> & v) const
 	return *((float32*)&res);
 }
 
-template<typename T>
-Vec3<T> Vec3<T>::operator^(const Vec3<T> & v) const
-{
-	return Vec3<T>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
-}
 template<>
 Vec3<float32> Vec3<float32>::operator^(const Vec3<float32> & v) const
 {
@@ -608,17 +631,38 @@ Vec3<float32> Vec3<float32>::operator^(const Vec3<float32> & v) const
 	return _mm_shuffle_ps(res, res, _MM_SHUFFLE(1, 3, 2, 0));
 }
 
-template<typename T1>
-template<typename T2>
-Vec3<T1>::operator Vec3<T2>() const
-{
-	return Vec3<T2>(static_cast<T2>(x), static_cast<T2>(y), static_cast<T2>(z));
-}
-
 template<>
 void Vec3<float32>::print(FILE * stream)
 {
 	printf("v3(%.3f, %.3f, %.3f)\n", x, y, z);
+}
+
+/////////////////////////////////////////////////
+// Int 32-bit specialization                   //
+/////////////////////////////////////////////////
+
+template<>
+Vec3<int32>::Vec3(const __m128i & data) : Vec3()
+{
+	this->data = data;
+}
+
+template<>
+Vec3<int32>::Vec3(const int32 & x, const int32 & y, const int32 & z) : Vec3()
+{
+	data = _mm_set_epi32(x, y, z, 0);
+}
+
+template<>
+Vec3<int32>::Vec3(const int32 & s) : Vec3()
+{
+	data = _mm_set1_epi32(s);
+}
+
+template<>
+void Vec3<int32>::print(FILE * stream)
+{
+	printf("v3(%d, %d, %d)\n", x, y, z);
 }
 
 #endif

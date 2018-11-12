@@ -12,21 +12,25 @@ template<typename T>
 struct Vec {};
 
 /**
- * @brief Specialization for int32
- */
-template<>
-struct Vec<int32>
-{
-	typedef __m128i VT;
-};
-
-/**
- * @brief Specialization for float32
+ * @brief Specialization for floating-point types
+ * @{
  */
 template<>
 struct Vec<float32>
 {
 	typedef __m128 VT;
 };
+/** @} */
+
+/**
+ * @brief Specialization for integer types
+ * @{
+ */
+template<>
+struct Vec<int32>
+{
+	typedef __m128i VT;
+};
+/** @} */
 
 #endif
