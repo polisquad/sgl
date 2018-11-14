@@ -10,6 +10,16 @@
 template<typename T = float32>
 struct Vec3 : public Vec<T>
 {
+	/**
+	 * @brief Friendship declarations
+	 * @{
+	 */
+	friend struct Vec2<T>;
+	friend struct Vec4<T>;
+	friend struct Quat<T>;
+	friend struct Mat4<T>;
+	/** @} */
+
 protected:
 	/**
 	 * @brief SIMD vector
@@ -56,6 +66,14 @@ public:
 	 * @param [in] s scalar value
 	 */
 	inline Vec3(const T & s);
+
+	/**
+	 * @brief Vec2-constructor
+	 * 
+	 * @param [in]	v2	Vec2 vector
+	 * @param [in]	z	missing component
+	 */
+	inline Vec3(const Vec2<T> & v2, const T & z = T());
 
 	/**
 	 * @brief Assignment operation
@@ -109,7 +127,6 @@ public:
 	 * @param [in] v other vector
 	 * 
 	 * @return Comparison result
-	 * 
 	 * @{
 	 */
 	inline bool operator==(const Vec3<T> & v) const;
@@ -129,7 +146,6 @@ public:
 	 * @param [in] v other vector
 	 * 
 	 * @return result of operation
-	 * 
 	 * @{
 	 */
 	inline Vec3<T> operator+(const Vec3<T> & v) const;
@@ -144,7 +160,6 @@ public:
 	 * @param [in] v other vector
 	 * 
 	 * @return result of operation
-	 * 
 	 * @{
 	 */
 	inline Vec3<T> & operator+=(const Vec3<T> & v);
@@ -159,7 +174,6 @@ public:
 	 * @param [in] s scalar value
 	 * 
 	 * @return result of operation
-	 * 
 	 * @{
 	 */
 	inline Vec3<T> operator+(const T & s) const;
@@ -174,7 +188,6 @@ public:
 	 * @param [in] s scalar value
 	 * 
 	 * @return result of operation
-	 * 
 	 * @{
 	 */
 	inline Vec3<T> & operator+=(const T & s);
@@ -204,17 +217,22 @@ public:
 	/**
 	 * @brief Component type conversion operator
 	 * 
-	 * @result converted vector
+	 * @return converted vector
 	 */
 	template<typename T2>
 	inline operator Vec3<T2>() const;
 
 	/**
-	 * @brief Print vector to stream
+	 * @brief Vec2 conversion
 	 * 
-	 * @param [in] stream output stream
+	 * @return converted vector
 	 */
-	inline void print(FILE * stream = stdout);
+	inline explicit operator Vec2<T>() const;
+
+	/**
+	 * @copydoc Vec<T>::print()
+	 */
+	inline virtual void print(FILE * stream = stdout) const;
 };
 
 //////////////////
@@ -229,6 +247,9 @@ Vec3<T>::Vec3() :
 
 template<typename T>
 Vec3<T>::Vec3(const T & s) : Vec3(s, s, s) {}
+
+template<typename T>
+Vec3<T>::Vec3(const Vec2<T> & v2, const T & z) : Vec3(v2.x, v2.y, z) {}
 
 template<typename T>
 Vec3<T> & Vec3<T>::operator=(const Vec3<T> & v)
@@ -386,7 +407,6 @@ Vec3<T> Vec3<T>::operator/(const T & s) const
  * @param [in]	s	scalar
  * 
  * @return result of operation
- * 
  * @{
  */
 template<typename T>
@@ -467,6 +487,12 @@ Vec3<T1>::operator Vec3<T2>() const
 	return Vec3<T2>(static_cast<T2>(x), static_cast<T2>(y), static_cast<T2>(z));
 }
 
+template<typename T>
+Vec3<T>::operator Vec2<T>() const
+{
+	return Vec2<T>(data);
+}
+
 /////////////////////////////////////////////////
 // Float 32-bit specialization                 //
 /////////////////////////////////////////////////
@@ -501,32 +527,82 @@ template<>
 float32 Vec3<float32>::getSquaredSize() const
 {
 	// Zero extra element
-	*((float32*)&data) = 0.f;
-	__m128	res = _mm_mul_ps(data, data);
-			res = _mm_hadd_ps(res, res);
-			res = _mm_hadd_ps(res, res);
-	return *((float*)&res);
+	float32 _nan; memset(&_nan, 0xffffffff, sizeof(float32));
+	__m128	size = _mm_and_ps(data, _mm_set_ps(_nan, _nan, _nan, 0.f));
+			size = _mm_mul_ps(size, size);
+			size = _mm_hadd_ps(size, size);
+			size = _mm_hadd_ps(size, size);
+
+	return *((float32*)&size);
 }
 
 template<>
 Vec3<float32> Vec3<float32>::getNormal() const
 {
-	const __m128 size = _mm_set1_ps(getSize());
+	// Zero extra element
+	float32 _nan; memset(&_nan, 0xffffffff, sizeof(float32));
+	__m128	size = _mm_and_ps(data, _mm_set_ps(_nan, _nan, _nan, 0.f));
+			size = _mm_mul_ps(size, size);
+			size = _mm_hadd_ps(size, size);
+			size = _mm_hadd_ps(size, size);
+			// Square root of size
+			size = _mm_sqrt_ps(size);
+
 	return Vec3<float32>(_mm_div_ps(data, size));
 }
 
 template<>
 Vec3<float32> & Vec3<float32>::normalize()
 {
-	const __m128 size = _mm_set1_ps(getSize());
+	// Zero extra element
+	float32 _nan; memset(&_nan, 0xffffffff, sizeof(float32));
+	__m128	size = _mm_and_ps(data, _mm_set_ps(_nan, _nan, _nan, 0.f));
+			size = _mm_mul_ps(size, size);
+			size = _mm_hadd_ps(size, size);
+			size = _mm_hadd_ps(size, size);
+			// Square root of size
+			size = _mm_sqrt_ps(size);
+			
 	data = _mm_div_ps(data, size);
 	return *this;
+}
+
+template<>
+bool Vec3<float32>::operator==(const Vec3<float32> & v) const
+{
+	return (_mm_movemask_ps(_mm_cmp_ps(
+		_mm_or_ps(
+			_mm_sub_ps(data, v.data),
+			_mm_set1_ps(-0.f)
+		),
+		_mm_set1_ps(-FLT_EPSILON),
+		_CMP_LT_OQ
+	)) & 0xe) == 0x0;
+}
+
+template<>
+bool Vec3<float32>::operator!=(const Vec3<float32> & v) const
+{
+	return _mm_movemask_ps(_mm_cmp_ps(
+		_mm_or_ps(
+			_mm_sub_ps(data, v.data),
+			_mm_set1_ps(-0.f)
+		),
+		_mm_set1_ps(-FLT_EPSILON),
+		_CMP_LT_OQ
+	)) & 0xe;
 }
 
 template<>
 Vec3<float32> Vec3<float32>::operator+(const Vec3<float32> & v) const
 {
 	return Vec3<float32>(_mm_add_ps(data, v.data));
+}
+
+template<>
+Vec3<float32> Vec3<float32>::operator-() const
+{
+	return Vec3<float32>(_mm_xor_ps(data, _mm_set1_ps(-0.f)));
 }
 
 template<>
@@ -630,11 +706,11 @@ Vec3<float32> & Vec3<float32>::operator/=(const float32 & s)
 template<>
 float32 Vec3<float32>::operator&(const Vec3<float32> & v) const
 {
-	*((float32*)&data) = *((float32*)&v.data) = 0.f;
-	__m128	res = _mm_mul_ps(data, v.data);
-			res = _mm_hadd_ps(res, res);
-			res = _mm_hadd_ps(res, res);
-	return *((float32*)&res);
+	__m128	mask = _mm_set_ps(1.f, 1.f, 1.f, 0.f);
+	__m128	dest = _mm_mul_ps(_mm_mul_ps(data, mask), _mm_mul_ps(v.data, mask));
+			dest = _mm_hadd_ps(dest, dest);
+			dest = _mm_hadd_ps(dest, dest);
+	return *((float32*)&dest);
 }
 
 template<>
@@ -648,7 +724,7 @@ Vec3<float32> Vec3<float32>::operator^(const Vec3<float32> & v) const
 }
 
 template<>
-void Vec3<float32>::print(FILE * stream)
+void Vec3<float32>::print(FILE * stream) const
 {
 	fprintf(stream, "v3(%.3f, %.3f, %.3f)\n", x, y, z);
 }
@@ -676,7 +752,7 @@ Vec3<int32>::Vec3(const int32 & s) : Vec3()
 }
 
 template<>
-void Vec3<int32>::print(FILE * stream)
+void Vec3<int32>::print(FILE * stream) const
 {
 	fprintf(stream, "v3(%d, %d, %d)\n", x, y, z);
 }

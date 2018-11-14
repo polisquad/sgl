@@ -1,6 +1,8 @@
 #include "math/vec2.h"
 #include "math/vec3.h"
 #include "math/vec4.h"
+#include "math/quat.h"
+#include "math/mat4.h"
 
 #include <gtest/gtest.h>
 
@@ -72,6 +74,23 @@ TEST(Math, v4f_sub_f)		{ ASSERT_EQ(Vec4<>(2.f) - 1.f, Vec4<>(1.f)); }
 TEST(Math, v4f_mul_f)		{ ASSERT_EQ(Vec4<>(2.f) * 2.f, Vec4<>(4.f)); }
 TEST(Math, v4f_div_f)		{ ASSERT_EQ(Vec4<>(4.f) / 2.f, Vec4<>(2.f)); }
 TEST(Math, v4f_dot)			{ ASSERT_FLOAT_EQ(Vec4<>(1.f, 0.f, 0.f, 0.f) & Vec4<>(1.f, 0.f, 0.f, 0.f), 1.f); }
+
+/////////////////////////////////////////////////
+// Quat tests                                  //
+/////////////////////////////////////////////////
+
+/////////////////////////////////////////////////
+// Mat4 tests                                  //
+/////////////////////////////////////////////////
+
+TEST(Math, m4f_eq)			{ ASSERT_EQ(mat4::translation(vec3(1.f)) == mat4::translation(vec3(1.f)), true); }
+TEST(Math, m4f_neq)			{ ASSERT_EQ(mat4::translation(vec3(1.f)) != mat4::translation(vec3(1.f)), false); }
+TEST(Math, m4f_mul_m4f)		{ ASSERT_EQ(mat4::translation(vec3(1.f)).getTranspose(), mat4(1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 1.f, 1.f)); }
+TEST(Math, m4f_transpose)	{ ASSERT_EQ(mat4::translation(vec3(1.f)) * mat4::translation(vec3(1.f)), mat4::translation(vec3(2.f))); }
+TEST(Math, m4f_inverse)		{ ASSERT_EQ(!mat4(2.f, 1.f, 0.f, 1.f, 3.f, 1.f, 1.f, 1.f, 2.f, 0.f, 3.f, 1.f, 0.f, 0.f, 0.f, 1.f), mat4(-3.f, 3.f, -1.f, 1.f, 7.f, -6.f, 2.f, -3.f, 2.f, -2.f, 1.f, -1.f, 0.f, -0.f, 0.f, 1.f)); }
+TEST(Math, m4f_mul_v2f)		{ ASSERT_EQ(mat4::translation(vec3(1.f)) * vec2(1.f), vec2(2.f)); }
+TEST(Math, m4f_mul_v3f)		{ ASSERT_EQ(mat4::translation(vec3(1.f)) * vec3(1.f), vec3(2.f)); }
+TEST(Math, m4f_mul_v4f)		{ ASSERT_EQ(mat4::translation(vec3(1.f)) * vec4(1.f), vec4(2.f)); }
 
 /**
  * @}

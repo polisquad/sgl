@@ -38,4 +38,17 @@ target_include_directories(test
 )
 
 ## Discover tests
-gtest_discover_tests(test)
+gtest_discover_tests(test
+
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+
+## Setup post-build command to run tests
+add_custom_command(
+
+	TARGET				test
+	POST_BUILD
+	COMMAND				${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test
+	COMMENT				"Running all unit tests"
+	WORKING_DIRECTORY	${PROJECT_SOURCE_DIR}
+)

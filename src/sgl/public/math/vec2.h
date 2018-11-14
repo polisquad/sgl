@@ -10,9 +10,19 @@
 template<typename T = float32>
 struct Vec2 : public Vec<T>
 {
+	/**
+	 * @brief Friendship declarations
+	 * @{
+	 */
+	friend struct Vec3<T>;
+	friend struct Vec4<T>;
+	friend struct Quat<T>;
+	friend struct Mat4<T>;
+	/** @} */
+
 protected:
 	/**
-	 * @brief SIMD vector
+	 * @brief Underlying data
 	 */
 	typename Vec2<T>::VT data;
 
@@ -202,11 +212,9 @@ public:
 	inline operator Vec2<T2>() const;
 
 	/**
-	 * @brief Print vector to stream
-	 * 
-	 * @param [in] stream output stream
+	 * @copydoc Vec<T>::print()
 	 */
-	inline void print(FILE * stream = stdout);
+	inline virtual void print(FILE * stream = stdout) const;
 };
 
 //////////////////
@@ -483,16 +491,22 @@ Vec2<float32>::Vec2(const float32 & s) : Vec2()
 template<>
 Vec2<float32> Vec2<float32>::getNormal() const
 {
-	const __m128 size = _mm_set1_ps(getSize());
+	const auto size = _mm_set1_ps(sqrtf(x * x + y * y));
 	return Vec2<float32>(_mm_div_ps(data, size));
 }
 
 template<>
 Vec2<float32> & Vec2<float32>::normalize()
 {
-	const __m128 size = _mm_set1_ps(getSize());
+	const auto size = _mm_set1_ps(sqrtf(x * x + y * y));
 	data = _mm_div_ps(data, size);
 	return *this;
+}
+
+template<>
+Vec2<float32> Vec2<float32>::operator-() const
+{
+	return Vec2<float32>(_mm_xor_ps(data, _mm_set1_ps(-0.f)));
 }
 
 template<>
@@ -600,7 +614,7 @@ Vec2<float32> & Vec2<float32>::operator/=(const float32 & s)
 }
 
 template<>
-void Vec2<float32>::print(FILE * stream)
+void Vec2<float32>::print(FILE * stream) const
 {
 	printf("v2(%.3f, %.3f)\n", x, y);
 }
@@ -628,7 +642,7 @@ Vec2<int32>::Vec2(const int32 & s) : Vec2()
 }
 
 template<>
-void Vec2<int32>::print(FILE * stream)
+void Vec2<int32>::print(FILE * stream) const
 {
 	fprintf(stream, "v3(%d, %d)\n", x, y);
 }
