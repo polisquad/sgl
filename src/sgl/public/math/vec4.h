@@ -8,7 +8,7 @@
  * @brief A 4-components templated vector
  */
 template<typename T = float32>
-struct Vec4 : public Vec<T>
+struct Vec4 : public SIMD<T>
 {
 	/**
 	 * @brief Friendship declarations

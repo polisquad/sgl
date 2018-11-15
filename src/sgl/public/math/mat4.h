@@ -1,7 +1,6 @@
 #ifndef SGL_MAT4_H
 #define SGL_MAT4_H
 
-#include "mat.h"
 #include "quat.h"
 
 /**
@@ -9,7 +8,7 @@
  * @brief 4x4 templated matrix
  */
 template<typename T = float32>
-struct Mat4 : public Mat<T>
+struct Mat4 : public SIMD<T>
 {
 protected:
 	/**

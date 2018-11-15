@@ -4,7 +4,8 @@
 #include "core/platform.h"
 
 /**
- * @brief Forward declarations
+ * @brief Forward declarations of structs
+ * that use SIMD data types
  * @{
  */
 template<typename>	struct Vec2;
@@ -15,29 +16,25 @@ template<typename>	struct Mat4;
 /** @} */
 
 /**
- * @struct Vec vec.h
- * @brief Base class for SIMD vector
- * that provides specialization for basic types
+ * @struct SIMD simd.h
+ * @brief Base class for SIMD-based structs
+ * that provides specialization for templates
  */
 template<typename T>
-struct Vec
-{
-	/**
-	 * @brief Print vector to stream
-	 * 
-	 * @param [in] stream output stream
-	 */
-	inline virtual void print(FILE * stream = stdout) const = 0;
-};
+struct SIMD {};
 
 /**
  * @brief Specialization for floating-point types
  * @{
  */
 template<>
-struct Vec<float32>
+struct SIMD<float32>
 {
+	// Vector type
 	typedef __m128 VT;
+
+	// Matrix type
+	typedef __m128 MT[4];
 };
 /** @} */
 
@@ -46,9 +43,13 @@ struct Vec<float32>
  * @{
  */
 template<>
-struct Vec<int32>
+struct SIMD<int32>
 {
+	// Vector type
 	typedef __m128i VT;
+
+	// Matrix type
+	typedef __m128i MT[4];
 };
 /** @} */
 

@@ -1,14 +1,14 @@
 #ifndef SGL_VEC2_H
 #define SGL_VEC2_H
 
-#include "vec.h"
+#include "simd.h"
 
 /**
  * @struct Vec2 vec2.h
  * @brief a 2-components templated vector
  */
 template<typename T = float32>
-struct Vec2 : public Vec<T>
+struct Vec2 : public SIMD<T>
 {
 	/**
 	 * @brief Friendship declarations
@@ -212,7 +212,7 @@ public:
 	inline operator Vec2<T2>() const;
 
 	/**
-	 * @copydoc Vec<T>::print()
+	 * @copydoc SIMD<T>::print()
 	 */
 	inline virtual void print(FILE * stream = stdout) const;
 };

@@ -8,7 +8,7 @@
  * @brief a 3-components templated vector
  */
 template<typename T = float32>
-struct Vec3 : public Vec<T>
+struct Vec3 : public SIMD<T>
 {
 	/**
 	 * @brief Friendship declarations
@@ -230,7 +230,7 @@ public:
 	inline explicit operator Vec2<T>() const;
 
 	/**
-	 * @copydoc Vec<T>::print()
+	 * @copydoc SIMD<T>::print()
 	 */
 	inline virtual void print(FILE * stream = stdout) const;
 };
