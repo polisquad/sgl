@@ -214,6 +214,21 @@ public:
 	inline Vec3<T> operator^(const Vec3<T> & v) const;
 
 	/**
+	 * @brief Linear interpolate with other vector
+	 * 
+	 * @param [in]	v		other vector
+	 * @param [in]	alpha	interpolation step
+	 * 
+	 * @return self
+	 */
+	inline Vec3<T> & lerp(const Vec3<T> & v, float32 alpha);
+
+	/**
+	 * @copydoc SIMD<T>::print()
+	 */
+	inline virtual void print(FILE * stream = stdout) const;
+
+	/**
 	 * @brief Component type conversion operator
 	 * 
 	 * @return converted vector
@@ -227,11 +242,6 @@ public:
 	 * @return converted vector
 	 */
 	inline explicit operator Vec2<T>() const;
-
-	/**
-	 * @copydoc SIMD<T>::print()
-	 */
-	inline virtual void print(FILE * stream = stdout) const;
 };
 
 //////////////////
@@ -479,6 +489,13 @@ Vec3<T> Vec3<T>::operator^(const Vec3<T> & v) const
 	return Vec3<T>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
 }
 
+template<typename T>
+Vec3<T> & Vec3<T>::lerp(const Vec3<T> & v, float32 alpha)
+{
+	*this += alpha * (v - *this);
+	return *this;
+}
+
 template<typename T1>
 template<typename T2>
 Vec3<T1>::operator Vec3<T2>() const
@@ -720,6 +737,22 @@ Vec3<float32> Vec3<float32>::operator^(const Vec3<float32> & v) const
 		_mm_mul_ps(data, _mm_shuffle_ps(v.data, v.data, _MM_SHUFFLE(1, 3, 2, 0)))
 	);
 	return _mm_shuffle_ps(res, res, _MM_SHUFFLE(1, 3, 2, 0));
+}
+
+template<>
+Vec3<float32> & Vec3<float32>::lerp(const Vec3<float32> & v, float32 alpha)
+{
+	data = _mm_add_ps(
+		data,
+		_mm_mul_ps(
+			_mm_set1_ps(alpha),
+			_mm_sub_ps(
+				v.data,
+				data
+			)
+		)
+	);
+	return *this;
 }
 
 template<>

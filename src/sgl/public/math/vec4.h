@@ -221,6 +221,23 @@ public:
 	inline T operator&(const Vec4<T> & v) const;
 
 	/**
+	 * @brief Linear interpolate with other vector
+	 * 
+	 * @param [in]	v		other vector
+	 * @param [in]	alpha	interpolation step
+	 * 
+	 * @return self
+	 */
+	inline Vec4<T> & lerp(const Vec4<T> & v, float32 alpha);
+
+	/**
+	 * @brief Print vector to stream
+	 * 
+	 * @param [in] stream output stream
+	 */
+	inline virtual void print(FILE * stream = stdout) const;
+
+	/**
 	 * @brief Component type conversion operator
 	 * 
 	 * @return converted vector
@@ -237,13 +254,6 @@ public:
 	inline explicit operator Vec2<T>() const;
 	inline explicit operator Vec3<T>() const;
 	/** @} */
-
-	/**
-	 * @brief Print vector to stream
-	 * 
-	 * @param [in] stream output stream
-	 */
-	inline virtual void print(FILE * stream = stdout) const;
 };
 
 //////////////////
@@ -490,6 +500,13 @@ T Vec4<T>::operator&(const Vec4<T> & v) const
 	return x * v.x + y * v.y + z * v.z + w * v.w;
 }
 
+template<typename T>
+Vec4<T> & Vec4<T>::lerp(const Vec4<T> & v, float32 alpha)
+{
+	*this += alpha * (v - *this);
+	return *this;
+}
+
 template<typename T1>
 template<typename T2>
 Vec4<T1>::operator Vec4<T2>() const
@@ -710,6 +727,22 @@ float32 Vec4<float32>::operator&(const Vec4<float32> & v) const
 			res = _mm_hadd_ps(res, res);
 			res = _mm_hadd_ps(res, res);
 	return *((float32*)&res);
+}
+
+template<>
+Vec4<float32> & Vec4<float32>::lerp(const Vec4<float32> & v, float32 alpha)
+{
+	data = _mm_add_ps(
+		data,
+		_mm_mul_ps(
+			_mm_set1_ps(alpha),
+			_mm_sub_ps(
+				v.data,
+				data
+			)
+		)
+	);
+	return *this;
 }
 
 template<>
