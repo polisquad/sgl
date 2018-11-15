@@ -6,17 +6,11 @@
 /**
  * @struct Quat quat.h
  * @brief Quaternion implementation (used for rotation)
+ * based on Vec4 implementation
  */
-struct Quat
+template<typename T>
+struct Quat : public Vec4<T>
 {
-protected:
-	/**
-	 * @brief Quat components
-	 * @{
-	 */
-	float32 x, y, z, w;
-	/** @} */
-
 public:
 	/**
 	 * @brief Default constructor
@@ -24,199 +18,256 @@ public:
 	inline Quat();
 
 	/**
-	 * @brief Components-constructor
-	 * 
-	 * @param [in] x,y,z,w
+	 * @brief Inherited constructors
 	 */
-	inline Quat(float32 x, float32 y, float32 z, float32 w);
+	using Vec4<T>::Vec4;
 
 	/**
-	 * @brief Axis-rotation-constructor
+	 * @brief Rotation-constructor
 	 * 
 	 * @param [in]	v	rotation axis
 	 * @param [in]	a	rotation angle
 	 */
-	inline Quat(const vec3 & v, float32 a);
+	inline Quat(const Vec3<T> & v, const T & a);
 
 	/**
-	 * @brief Quaternion squared size
+	 * @brief Get rotation angle
 	 * 
-	 * @return quaternion squared size
+	 * @return rotation angle
 	 */
-	inline float32 getSquaredSize() const;
+	inline T getAngle() const;
 
 	/**
-	 * @brief Quaternion size
+	 * @brief Get rotation axis
 	 * 
-	 * @return quaternion size (L^2-norm)
+	 * @return rotation axis
 	 */
-	inline float32 getSize() const;
+	inline Vec3<T> getAxis() const;
 
 	/**
-	 * @brief Return normalized copy of quaternion
+	 * @brief Compare two vectors
 	 * 
-	 * @return normalized quat
+	 * @param [in] v other vector
+	 * 
+	 * @return Comparison result
+	 * @{
 	 */
-	inline Quat getNormal() const;
+	inline bool operator==(const Quat<T> & v) const;
+	inline bool operator!=(const Quat<T> & v) const;
+	/** @} */
 
 	/**
-	 * @brief Normalize in-place
+	 * @brief Invert quaternion (rotation)
+	 * 
+	 * @return inverted rotation
+	 */
+	inline Quat<T> operator!() const;
+
+	/**
+	 * @brief Invert quaternion (rotation) in-place
 	 * 
 	 * @return self
 	 */
-	inline Quat & normalize();
+	inline Quat<T> & invert();
 
 	/**
-	 * @brief Comparison operators
-	 * @details Compare two unit quaternion.
-	 * If the quaternions are not normalized
-	 * result is not well defined
-	 * 
-	 * @param [in] q other quat
-	 * 
-	 * @return comparison result as boolean
-	 * 
-	 * @{
-	 */
-	inline bool operator==(const Quat & q) const;
-	inline bool operator!=(const Quat & q) const;
-	/** @} */
-
-	/**
-	 * @brief Invert quaternion components
-	 * 
-	 * @return Copy with inverted components
-	 */
-	inline Quat operator-() const;
-
-	/**
-	 * @brief Quaternion multiplication
-	 * @details Combines two rotation.
-	 * Note that this operation is not commutative
+	 * @brief Quat-quat multiplication
 	 * 
 	 * @param [in] q other quaternion
+	 * 
+	 * @return combined quaternion
 	 */
-	inline Quat operator*(const Quat & q) const;
+	inline Quat operator*(const Quat<T> & q) const;
 
 	/**
-	 * @brief Quat-Vec3 multiplication
-	 * @details Semantically, rotates a vector
-	 * by this quaternion
+	 * @brief Quat-vector multiplication (rotates vector)
 	 * 
-	 * @param [in] v vector to multiply
+	 * @param [in] v vector
+	 * 
+	 * @return rotated vector
 	 */
-	inline vec3 operator*(const vec3 & v) const;
+	inline Vec3<T> operator*(const Vec3<T> & v) const;
 
 	/**
-	 * @brief Quat to direction vectors conversion
+	 * @brief Direction-vector conversions
 	 * 
-	 * @return direction vector
-	 * 
+	 * @return rotated direction vector
 	 * @{
 	 */
-	inline vec3 toForward() const;
-	inline vec3 toRight() const;
-	inline vec3 toUp() const;
+	inline Vec3<T> forward() const;
+	inline Vec3<T> backward() const;
+	inline Vec3<T> down() const;
+	inline Vec3<T> up() const;
+	inline Vec3<T> left() const;
+	inline Vec3<T> right() const;
 	/** @} */
 
 	/**
-	 * @brief Print to stream
+	 * @brief Get angular distance between two quaternions
 	 * 
-	 * @param [in] stream output stream
+	 * @param [in] q other quaternion
+	 * 
+	 * @return min. angular distance
+	 * @{
 	 */
-	inline void print(FILE * stream = stdout);
+	inline T operator^(const Quat<T> & q) const;
+	/** @} */
+
+	/**
+	 * @copydoc Vec4<T>::print()
+	 */
+	inline virtual void print(FILE * stream = stdout) const;
 };
 
-Quat::Quat() : x(0.f), y(1.f), z(0.f), w(0.f) {}
+template<typename T>
+Quat<T>::Quat() {}
 
-Quat::Quat(float32 x, float32 y, float32 z, float32 w) : x(x), y(y), z(z), w(w) {}
-
-Quat::Quat(const vec3 & v, float32 a)
+template<typename T>
+T Quat<T>::getAngle() const
 {
-	const vec3 axis = v.getNormal();
-	const float32 s = sinf(a / 2.f), c = cosf(a / 2.f);
-	x = s * axis.x, y = s * axis.y, z = s * axis.z;
-	w = c;
+	return T(2) * acosf(this->w);
 }
 
-float32 Quat::getSquaredSize() const
+template<typename T>
+Vec3<T> Quat<T>::getAxis() const
 {
-	return x * x + y * y + z * z + w * w;
+	const T s = sqrtf(1.f - this->w * this->w);
+	return Vec3<T>(this->data) / s;
 }
 
-float32 Quat::getSize() const
+template<typename T>
+bool Quat<T>::operator==(const Quat<T> & q) const
 {
-	return sqrtf(getSquaredSize());
+	return Vec4<T>::operator==(static_cast<Vec4<T>>(q)) || Vec4<T>::operator==(-static_cast<Vec4<T>>(q));
 }
 
-Quat Quat::getNormal() const
+template<typename T>
+bool Quat<T>::operator!=(const Quat<T> & q) const
 {
-	const float32 size = getSize();
-	return Quat(x / size, y / size, z / size, w / size);
+	return Vec4<T>::operator!=(static_cast<Vec4<T>>(q)) && Vec4<T>::operator!=(-static_cast<Vec4<T>>(q));
 }
 
-Quat & Quat::normalize()
+template<typename T>
+Quat<T> Quat<T>::operator!() const
 {
-	const float32 size = getSize();
-	x /= size, y /= size, z /= size, w /= size;
+	return Quat<T>(-this->x, -this->y, -this->z, this->w);
+}
+
+template<typename T>
+Quat<T> & Quat<T>::invert()
+{
+	this->x = -this->x, this->y = -this->y, this->z = -this->z;
 	return *this;
 }
 
-bool Quat::operator==(const Quat & q) const
+template<typename T>
+Vec3<T> Quat<T>::operator*(const Vec3<T> & v) const
 {
-	return
-		(x == q.x && y == q.y && z == q.z && w == q.w) ||
-		(x == -q.x && y == -q.y && z == -q.z && w == -q.w);
+	/** @see http://people.csail.mit.edu/bkph/articles/Quaternions.pdf */
+	const Vec3<T> q(this->data);
+	const Vec3<T> t = T(2) * (q ^ v);
+	return v + (this->w * t) + (q ^ t);
 }
 
-bool Quat::operator!=(const Quat & q) const
+/////////////////////////////////////////////////
+// Direction-vector conversions                //
+/////////////////////////////////////////////////
+
+template<typename T>
+Vec3<T> Quat<T>::forward() const	{ return operator*(Vec3<T>::forward); }
+
+template<typename T>
+Vec3<T> Quat<T>::backward() const	{ return operator*(Vec3<T>::backward); }
+
+template<typename T>
+Vec3<T> Quat<T>::down() const		{ return operator*(Vec3<T>::down); }
+
+template<typename T>
+Vec3<T> Quat<T>::up() const			{ return operator*(Vec3<T>::up); }
+
+template<typename T>
+Vec3<T> Quat<T>::left() const		{ return operator*(Vec3<T>::left); }
+
+template<typename T>
+Vec3<T> Quat<T>::right() const		{ return operator*(Vec3<T>::right); }
+
+/////////////////////////////////////////////////
+// Float 32-bit specialization                 //
+/////////////////////////////////////////////////
+
+template<>
+Quat<float32>::Quat(const Vec3<float32> & v, const float32 & a) : Vec4(v.getNormal() * sinf(a / 2.f), cosf(a / 2.f)) {}
+
+template<>
+Quat<float32> & Quat<float32>::invert()
 {
-	return
-		(x != q.x || y != q.y || z != q.z || w != q.w) &&
-		(x != -q.x || y != -q.y || z != -q.z || w != -q.w);
+	data = _mm_xor_ps(data, _mm_set_ps(-0.f, -0.f, -0.f, 0.f));
+	return *this;
 }
 
-Quat Quat::operator-() const
+template<>
+Quat<float32> Quat<float32>::operator*(const Quat<float32> & q) const
 {
-	return Quat(-x, -y, -z, -w);
+	#define shuffle(v, x, y, z, w) _mm_shuffle_ps(v, v, _MM_SHUFFLE(x, y, z, w))
+	#define mul(v1, v2) _mm_mul_ps(v1, v2)
+	#define add(v1, v2) _mm_add_ps(v1, v2)
+	#define sgn(v1, v2) _mm_xor_ps(v1, v2)
+	#define set(x, y, z, w) _mm_set_ps(x, y, z, w)
+
+	return Quat<float32>(add(
+		add(
+			mul(
+				shuffle(q.data, 0, 0, 0, 0),
+				data
+			),
+			mul(
+				sgn(
+					set(0.f, -0.f, 0.f, -0.f),
+					shuffle(q.data, 3, 3, 3, 3)
+				),
+				shuffle(data, 0, 1, 2, 3)
+			)
+		),
+		add(
+			mul(
+				sgn(
+					set(0.f, 0.f, -0.f, -0.f),
+					shuffle(q.data, 2, 2, 2, 2)
+				),
+				shuffle(data, 1, 0, 3, 2)
+			),
+			mul(
+				sgn(
+					set(-0.f, 0.f, 0.f, -0.f),
+					shuffle(q.data, 1, 1, 1, 1)
+				),
+				shuffle(data, 2, 3, 0, 1)
+			)
+		)
+	));
+
+	#undef shuffle
+	#undef mul
+	#undef add
+	#undef sgn
+	#undef set
 }
 
-Quat Quat::operator*(const Quat & q) const
-{
-	return Quat(
-		w * q.x + x * q.w + y * q.z - z * q.y,
-		w * q.y - x * q.z + y * q.w + z * q.x,
-		w * q.z + x * q.y - y * q.x + z * q.w,
-		w * q.w - x * q.x - y * q.y - z * q.z
-	).normalize();
-}
-
-vec3 Quat::operator*(const vec3 & v) const
-{
-	// http://people.csail.mit.edu/bkph/articles/Quaternions.pdf
-	const vec3 q(x, y, z);
-	const vec3 t = 2.f * (q ^ v);
-	return v + (w * t) + (q ^ t);
-}
-
-vec3 Quat::toForward() const
-{
-	return *this * vec3::forward;
-}
-
-vec3 Quat::toRight() const
-{
-	return *this * vec3::right;
-}
-
-vec3 Quat::toUp() const
-{
-	return *this * vec3::up;
-}
-
-void Quat::print(FILE * stream)
+template<>
+void Quat<float32>::print(FILE * stream) const
 {
 	fprintf(stream, "q(%.3f, %.3f, %.3f, %.3f)\n", x, y, z, w);
 }
+
+/////////////////////////////////////////////////
+// Type definitions                            //
+/////////////////////////////////////////////////
+
+/**
+ * @brief Type definitions for common quaternion types
+ * @{
+ */
+typedef Quat<float32> quat;
+/** @} */
 
 #endif
