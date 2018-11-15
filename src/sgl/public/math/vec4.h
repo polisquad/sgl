@@ -197,6 +197,23 @@ public:
 	/** @} */
 
 	/**
+	 * @brief Vector-matrix operations
+	 * @details Element-wise operations where vector
+	 * is replicated 4 times
+	 * 
+	 * @param [in]	v	vector
+	 * @param [in]	m	matrix
+	 * 
+	 * @return multiplied matrix
+	 * @{
+	 */
+	template<typename F> inline friend Mat4<F> operator+(const Vec4<F> & v, const Mat4<F> & m);
+	template<typename F> inline friend Mat4<F> operator-(const Vec4<F> & v, const Mat4<F> & m);
+	template<typename F> inline friend Mat4<F> operator*(const Vec4<F> & v, const Mat4<F> & m);
+	template<typename F> inline friend Mat4<F> operator/(const Vec4<F> & v, const Mat4<F> & m);
+	/** @} */
+
+	/**
 	 * @brief Vector-vector dot(scalar) product
 	 * 
 	 * @param [in] v other vector

@@ -2,7 +2,7 @@
 #define SGL_MAT4_H
 
 #include "mat.h"
-#include "vec4.h"
+#include "quat.h"
 
 /**
  * @struct Mat4 mat4.h
@@ -70,6 +70,27 @@ public:
 	inline T & operator[](uint8 i) const;
 
 	/**
+	 * @brief Row and column accessors
+	 * 
+	 * @param [in] i row[column] index
+	 * 
+	 * @return Vec4 representing row[column]
+	 * @{
+	 */
+	inline Vec4<T> getRow(uint8 i) const;
+	inline Vec4<T> getCol(uint8 i) const;
+	/** @} */
+
+	/**
+	 * @brief Returns a buffer that contains ordered data
+	 * @details it is up to the user to
+	 * free the buffer after its use
+	 * 
+	 * @return buffer with data
+	 */
+	T * getDataBuffer() const;
+
+	/**
 	 * @brief Comparison operators
 	 * 
 	 * @param [in] m other matrix
@@ -117,11 +138,32 @@ public:
 	/** @} */
 
 	/**
+	 * @brief Vector-matrix operations
+	 * @details Element-wise operations where vector
+	 * is replicated 4 times
+	 * 
+	 * @param [in]	v	vector
+	 * @param [in]	m	matrix
+	 * 
+	 * @return multiplied matrix
+	 * @{
+	 */
+	template<typename F> inline friend Mat4<F> operator+(const Vec4<F> & v, const Mat4<F> & m);
+	template<typename F> inline friend Mat4<F> operator-(const Vec4<F> & v, const Mat4<F> & m);
+	template<typename F> inline friend Mat4<F> operator*(const Vec4<F> & v, const Mat4<F> & m);
+	template<typename F> inline friend Mat4<F> operator/(const Vec4<F> & v, const Mat4<F> & m);
+	/** @} */
+
+	/**
 	 * @brief Get inverse matrix
 	 * 
 	 * @return inverted matrix or zero-matrix if not invertible
+	 * 
+	 * @{
 	 */
 	inline Mat4<T> operator!() const;
+	inline Mat4<T> getInverse() const;
+	/** @} */
 	
 	/**
 	 * @brief inverse matrix in-place
@@ -154,15 +196,22 @@ public:
 	/** @} */
 
 	/**
-	 * @brief Transformation constructors
+	 * @brief Static constructors
 	 * 
-	 * @return Matrix that represent transformation
+	 * @return constructed matrix
 	 * 
 	 * @{
 	 */
-	inline static Mat4<T> translation(const vec3 & v);
-	inline static Mat4<T> scale(const vec3 & v);
-	inline static Mat4<T> rotation(const Quat & q);
+	inline static Mat4<T> fill(const T & s);
+	inline static Mat4<T> eye(const T & s);
+	inline static Mat4<T> diag(const Vec4<T> & d);
+	inline static Mat4<T> diag(const T & x, const T & y, const T & z, const T & w);
+	inline static Mat4<T> translation(const Vec3<T> & v);
+	inline static Mat4<T> translation(const T & x, const T & y, const T & z);
+	inline static Mat4<T> scale(const Vec3<T> & v);
+	inline static Mat4<T> scale(const T & s);
+	inline static Mat4<T> rotation(const Quat<T> & q);
+	inline static Mat4<T> rotation(const Vec3<T> & v, const T & a);
 	/** @} */
 
 	/**
@@ -186,6 +235,71 @@ T & Mat4<T>::operator[](uint8 i) const
 {
 	return operator()(i / 4, i % 4);
 }
+
+template<typename T>
+Vec4<T> Mat4<T>::getRow(uint8 i) const
+{
+	return Vec4<T>(data[i]);
+}
+
+template<typename T>
+Vec4<T> Mat4<T>::getCol(uint8 i) const
+{
+	Mat4<T> t = getTranspose();
+	return Vec4<T>(t.data[i]);
+}
+
+template<typename T>
+T * Mat4<T>::getDataBuffer() const
+{
+	// Allocate buffer and copy data
+	T * buff = static_cast<T*>(malloc(16 * sizeof(T)));
+	for (uint8 i = 0; i < 4; i++) memcpy(buff + i * 4, data + i, 4 * sizeof(T));
+
+	return buff;
+}
+
+template<typename T>
+Mat4<T> Mat4<T>::getInverse() const
+{
+	return operator!();
+}
+
+/**
+ * @brief Scalar-matrix operations
+ * @details Commutativity is exploited in + and *
+ * Vector-Matrix operations are used for - and /
+ * 
+ * @param [in]	s	scalar
+ * @param [in]	m	matrix
+ * 
+ * @return result of operation
+ * @{
+ */
+template<typename T>
+inline Mat4<T> operator+(const T & s, const Mat4<T> & m)
+{
+	return m + s;
+}
+
+template<typename T>
+inline Mat4<T> operator-(const T & s, const Mat4<T> & m)
+{
+	return Vec4<T>(s) - m;
+}
+
+template<typename T>
+inline Mat4<T> operator*(const T & s, const Mat4<T> & m)
+{
+	return m * s;
+}
+
+template<typename T>
+inline Mat4<T> operator/(const T & s, const Mat4<T> & m)
+{
+	return Vec4<T>(s) / m;
+}
+/** @} */
 
 /////////////////////////////////////////////////
 // Float 32-bit specialization                 //
@@ -220,12 +334,22 @@ Mat4<float32>::Mat4(
 } {}
 
 template<>
+float32 * Mat4<float32>::getDataBuffer() const
+{
+	// Allocate buffer and copy data
+	float32 * buff = static_cast<float32*>(malloc(16 * sizeof(float32)));
+	for (uint8 i = 0; i < 4; i++) _mm_storer_ps(buff + i * 4, data[i]);
+
+	return buff;
+}
+
+template<>
 bool Mat4<float32>::operator==(const Mat4<float32> & m) const
 {
-	return	_mm_movemask_ps(_mm_cmp_ps(data[0], m.data[0], _MM_CMPINT_EQ)) &&
-			_mm_movemask_ps(_mm_cmp_ps(data[1], m.data[1], _MM_CMPINT_EQ)) &&
-			_mm_movemask_ps(_mm_cmp_ps(data[2], m.data[2], _MM_CMPINT_EQ)) &&
-			_mm_movemask_ps(_mm_cmp_ps(data[3], m.data[3], _MM_CMPINT_EQ));
+	return	_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[0], m.data[0]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_GE_OQ)) &
+			_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[1], m.data[1]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_GE_OQ)) &
+			_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[2], m.data[2]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_GE_OQ)) &
+			_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[3], m.data[3]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_GE_OQ)) == 0xf;
 }
 
 template<>
@@ -384,6 +508,54 @@ Mat4<float32> Mat4<float32>::operator/(const float32 & s) const
 {
 	__m128 new_data[4];
 	for (uint8 i = 0; i < 4; i++) new_data[i] = _mm_div_ps(data[i], _mm_set1_ps(s));
+	return Mat4<float32>(new_data);
+}
+
+template<>
+inline Mat4<float32> operator+(const Vec4<float32> & v, const Mat4<float32> & m)
+{
+	__m128 new_data[4] = {
+		_mm_add_ps(v.data, m.data[0]),
+		_mm_add_ps(v.data, m.data[1]),
+		_mm_add_ps(v.data, m.data[2]),
+		_mm_add_ps(v.data, m.data[3])
+	};
+	return Mat4<float32>(new_data);
+}
+
+template<>
+inline Mat4<float32> operator-(const Vec4<float32> & v, const Mat4<float32> & m)
+{
+	__m128 new_data[4] = {
+		_mm_sub_ps(v.data, m.data[0]),
+		_mm_sub_ps(v.data, m.data[1]),
+		_mm_sub_ps(v.data, m.data[2]),
+		_mm_sub_ps(v.data, m.data[3])
+	};
+	return Mat4<float32>(new_data);
+}
+
+template<>
+inline Mat4<float32> operator*(const Vec4<float32> & v, const Mat4<float32> & m)
+{
+	__m128 new_data[4] = {
+		_mm_mul_ps(v.data, m.data[0]),
+		_mm_mul_ps(v.data, m.data[1]),
+		_mm_mul_ps(v.data, m.data[2]),
+		_mm_mul_ps(v.data, m.data[3])
+	};
+	return Mat4<float32>(new_data);
+}
+
+template<>
+inline Mat4<float32> operator/(const Vec4<float32> & v, const Mat4<float32> & m)
+{
+	__m128 new_data[4] = {
+		_mm_div_ps(v.data, m.data[0]),
+		_mm_div_ps(v.data, m.data[1]),
+		_mm_div_ps(v.data, m.data[2]),
+		_mm_div_ps(v.data, m.data[3])
+	};
 	return Mat4<float32>(new_data);
 }
 
@@ -689,8 +861,65 @@ vec4 Mat4<float32>::operator*(const vec4 & v) const
 	return out;
 }
 
+/////////////////////////////////////////////////
+// Static constructors                         //
+/////////////////////////////////////////////////
+
 template<>
-Mat4<float32> Mat4<float32>::translation(const vec3 & v)
+Mat4<float32> Mat4<float32>::fill(const float32 & s)
+{
+	// Eye matrix
+	const __m128 row = _mm_set1_ps(s);
+	const __m128 data[4] = {
+		row,
+		row,
+		row,
+		row
+	};
+	return Mat4<float32>(data);
+}
+
+template<>
+Mat4<float32> Mat4<float32>::eye(const float32 & s)
+{
+	// Eye matrix
+	const __m128 data[4] = {
+		_mm_set_ps(s, 0.f, 0.f, 0.f),
+		_mm_set_ps(0.f, s, 0.f, 0.f),
+		_mm_set_ps(0.f, 0.f, s, 0.f),
+		_mm_set_ps(0.f, 0.f, 0.f, s),
+	};
+	return Mat4<float32>(data);
+}
+
+template<>
+Mat4<float32> Mat4<float32>::diag(const Vec4<float32> & d)
+{
+	// Eye matrix
+	const __m128 data[4] = {
+		_mm_set_ps(d.x, 0.f, 0.f, 0.f),
+		_mm_set_ps(0.f, d.y, 0.f, 0.f),
+		_mm_set_ps(0.f, 0.f, d.z, 0.f),
+		_mm_set_ps(0.f, 0.f, 0.f, d.w)
+	};
+	return Mat4<float32>(data);
+}
+
+template<>
+Mat4<float32> Mat4<float32>::diag(const float32 & x, const float32 & y, const float32 & z, const float32 & w)
+{
+	// Eye matrix
+	const __m128 data[4] = {
+		_mm_set_ps(x, 0.f, 0.f, 0.f),
+		_mm_set_ps(0.f, y, 0.f, 0.f),
+		_mm_set_ps(0.f, 0.f, z, 0.f),
+		_mm_set_ps(0.f, 0.f, 0.f, w)
+	};
+	return Mat4<float32>(data);
+}
+
+template<>
+Mat4<float32> Mat4<float32>::translation(const Vec3<float32> & v)
 {
 	// Translation matrix
 	const __m128 data[4] = {
@@ -700,6 +929,143 @@ Mat4<float32> Mat4<float32>::translation(const vec3 & v)
 		_mm_set_ps(0.f, 0.f, 0.f, 1.f)
 	};
 	return Mat4<float32>(data);
+}
+
+template<>
+Mat4<float32> Mat4<float32>::translation(const float32 & x, const float32 & y, const float32 & z)
+{
+	// Translation matrix
+	const __m128 data[4] = {
+		_mm_set_ps(1.f, 0.f, 0.f, x),
+		_mm_set_ps(0.f, 1.f, 0.f, y),
+		_mm_set_ps(0.f, 0.f, 1.f, z),
+		_mm_set_ps(0.f, 0.f, 0.f, 1.f)
+	};
+	return Mat4<float32>(data);
+}
+
+template<>
+Mat4<float32> Mat4<float32>::scale(const Vec3<float32> & v)
+{
+	// Scale matrix
+	const __m128 data[4] = {
+		_mm_set_ps(v.x, 0.f, 0.f, 0.f),
+		_mm_set_ps(0.f, v.y, 0.f, 0.f),
+		_mm_set_ps(0.f, 0.f, v.z, 0.f),
+		_mm_set_ps(0.f, 0.f, 0.f, 1.f)
+	};
+	return Mat4<float32>(data);
+}
+
+template<>
+Mat4<float32> Mat4<float32>::scale(const float32 & s)
+{
+	// Scale matrix
+	const __m128 data[4] = {
+		_mm_set_ps(s, 0.f, 0.f, 0.f),
+		_mm_set_ps(0.f, s, 0.f, 0.f),
+		_mm_set_ps(0.f, 0.f, s, 0.f),
+		_mm_set_ps(0.f, 0.f, 0.f, 1.f)
+	};
+	return Mat4<float32>(data);
+}
+
+template<>
+Mat4<float32> Mat4<float32>::rotation(const Quat<float32> & q)
+{
+	// Scale matrix
+	__m128 data[4];
+
+	#define d q.data
+	#define set(x, y, z, w) _mm_set_ps(x, y, z, w)
+	#define shuffle(v, x, y, z, w) _mm_shuffle_ps(v, v, _MM_SHUFFLE(x, y, z, w))
+	#define mul(v1, v2) _mm_mul_ps(v1, v2)
+	#define add(v1, v2) _mm_add_ps(v1, v2)
+	#define sgn(v1, v2) _mm_xor_ps(v1, v2)
+
+	// First row
+	data[0] = add(
+		set(1.f, 0.f, 0.f, 0.f),
+		mul(
+			set(-2.f, 2.f, 2.f, 0.f),
+			add(
+				mul(
+					shuffle(d, 2, 3, 3, 0),
+					shuffle(d, 2, 2, 1, 0)
+				),
+				sgn(
+					set(0.f, -0.f, 0.f, 0.f),
+					mul(
+						shuffle(d, 1, 1, 2, 0),
+						shuffle(d, 1, 0, 0, 0)
+					)
+				)
+			)
+		)
+	);
+
+	// Second row
+	data[1] = add(
+		set(0.f, 1.f, 0.f, 0.f),
+		mul(
+			set(2.f, -2.f, 2.f, 0.f),
+			add(
+				mul(
+					shuffle(d, 3, 3, 2, 0),
+					shuffle(d, 2, 3, 1, 0)
+				),
+				sgn(
+					set(0.f, -0.f, -0.f, 0.f),
+					mul(
+						shuffle(d, 1, 1, 3, 0),
+						shuffle(d, 0, 1, 0, 0)
+					)
+				)
+			)
+		)
+	);
+
+	// Third row
+	data[2] = add(
+		set(0.f, 0.f, 1.f, 0.f),
+		mul(
+			set(2.f, 2.f, -2.f, 0.f),
+			add(
+				mul(
+					shuffle(d, 3, 2, 3, 0),
+					shuffle(d, 1, 1, 3, 0)
+				),
+				sgn(
+					set(-0.f, 0.f, 0.f, 0.f),
+					mul(
+						shuffle(d, 2, 3, 2, 0),
+						shuffle(d, 0, 0, 2, 0)
+					)
+				)
+			)
+		)
+	);
+
+	// Fourth row
+	data[3] = set(0.f, 0.f, 0.f, 1.f);
+
+	#undef d
+	#undef set
+	#undef shuffle
+	#undef mul
+	#undef add
+	#undef sgn
+
+	return Mat4<float32>(data);
+}
+
+template<>
+Mat4<float32> Mat4<float32>::rotation(const Vec3<float32> & v, const float32 & a)
+{
+	/**
+	 * @todo May be a little faster to compute directly from @c v and @c a
+	 */
+	return Mat4<float32>::rotation(Quat<float32>(v, a));
 }
 
 template<>
