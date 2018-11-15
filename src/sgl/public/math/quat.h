@@ -28,7 +28,7 @@ public:
 	 * @param [in]	v	rotation axis
 	 * @param [in]	a	rotation angle
 	 */
-	inline Quat(const Vec3<T> & v, const T & a);
+	inline Quat(const Vec3<T> & v, const T a);
 
 	/**
 	 * @brief Get rotation angle
@@ -196,7 +196,7 @@ Vec3<T> Quat<T>::right() const		{ return operator*(Vec3<T>::right); }
 /////////////////////////////////////////////////
 
 template<>
-Quat<float32>::Quat(const Vec3<float32> & v, const float32 & a) : Vec4(v.getNormal() * sinf(a / 2.f), cosf(a / 2.f)) {}
+Quat<float32>::Quat(const Vec3<float32> & v, const float32 a) : Vec4(v.getNormal() * sinf(a / 2.f), cosf(a / 2.f)) {}
 
 template<>
 Quat<float32> & Quat<float32>::invert()

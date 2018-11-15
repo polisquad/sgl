@@ -13,6 +13,7 @@ template<typename>	struct Vec3;
 template<typename>	struct Vec4;
 template<typename>	struct Quat;
 template<typename>	struct Mat4;
+					struct Math;
 /** @} */
 
 /**

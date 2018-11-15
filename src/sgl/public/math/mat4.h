@@ -10,6 +10,13 @@
 template<typename T = float32>
 struct Mat4 : public SIMD<T>
 {
+	/**
+	 * @brief Friendship declarations
+	 * @{
+	 */
+	friend struct Math;
+	/** @} */
+
 protected:
 	/**
 	 * @brief underlying data
@@ -35,10 +42,10 @@ public:
 	 * @param [in] a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p elements values
 	 */
 	inline Mat4(
-		const T & a, const T & b, const T & c, const T & d,
-		const T & e, const T & f, const T & g, const T & h,
-		const T & i, const T & j, const T & k, const T & l,
-		const T & m, const T & n, const T & o, const T & p
+		const T a, const T b, const T c, const T d,
+		const T e, const T f, const T g, const T h,
+		const T i, const T j, const T k, const T l,
+		const T m, const T n, const T o, const T p
 	);
 
 	/**
@@ -130,10 +137,10 @@ public:
 	 * 
 	 * @return result of operation
 	 */
-	inline Mat4<T> operator+(const T & s) const;
-	inline Mat4<T> operator-(const T & s) const;
-	inline Mat4<T> operator*(const T & s) const;
-	inline Mat4<T> operator/(const T & s) const;
+	inline Mat4<T> operator+(const T s) const;
+	inline Mat4<T> operator-(const T s) const;
+	inline Mat4<T> operator*(const T s) const;
+	inline Mat4<T> operator/(const T s) const;
 	/** @} */
 
 	/**
@@ -201,16 +208,16 @@ public:
 	 * 
 	 * @{
 	 */
-	inline static Mat4<T> fill(const T & s);
-	inline static Mat4<T> eye(const T & s);
+	inline static Mat4<T> fill(const T s);
+	inline static Mat4<T> eye(const T s);
 	inline static Mat4<T> diag(const Vec4<T> & d);
-	inline static Mat4<T> diag(const T & x, const T & y, const T & z, const T & w);
+	inline static Mat4<T> diag(const T x, const T y, const T z, const T w);
 	inline static Mat4<T> translation(const Vec3<T> & v);
-	inline static Mat4<T> translation(const T & x, const T & y, const T & z);
+	inline static Mat4<T> translation(const T x, const T y, const T z);
 	inline static Mat4<T> scale(const Vec3<T> & v);
-	inline static Mat4<T> scale(const T & s);
+	inline static Mat4<T> scale(const T s);
 	inline static Mat4<T> rotation(const Quat<T> & q);
-	inline static Mat4<T> rotation(const Vec3<T> & v, const T & a);
+	inline static Mat4<T> rotation(const Vec3<T> & v, const T a);
 	/** @} */
 
 	/**
@@ -276,25 +283,25 @@ Mat4<T> Mat4<T>::getInverse() const
  * @{
  */
 template<typename T>
-inline Mat4<T> operator+(const T & s, const Mat4<T> & m)
+inline Mat4<T> operator+(const T s, const Mat4<T> & m)
 {
 	return m + s;
 }
 
 template<typename T>
-inline Mat4<T> operator-(const T & s, const Mat4<T> & m)
+inline Mat4<T> operator-(const T s, const Mat4<T> & m)
 {
 	return Vec4<T>(s) - m;
 }
 
 template<typename T>
-inline Mat4<T> operator*(const T & s, const Mat4<T> & m)
+inline Mat4<T> operator*(const T s, const Mat4<T> & m)
 {
 	return m * s;
 }
 
 template<typename T>
-inline Mat4<T> operator/(const T & s, const Mat4<T> & m)
+inline Mat4<T> operator/(const T s, const Mat4<T> & m)
 {
 	return Vec4<T>(s) / m;
 }
@@ -321,10 +328,10 @@ Mat4<float32>::Mat4(const Mat4<float32>::MT & data)
 
 template<>
 Mat4<float32>::Mat4(
-	const float32 & a, const float32 & b, const float32 & c, const float32 & d,
-	const float32 & e, const float32 & f, const float32 & g, const float32 & h,
-	const float32 & i, const float32 & j, const float32 & k, const float32 & l,
-	const float32 & m, const float32 & n, const float32 & o, const float32 & p
+	const float32 a, const float32 b, const float32 c, const float32 d,
+	const float32 e, const float32 f, const float32 g, const float32 h,
+	const float32 i, const float32 j, const float32 k, const float32 l,
+	const float32 m, const float32 n, const float32 o, const float32 p
 ) : data{
 	_mm_set_ps(a, b, c, d),
 	_mm_set_ps(e, f, g, h),
@@ -479,7 +486,7 @@ float32 Mat4<float32>::getDeterminant() const
 }
 
 template<>
-Mat4<float32> Mat4<float32>::operator+(const float32 & s) const
+Mat4<float32> Mat4<float32>::operator+(const float32 s) const
 {
 	__m128 new_data[4];
 	for (uint8 i = 0; i < 4; i++) new_data[i] = _mm_add_ps(data[i], _mm_set1_ps(s));
@@ -487,7 +494,7 @@ Mat4<float32> Mat4<float32>::operator+(const float32 & s) const
 }
 
 template<>
-Mat4<float32> Mat4<float32>::operator-(const float32 & s) const
+Mat4<float32> Mat4<float32>::operator-(const float32 s) const
 {
 	__m128 new_data[4];
 	for (uint8 i = 0; i < 4; i++) new_data[i] = _mm_sub_ps(data[i], _mm_set1_ps(s));
@@ -495,7 +502,7 @@ Mat4<float32> Mat4<float32>::operator-(const float32 & s) const
 }
 
 template<>
-Mat4<float32> Mat4<float32>::operator*(const float32 & s) const
+Mat4<float32> Mat4<float32>::operator*(const float32 s) const
 {
 	__m128 new_data[4];
 	for (uint8 i = 0; i < 4; i++) new_data[i] = _mm_mul_ps(data[i], _mm_set1_ps(s));
@@ -503,7 +510,7 @@ Mat4<float32> Mat4<float32>::operator*(const float32 & s) const
 }
 
 template<>
-Mat4<float32> Mat4<float32>::operator/(const float32 & s) const
+Mat4<float32> Mat4<float32>::operator/(const float32 s) const
 {
 	__m128 new_data[4];
 	for (uint8 i = 0; i < 4; i++) new_data[i] = _mm_div_ps(data[i], _mm_set1_ps(s));
@@ -865,7 +872,7 @@ vec4 Mat4<float32>::operator*(const vec4 & v) const
 /////////////////////////////////////////////////
 
 template<>
-Mat4<float32> Mat4<float32>::fill(const float32 & s)
+Mat4<float32> Mat4<float32>::fill(const float32 s)
 {
 	// Eye matrix
 	const __m128 row = _mm_set1_ps(s);
@@ -879,7 +886,7 @@ Mat4<float32> Mat4<float32>::fill(const float32 & s)
 }
 
 template<>
-Mat4<float32> Mat4<float32>::eye(const float32 & s)
+Mat4<float32> Mat4<float32>::eye(const float32 s)
 {
 	// Eye matrix
 	const __m128 data[4] = {
@@ -905,7 +912,7 @@ Mat4<float32> Mat4<float32>::diag(const Vec4<float32> & d)
 }
 
 template<>
-Mat4<float32> Mat4<float32>::diag(const float32 & x, const float32 & y, const float32 & z, const float32 & w)
+Mat4<float32> Mat4<float32>::diag(const float32 x, const float32 y, const float32 z, const float32 w)
 {
 	// Eye matrix
 	const __m128 data[4] = {
@@ -931,7 +938,7 @@ Mat4<float32> Mat4<float32>::translation(const Vec3<float32> & v)
 }
 
 template<>
-Mat4<float32> Mat4<float32>::translation(const float32 & x, const float32 & y, const float32 & z)
+Mat4<float32> Mat4<float32>::translation(const float32 x, const float32 y, const float32 z)
 {
 	// Translation matrix
 	const __m128 data[4] = {
@@ -957,7 +964,7 @@ Mat4<float32> Mat4<float32>::scale(const Vec3<float32> & v)
 }
 
 template<>
-Mat4<float32> Mat4<float32>::scale(const float32 & s)
+Mat4<float32> Mat4<float32>::scale(const float32 s)
 {
 	// Scale matrix
 	const __m128 data[4] = {
@@ -1059,7 +1066,7 @@ Mat4<float32> Mat4<float32>::rotation(const Quat<float32> & q)
 }
 
 template<>
-Mat4<float32> Mat4<float32>::rotation(const Vec3<float32> & v, const float32 & a)
+Mat4<float32> Mat4<float32>::rotation(const Vec3<float32> & v, const float32 a)
 {
 	/**
 	 * @todo May be a little faster to compute directly from @c v and @c a

@@ -14,10 +14,9 @@ struct Vec3 : public SIMD<T>
 	 * @brief Friendship declarations
 	 * @{
 	 */
-	friend struct Vec2<T>;
-	friend struct Vec4<T>;
 	friend struct Quat<T>;
 	friend struct Mat4<T>;
+	friend struct Math;
 	/** @} */
 
 protected:
@@ -51,21 +50,21 @@ public:
 	 * 
 	 * @param [in] data simd-like data structure
 	 */
-	inline Vec3(const typename Vec3::VT & data);
+	inline Vec3(const typename Vec3::VT data);
 
 	/**
 	 * @brief Coordinates-constructor
 	 * 
 	 * @param [in] x,y,z coordinates values
 	 */
-	inline Vec3(const T & x, const T & y, const T & z);
+	inline Vec3(const T x, const T y, const T z);
 
 	/**
 	 * @brief Scalar-constructor
 	 * 
 	 * @param [in] s scalar value
 	 */
-	inline Vec3(const T & s);
+	inline Vec3(const T s);
 
 	/**
 	 * @brief Vec2-constructor
@@ -73,7 +72,7 @@ public:
 	 * @param [in]	v2	Vec2 vector
 	 * @param [in]	z	missing component
 	 */
-	inline Vec3(const Vec2<T> & v2, const T & z = T());
+	inline Vec3(const Vec2<T> & v2, const T z = T());
 
 	/**
 	 * @brief Assignment operation
@@ -176,10 +175,10 @@ public:
 	 * @return result of operation
 	 * @{
 	 */
-	inline Vec3<T> operator+(const T & s) const;
-	inline Vec3<T> operator-(const T & s) const;
-	inline Vec3<T> operator*(const T & s) const;
-	inline Vec3<T> operator/(const T & s) const;
+	inline Vec3<T> operator+(const T s) const;
+	inline Vec3<T> operator-(const T s) const;
+	inline Vec3<T> operator*(const T s) const;
+	inline Vec3<T> operator/(const T s) const;
 	/** @} */
 
 	/**
@@ -190,10 +189,10 @@ public:
 	 * @return result of operation
 	 * @{
 	 */
-	inline Vec3<T> & operator+=(const T & s);
-	inline Vec3<T> & operator-=(const T & s);
-	inline Vec3<T> & operator*=(const T & s);
-	inline Vec3<T> & operator/=(const T & s);
+	inline Vec3<T> & operator+=(const T s);
+	inline Vec3<T> & operator-=(const T s);
+	inline Vec3<T> & operator*=(const T s);
+	inline Vec3<T> & operator/=(const T s);
 	/** @} */
 
 	/**
@@ -246,10 +245,10 @@ Vec3<T>::Vec3() :
 	z(((T*)&data)[1]) {}
 
 template<typename T>
-Vec3<T>::Vec3(const T & s) : Vec3(s, s, s) {}
+Vec3<T>::Vec3(const T s) : Vec3(s, s, s) {}
 
 template<typename T>
-Vec3<T>::Vec3(const Vec2<T> & v2, const T & z) : Vec3(v2.x, v2.y, z) {}
+Vec3<T>::Vec3(const Vec2<T> & v2, const T z) : Vec3(v2.x, v2.y, z) {}
 
 template<typename T>
 Vec3<T> & Vec3<T>::operator=(const Vec3<T> & v)
@@ -377,25 +376,25 @@ Vec3<T> & Vec3<T>::operator/=(const Vec3<T> & v)
 //////////////////////////////
 
 template<typename T>
-Vec3<T> Vec3<T>::operator+(const T & s) const
+Vec3<T> Vec3<T>::operator+(const T s) const
 {
 	return Vec3<T>(x + s, y + s, z + s);
 }
 
 template<typename T>
-Vec3<T> Vec3<T>::operator-(const T & s) const
+Vec3<T> Vec3<T>::operator-(const T s) const
 {
 	return Vec3<T>(x - s, y - s, z - s);
 }
 
 template<typename T>
-Vec3<T> Vec3<T>::operator*(const T & s) const
+Vec3<T> Vec3<T>::operator*(const T s) const
 {
 	return Vec3<T>(x * s, y * s, z * s);
 }
 
 template<typename T>
-Vec3<T> Vec3<T>::operator/(const T & s) const
+Vec3<T> Vec3<T>::operator/(const T s) const
 {
 	return Vec3<T>(x / s, y / s, z / s);
 }
@@ -410,27 +409,27 @@ Vec3<T> Vec3<T>::operator/(const T & s) const
  * @{
  */
 template<typename T>
-inline Vec3<T> operator+(const T & s, const Vec3<T> & v)
+inline Vec3<T> operator+(const T s, const Vec3<T> & v)
 {
 	// Commutative
 	return v + s;
 }
 
 template<typename T>
-inline Vec3<T> operator-(const T & s, const Vec3<T> & v)
+inline Vec3<T> operator-(const T s, const Vec3<T> & v)
 {
 	return Vec3<T>(s) - v;
 }
 
 template<typename T>
-inline Vec3<T> operator*(const T & s, const Vec3<T> & v)
+inline Vec3<T> operator*(const T s, const Vec3<T> & v)
 {
 	// Commutative
 	return v * s;
 }
 
 template<typename T>
-inline Vec3<T> operator/(const T & s, const Vec3<T> & v)
+inline Vec3<T> operator/(const T s, const Vec3<T> & v)
 {
 	return Vec3<T>(s) / v;
 }
@@ -441,28 +440,28 @@ inline Vec3<T> operator/(const T & s, const Vec3<T> & v)
 ///////////////////////////////////////
 
 template<typename T>
-Vec3<T> & Vec3<T>::operator+=(const T & s)
+Vec3<T> & Vec3<T>::operator+=(const T s)
 {
 	x += s, y += s, z += s;
 	return *this;
 }
 
 template<typename T>
-Vec3<T> & Vec3<T>::operator-=(const T & s)
+Vec3<T> & Vec3<T>::operator-=(const T s)
 {
 	x -= s, y -= s, z -= s;
 	return *this;
 }
 
 template<typename T>
-Vec3<T> & Vec3<T>::operator*=(const T & s)
+Vec3<T> & Vec3<T>::operator*=(const T s)
 {
 	x *= s, y *= s, z *= s;
 	return *this;
 }
 
 template<typename T>
-Vec3<T> & Vec3<T>::operator/=(const T & s)
+Vec3<T> & Vec3<T>::operator/=(const T s)
 {
 	x /= s, y /= s, z /= s;
 	return *this;
@@ -498,19 +497,19 @@ Vec3<T>::operator Vec2<T>() const
 /////////////////////////////////////////////////
 
 template<>
-Vec3<float32>::Vec3(const __m128 & data) : Vec3()
+Vec3<float32>::Vec3(const __m128 data) : Vec3()
 {
 	this->data = data;
 }
 
 template<>
-Vec3<float32>::Vec3(const float32 & x, const float32 & y, const float32 & z) : Vec3()
+Vec3<float32>::Vec3(const float32 x, const float32 y, const float32 z) : Vec3()
 {
 	data = _mm_set_ps(x, y, z, 0.f);
 }
 
 template<>
-Vec3<float32>::Vec3(const float32 & s) : Vec3()
+Vec3<float32>::Vec3(const float32 s) : Vec3()
 {
 	data = _mm_set1_ps(s);
 }
@@ -652,52 +651,52 @@ Vec3<float32> & Vec3<float32>::operator/=(const Vec3<float32> & v)
 }
 
 template<>
-Vec3<float32> Vec3<float32>::operator+(const float32 & s) const
+Vec3<float32> Vec3<float32>::operator+(const float32 s) const
 {
 	return Vec3<float32>(_mm_add_ps(data, _mm_set1_ps(s)));
 }
 
 template<>
-Vec3<float32> Vec3<float32>::operator-(const float32 & s) const
+Vec3<float32> Vec3<float32>::operator-(const float32 s) const
 {
 	return Vec3<float32>(_mm_sub_ps(data, _mm_set1_ps(s)));
 }
 
 template<>
-Vec3<float32> Vec3<float32>::operator*(const float32 & s) const
+Vec3<float32> Vec3<float32>::operator*(const float32 s) const
 {
 	return Vec3<float32>(_mm_mul_ps(data, _mm_set1_ps(s)));
 }
 
 template<>
-Vec3<float32> Vec3<float32>::operator/(const float32 & s) const
+Vec3<float32> Vec3<float32>::operator/(const float32 s) const
 {
 	return Vec3<float32>(_mm_div_ps(data, _mm_set1_ps(s)));
 }
 
 template<>
-Vec3<float32> & Vec3<float32>::operator+=(const float32 & s)
+Vec3<float32> & Vec3<float32>::operator+=(const float32 s)
 {
 	data = _mm_add_ps(data, _mm_set1_ps(s));
 	return *this;
 }
 
 template<>
-Vec3<float32> & Vec3<float32>::operator-=(const float32 & s)
+Vec3<float32> & Vec3<float32>::operator-=(const float32 s)
 {
 	data = _mm_sub_ps(data, _mm_set1_ps(s));
 	return *this;
 }
 
 template<>
-Vec3<float32> & Vec3<float32>::operator*=(const float32 & s)
+Vec3<float32> & Vec3<float32>::operator*=(const float32 s)
 {
 	data = _mm_mul_ps(data, _mm_set1_ps(s));
 	return *this;
 }
 
 template<>
-Vec3<float32> & Vec3<float32>::operator/=(const float32 & s)
+Vec3<float32> & Vec3<float32>::operator/=(const float32 s)
 {
 	data = _mm_div_ps(data, _mm_set1_ps(s));
 	return *this;
@@ -727,34 +726,6 @@ template<>
 void Vec3<float32>::print(FILE * stream) const
 {
 	fprintf(stream, "v3(%.3f, %.3f, %.3f)\n", x, y, z);
-}
-
-/////////////////////////////////////////////////
-// Int 32-bit specialization                   //
-/////////////////////////////////////////////////
-
-template<>
-Vec3<int32>::Vec3(const __m128i & data) : Vec3()
-{
-	this->data = data;
-}
-
-template<>
-Vec3<int32>::Vec3(const int32 & x, const int32 & y, const int32 & z) : Vec3()
-{
-	data = _mm_set_epi32(x, y, z, 0);
-}
-
-template<>
-Vec3<int32>::Vec3(const int32 & s) : Vec3()
-{
-	data = _mm_set1_epi32(s);
-}
-
-template<>
-void Vec3<int32>::print(FILE * stream) const
-{
-	fprintf(stream, "v3(%d, %d, %d)\n", x, y, z);
 }
 
 /////////////////////////////////////////////////
