@@ -15,8 +15,8 @@ TEST(Math, v2f_component_x)	{ ASSERT_FLOAT_EQ(Vec2<>(1.f).x, 1.f); }
 TEST(Math, v2f_component_y)	{ ASSERT_FLOAT_EQ(Vec2<>(1.f).y, 1.f); }
 TEST(Math, v2f_sq_size)		{ EXPECT_FLOAT_EQ(Vec2<>(1.f).getSquaredSize(), 2.f); }
 TEST(Math, v2f_size)		{ EXPECT_FLOAT_EQ(Vec2<>(1.f).getSize(), sqrtf(2.f)); }
-TEST(Math, v2f_eq)			{ EXPECT_EQ(Vec2<>(0.f) == Vec2<>(0.f), true); }
-TEST(Math, v2f_neq)			{ EXPECT_EQ(Vec2<>(0.f) != Vec2<>(0.f), false); }
+TEST(Math, v2f_eq)			{ EXPECT_TRUE(Vec2<>(0.f) == Vec2<>(0.f)); }
+TEST(Math, v2f_neq)			{ EXPECT_FALSE(Vec2<>(0.f) != Vec2<>(0.f)); }
 TEST(Math, v2f_norm)		{ EXPECT_EQ(Vec2<>(3.f, 4.f).getNormal().getSquaredSize(), 1.f); }
 TEST(Math, v2f_add_v2f)		{ EXPECT_EQ(Vec2<>(2.f) + Vec2<>(1.f), Vec2<>(3.f)); }
 TEST(Math, v2f_sub_v2f)		{ EXPECT_EQ(Vec2<>(2.f) - Vec2<>(1.f), Vec2<>(1.f)); }
@@ -38,8 +38,8 @@ TEST(Math, v3f_component_y)	{ ASSERT_FLOAT_EQ(Vec3<>(1.f).y, 1.f); }
 TEST(Math, v3f_component_z)	{ ASSERT_FLOAT_EQ(Vec3<>(1.f).z, 1.f); }
 TEST(Math, v3f_sq_size)		{ EXPECT_FLOAT_EQ(Vec3<>(1.f).getSquaredSize(), 3.f); }
 TEST(Math, v3f_size)		{ EXPECT_FLOAT_EQ(Vec3<>(1.f).getSize(), sqrtf(3.f)); }
-TEST(Math, v3f_eq)			{ EXPECT_EQ(Vec3<>(0.f) == Vec3<>(0.f), true); }
-TEST(Math, v3f_neq)			{ EXPECT_EQ(Vec3<>(0.f) != Vec3<>(0.f), false); }
+TEST(Math, v3f_eq)			{ EXPECT_TRUE(Vec3<>(0.f) == Vec3<>(0.f)); }
+TEST(Math, v3f_neq)			{ EXPECT_FALSE(Vec3<>(0.f) != Vec3<>(0.f)); }
 TEST(Math, v3f_norm)		{ EXPECT_EQ(Vec3<>(3.f, 4.f, 0.f).getNormal().getSquaredSize(), 1.f); }
 TEST(Math, v3f_add_v3f)		{ EXPECT_EQ(Vec3<>(2.f) + Vec3<>(1.f), Vec3<>(3.f)); }
 TEST(Math, v3f_sub_v3f)		{ EXPECT_EQ(Vec3<>(2.f) - Vec3<>(1.f), Vec3<>(1.f)); }
@@ -62,8 +62,8 @@ TEST(Math, v4f_component_z)	{ ASSERT_FLOAT_EQ(Vec4<>(1.f).z, 1.f); }
 TEST(Math, v4f_component_w)	{ ASSERT_FLOAT_EQ(Vec4<>(1.f).w, 1.f); }
 TEST(Math, v4f_sq_size)		{ EXPECT_FLOAT_EQ(Vec4<>(1.f).getSquaredSize(), 4.f); }
 TEST(Math, v4f_size)		{ EXPECT_FLOAT_EQ(Vec4<>(1.f).getSize(), sqrtf(4.f)); }
-TEST(Math, v4f_eq)			{ EXPECT_EQ(Vec4<>(0.f) == Vec4<>(0.f), true); }
-TEST(Math, v4f_neq)			{ EXPECT_EQ(Vec4<>(0.f) != Vec4<>(0.f), false); }
+TEST(Math, v4f_eq)			{ EXPECT_TRUE(Vec4<>(0.f) == Vec4<>(0.f)); }
+TEST(Math, v4f_neq)			{ EXPECT_FALSE(Vec4<>(0.f) != Vec4<>(0.f)); }
 TEST(Math, v4f_norm)		{ EXPECT_EQ(Vec4<>(6.f, 8.f, 0.f, 0.f).getNormal().getSquaredSize(), 1.f); }
 TEST(Math, v4f_add_v4f)		{ EXPECT_EQ(Vec4<>(2.f) + Vec4<>(1.f), Vec4<>(3.f)); }
 TEST(Math, v4f_sub_v4f)		{ EXPECT_EQ(Vec4<>(2.f) - Vec4<>(1.f), Vec4<>(1.f)); }
@@ -95,8 +95,8 @@ TEST(Math, quat_up)			{ EXPECT_EQ(quat(vec3::right, M_PI).up(), vec3::down); }
 // Mat4 tests                                  //
 /////////////////////////////////////////////////
 
-TEST(Math, m4f_eq)			{ EXPECT_EQ(mat4::translation(vec3(1.f)) == mat4::translation(vec3(1.f)), true); }
-TEST(Math, m4f_neq)			{ EXPECT_EQ(mat4::translation(vec3(1.f)) != mat4::translation(vec3(1.f)), false); }
+TEST(Math, m4f_eq)			{ EXPECT_TRUE(mat4::translation(vec3(1.f)) == mat4::translation(vec3(1.f))); }
+TEST(Math, m4f_neq)			{ EXPECT_FALSE(mat4::translation(vec3(1.f)) != mat4::translation(vec3(1.f))); }
 TEST(Math, m4f_fill)		{ EXPECT_EQ(mat4::fill(1.f), mat4(1.f, 1.f, 1.f, 1.f,  1.f, 1.f, 1.f, 1.f,  1.f, 1.f, 1.f, 1.f,  1.f, 1.f, 1.f, 1.f)); }
 TEST(Math, m4f_eye)			{ EXPECT_EQ(mat4::eye(1.f), mat4(1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,  0.f, 0.f, 1.f, 0.f,  0.f, 0.f, 0.f, 1.f)); }
 TEST(Math, m4f_diag)		{ EXPECT_EQ(mat4::diag(vec4(1.f, 2.f, 3.f, 4.f)), mat4(1.f, 0.f, 0.f, 0.f,  0.f, 2.f, 0.f, 0.f,  0.f, 0.f, 3.f, 0.f,  0.f, 0.f, 0.f, 4.f)); }

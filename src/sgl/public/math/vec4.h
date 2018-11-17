@@ -37,6 +37,13 @@ public:
 	inline Vec4();
 
 	/**
+	 * @brief Copy-constructor
+	 * 
+	 * @param [in] v other vector
+	 */
+	inline Vec4(const Vec4<T> & v);
+
+	/**
 	 * @brief Data-constructor
 	 * 
 	 * @param [in] data simd-like data structure
@@ -129,6 +136,10 @@ public:
 	 */
 	inline bool operator==(const Vec4<T> & v) const;
 	inline bool operator!=(const Vec4<T> & v) const;
+	inline bool operator<(const Vec4<T> & v) const;
+	inline bool operator<=(const Vec4<T> & v) const;
+	inline bool operator>(const Vec4<T> & v) const;
+	inline bool operator>=(const Vec4<T> & v) const;
 	/** @} */
 
 	/**
@@ -271,6 +282,9 @@ template<typename T>
 Vec4<T>::Vec4(const T s) : Vec4(s, s, s, s) {}
 
 template<typename T>
+Vec4<T>::Vec4(const Vec4<T> & v) : Vec4() { data = v.data; }
+
+template<typename T>
 Vec4<T>::Vec4(const Vec2<T> & v2, const T z, const T w) : Vec4(v2.x, v2.y, z, w) {}
 
 template<typename T>
@@ -299,7 +313,7 @@ float32 Vec4<T>::getSquaredSize() const
 template<typename T>
 float32 Vec4<T>::getSize() const
 {
-	return sqrtf(getSquaredSize());
+	return sqrtf(x * x + y * y + z * z + w * w);
 }
 
 template<typename T>
@@ -324,10 +338,6 @@ Vec4<T> & Vec4<T>::normalize()
 template<typename T>
 bool Vec4<T>::operator==(const Vec4<T> & v) const
 {
-	/**
-	 * @brief IEEE comparison should be
-	 * faster than SIMD comparison
-	 */
 	return x == v.x && y == v.y && z == v.z && w == v.w;
 }
 
@@ -335,6 +345,30 @@ template<typename T>
 bool Vec4<T>::operator!=(const Vec4<T> & v) const
 {
 	return x != v.x || y != v.y || z != v.y || w != v.w;
+}
+
+template<typename T>
+bool Vec4<T>::operator<(const Vec4<T> & v) const
+{
+	return x < v.x & y < v.y & z < v.z & w < v.w;
+}
+
+template<typename T>
+bool Vec4<T>::operator<=(const Vec4<T> & v) const
+{
+	return x <= v.x & y <= v.y & z <= v.z & w <= v.w;
+}
+
+template<typename T>
+bool Vec4<T>::operator>(const Vec4<T> & v) const
+{
+	return x > v.x & y > v.y & z > v.z & w > v.w;
+}
+
+template<typename T>
+bool Vec4<T>::operator>=(const Vec4<T> & v) const
+{
+	return x >= v.x & y >= v.y & z >= v.z & w >= v.w;
 }
 
 //////////////////////////////
@@ -549,37 +583,16 @@ Vec4<float32>::Vec4(const float32 s) : Vec4()
 }
 
 template<>
-float32 Vec4<float32>::getSquaredSize() const
-{
-	__m128	size = _mm_mul_ps(data, data);
-			size = _mm_hadd_ps(size, size);
-			size = _mm_hadd_ps(size, size);
-
-	return *((float*)&size);
-}
-
-template<>
 Vec4<float32> Vec4<float32>::getNormal() const
 {
-	// Zero extra element
-	__m128	size = _mm_mul_ps(data, data);
-			size = _mm_hadd_ps(size, size);
-			size = _mm_hadd_ps(size, size);
-			// Square root of size
-			size = _mm_sqrt_ps(size);
-
+	const __m128 size = _mm_sqrt_ps(_mm_set1_ps(x * x + y * y + z * z + w * w));
 	return Vec4<float32>(_mm_div_ps(data, size));
 }
 
 template<>
 Vec4<float32> & Vec4<float32>::normalize()
 {
-	__m128	size = _mm_mul_ps(data, data);
-			size = _mm_hadd_ps(size, size);
-			size = _mm_hadd_ps(size, size);
-			// Square root of size
-			size = _mm_sqrt_ps(size);
-
+	const __m128 size = _mm_sqrt_ps(_mm_set1_ps(x * x + y * y + z * z + w * w));
 	data = _mm_div_ps(data, size);
 	return *this;
 }
@@ -608,6 +621,30 @@ bool Vec4<float32>::operator!=(const Vec4<float32> & v) const
 		_mm_set1_ps(-FLT_EPSILON),
 		_CMP_LT_OQ
 	));
+}
+
+template<>
+bool Vec4<float32>::operator<(const Vec4<float32> & v) const
+{
+	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_LT_OQ)) & 0xe) == 0xe;
+}
+
+template<>
+bool Vec4<float32>::operator<=(const Vec4<float32> & v) const
+{
+	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_LE_OQ)) & 0xe) == 0xe;
+}
+
+template<>
+bool Vec4<float32>::operator>(const Vec4<float32> & v) const
+{
+	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_GT_OQ)) & 0xe) == 0xe;
+}
+
+template<>
+bool Vec4<float32>::operator>=(const Vec4<float32> & v) const
+{
+	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_GE_OQ)) & 0xe) == 0xe;
 }
 
 template<>

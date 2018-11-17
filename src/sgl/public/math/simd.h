@@ -1,20 +1,7 @@
 #ifndef SGL_VEC_H
 #define SGL_VEC_H
 
-#include "core/platform.h"
-
-/**
- * @brief Forward declarations of structs
- * that use SIMD data types
- * @{
- */
-template<typename>	struct Vec2;
-template<typename>	struct Vec3;
-template<typename>	struct Vec4;
-template<typename>	struct Quat;
-template<typename>	struct Mat4;
-					struct Math;
-/** @} */
+#include "math.tpp"
 
 /**
  * @struct SIMD simd.h
@@ -53,5 +40,14 @@ struct SIMD<int32>
 	typedef __m128i MT[4];
 };
 /** @} */
+
+/**
+ * @brief Union to access simd vector elements
+ */
+#define __m128_getter\
+	union {\
+		__m128 _v_;\
+		float32 _a_[4];\
+	}
 
 #endif

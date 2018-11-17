@@ -232,8 +232,8 @@ template<typename T>
 T & Mat4<T>::operator()(uint8 i, uint8 j) const
 {
 	// AVX registers are inverted
-	j = 3 - j;
-	return *((T*)&(data[i]) + j);
+	j -= 3;
+	return *((T*)&(data[i]) - j);
 }
 
 template<typename T>
@@ -260,7 +260,7 @@ T * Mat4<T>::getDataBuffer() const
 {
 	// Allocate buffer and copy data
 	T * buff = static_cast<T*>(malloc(16 * sizeof(T)));
-	for (uint8 i = 0; i < 4; i++) memcpy(buff + i * 4, data + i, 4 * sizeof(T));
+	for (uint8 i = 0; i < 4; i++) _mm_store_ps(buff + i * 4, data);
 
 	return buff;
 }
@@ -352,19 +352,21 @@ float32 * Mat4<float32>::getDataBuffer() const
 template<>
 bool Mat4<float32>::operator==(const Mat4<float32> & m) const
 {
-	return	_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[0], m.data[0]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_GE_OQ)) &
-			_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[1], m.data[1]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_GE_OQ)) &
-			_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[2], m.data[2]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_GE_OQ)) &
-			_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[3], m.data[3]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_GE_OQ)) == 0xf;
+	return ~(
+		_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[0], m.data[0]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_LT_OQ)) |
+		_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[1], m.data[1]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_LT_OQ)) |
+		_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[2], m.data[2]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_LT_OQ)) |
+		_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[3], m.data[3]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_LT_OQ))
+	);
 }
 
 template<>
 bool Mat4<float32>::operator!=(const Mat4<float32> & m) const
 {
-	return	_mm_movemask_ps(_mm_cmp_ps(data[0], m.data[0], _MM_CMPINT_NE)) ||
-			_mm_movemask_ps(_mm_cmp_ps(data[1], m.data[1], _MM_CMPINT_NE)) ||
-			_mm_movemask_ps(_mm_cmp_ps(data[2], m.data[2], _MM_CMPINT_NE)) ||
-			_mm_movemask_ps(_mm_cmp_ps(data[3], m.data[3], _MM_CMPINT_NE));
+	return	_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[0], m.data[0]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_LT_OQ)) |
+			_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[1], m.data[1]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_LT_OQ)) |
+			_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[2], m.data[2]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_LT_OQ)) |
+			_mm_movemask_ps(_mm_cmp_ps(_mm_or_ps(_mm_sub_ps(data[3], m.data[3]), _mm_set1_ps(-0.f)), _mm_set1_ps(-FLT_EPSILON), _CMP_LT_OQ));
 }
 
 template<>
@@ -482,38 +484,59 @@ float32 Mat4<float32>::getDeterminant() const
 	det = _mm_hadd_ps(det, det);
 	det = _mm_hadd_ps(det, det);
 
-	return *((float32*)&det);
+	__m128_getter _det_ = {det};
+	return _det_._a_[3];
 }
 
 template<>
 Mat4<float32> Mat4<float32>::operator+(const float32 s) const
 {
-	__m128 new_data[4];
-	for (uint8 i = 0; i < 4; i++) new_data[i] = _mm_add_ps(data[i], _mm_set1_ps(s));
+	const __m128 v = _mm_set1_ps(s);
+	__m128 new_data[4] = {
+		_mm_add_ps(data[0], v),
+		_mm_add_ps(data[1], v),
+		_mm_add_ps(data[2], v),
+		_mm_add_ps(data[3], v)
+	};
 	return Mat4<float32>(new_data);
 }
 
 template<>
 Mat4<float32> Mat4<float32>::operator-(const float32 s) const
 {
-	__m128 new_data[4];
-	for (uint8 i = 0; i < 4; i++) new_data[i] = _mm_sub_ps(data[i], _mm_set1_ps(s));
+	const __m128 v = _mm_set1_ps(s);
+	__m128 new_data[4] = {
+		_mm_sub_ps(data[0], v),
+		_mm_sub_ps(data[1], v),
+		_mm_sub_ps(data[2], v),
+		_mm_sub_ps(data[3], v)
+	};
 	return Mat4<float32>(new_data);
 }
 
 template<>
 Mat4<float32> Mat4<float32>::operator*(const float32 s) const
 {
-	__m128 new_data[4];
-	for (uint8 i = 0; i < 4; i++) new_data[i] = _mm_mul_ps(data[i], _mm_set1_ps(s));
+	const __m128 v = _mm_set1_ps(s);
+	__m128 new_data[4] = {
+		_mm_mul_ps(data[0], v),
+		_mm_mul_ps(data[1], v),
+		_mm_mul_ps(data[2], v),
+		_mm_mul_ps(data[3], v)
+	};
 	return Mat4<float32>(new_data);
 }
 
 template<>
 Mat4<float32> Mat4<float32>::operator/(const float32 s) const
 {
-	__m128 new_data[4];
-	for (uint8 i = 0; i < 4; i++) new_data[i] = _mm_div_ps(data[i], _mm_set1_ps(s));
+	const __m128 v = _mm_set1_ps(s);
+	__m128 new_data[4] = {
+		_mm_div_ps(data[0], v),
+		_mm_div_ps(data[1], v),
+		_mm_div_ps(data[2], v),
+		_mm_div_ps(data[3], v)
+	};
 	return Mat4<float32>(new_data);
 }
 
@@ -746,7 +769,7 @@ Mat4<float32> & Mat4<float32>::invert()
 }
 
 /**
- * @todo maybe there's a better way, don't know
+ * @todo Probably there's a better way, don't know
  */
 template<>
 Mat4<float32> Mat4<float32>::operator*(const Mat4<float32> & m) const
@@ -776,95 +799,67 @@ Mat4<float32> Mat4<float32>::operator*(const Mat4<float32> & m) const
 template<>
 vec2 Mat4<float32>::operator*(const vec2 & v) const
 {
-	// Out vector
-	vec2 out(0.f);
-
 	// Get SIMD data
-	const __m128 v_data = v.data;
-	*((float32*)&v_data) = *((float32*)&v_data + 1) = 1.f;
-	__m128 dest;
+	const __m128 v_data = _mm_shuffle_ps(v.data, _mm_set1_ps(1.f), _MM_SHUFFLE(3, 2, 1, 0));
+	__m128 x, y;
 
-	// Row 0
-	dest = _mm_mul_ps(data[0], v_data);
-	dest = _mm_hadd_ps(dest, dest);
-	dest = _mm_hadd_ps(dest, dest);
-	out.x = *((float32*)&dest);
+	x = _mm_mul_ps(data[0], v_data);
+	x = _mm_hadd_ps(x, x);
+	x = _mm_hadd_ps(x, x);
 	
-	// Row 1
-	dest = _mm_mul_ps(data[1], v_data);
-	dest = _mm_hadd_ps(dest, dest);
-	dest = _mm_hadd_ps(dest, dest);
-	out.y = *((float32*)&dest);
+	y = _mm_mul_ps(data[1], v_data);
+	y = _mm_hadd_ps(y, y);
+	y = _mm_hadd_ps(y, y);
 
-	return out;
+	return Vec2<float32>(_mm_unpackhi_ps(y, x));
 }
 
 template<>
 vec3 Mat4<float32>::operator*(const vec3 & v) const
 {
-	// Out vector
-	vec3 out(0.f);
-
 	// Get SIMD data
-	const __m128 v_data = v.data;
-	*((float32*)&v_data) = 1.f;
-	__m128 dest;
+	const __m128 v_data = _mm_move_ss(v.data, _mm_set1_ps(1.f));
+	__m128 x, y, z, zero = _mm_set1_ps(0.f);
 	
-	// Row 0
-	dest = _mm_mul_ps(data[0], v_data);
-	dest = _mm_hadd_ps(dest, dest);
-	dest = _mm_hadd_ps(dest, dest);
-	out.x = *((float32*)&dest);
+	x = _mm_mul_ps(data[0], v_data);
+	x = _mm_hadd_ps(x, x);
+	x = _mm_hadd_ps(x, x);
 	
-	// Row 1
-	dest = _mm_mul_ps(data[1], v_data);
-	dest = _mm_hadd_ps(dest, dest);
-	dest = _mm_hadd_ps(dest, dest);
-	out.y = *((float32*)&dest);
+	y = _mm_mul_ps(data[1], v_data);
+	y = _mm_hadd_ps(y, y);
+	y = _mm_hadd_ps(y, y);
 	
-	// Row 2
-	dest = _mm_mul_ps(data[2], v_data);
-	dest = _mm_hadd_ps(dest, dest);
-	dest = _mm_hadd_ps(dest, dest);
-	out.z = *((float32*)&dest);
+	z = _mm_mul_ps(data[2], v_data);
+	z = _mm_hadd_ps(z, z);
+	z = _mm_hadd_ps(z, z);
 
-	return out;
+	return Vec3<float32>(_mm_movehl_ps(_mm_unpackhi_ps(y, x), _mm_unpackhi_ps(zero, z)));
 }
 
 template<>
 vec4 Mat4<float32>::operator*(const vec4 & v) const
 {
-	// Out vector
-	vec4 out(0.f);
+	// Get SIMD data
+	const __m128 v_data = v.data;
+	__m128 x, y, z, w;
 	
-	// Destination register
-	__m128 dest;
+	x = _mm_mul_ps(data[0], v_data);
+	x = _mm_hadd_ps(x, x);
+	x = _mm_hadd_ps(x, x);
 	
-	// Row 0
-	dest = _mm_mul_ps(data[0], v.data);
-	dest = _mm_hadd_ps(dest, dest);
-	dest = _mm_hadd_ps(dest, dest);
-	out.x = *((float32*)&dest);
+	y = _mm_mul_ps(data[1], v_data);
+	y = _mm_hadd_ps(y, y);
+	y = _mm_hadd_ps(y, y);
 	
-	// Row 1
-	dest = _mm_mul_ps(data[1], v.data);
-	dest = _mm_hadd_ps(dest, dest);
-	dest = _mm_hadd_ps(dest, dest);
-	out.y = *((float32*)&dest);
+	z = _mm_mul_ps(data[2], v_data);
+	z = _mm_hadd_ps(z, z);
+	z = _mm_hadd_ps(z, z);
 	
-	// Row 2
-	dest = _mm_mul_ps(data[2], v.data);
-	dest = _mm_hadd_ps(dest, dest);
-	dest = _mm_hadd_ps(dest, dest);
-	out.z = *((float32*)&dest);
-	
-	// Row 3
-	dest = _mm_mul_ps(data[3], v.data);
-	dest = _mm_hadd_ps(dest, dest);
-	dest = _mm_hadd_ps(dest, dest);
-	out.w = *((float32*)&dest);
+	w = _mm_mul_ps(data[3], v_data);
+	w = _mm_hadd_ps(w, w);
+	w = _mm_hadd_ps(w, w);
 
-	return out;
+	return Vec4<float32>(_mm_movehl_ps(_mm_unpackhi_ps(y, x), _mm_unpackhi_ps(w, z)));
 }
 
 /////////////////////////////////////////////////

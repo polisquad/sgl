@@ -16,6 +16,7 @@ struct Vec3 : public SIMD<T>
 	 */
 	friend struct Quat<T>;
 	friend struct Mat4<T>;
+	friend struct Box<T>;
 	friend struct Math;
 	/** @} */
 
@@ -44,6 +45,13 @@ public:
 	 * @brief Zero-constructor
 	 */
 	inline Vec3();
+
+	/**
+	 * @brief Copy-constructor
+	 * 
+	 * @param [in] v other vector
+	 */
+	inline Vec3(const Vec3<T> & v);
 
 	/**
 	 * @brief Data-constructor
@@ -130,6 +138,10 @@ public:
 	 */
 	inline bool operator==(const Vec3<T> & v) const;
 	inline bool operator!=(const Vec3<T> & v) const;
+	inline bool operator<(const Vec3<T> & v) const;
+	inline bool operator<=(const Vec3<T> & v) const;
+	inline bool operator>(const Vec3<T> & v) const;
+	inline bool operator>=(const Vec3<T> & v) const;
 	/** @} */
 
 	/**
@@ -255,6 +267,9 @@ Vec3<T>::Vec3() :
 	z(((T*)&data)[1]) {}
 
 template<typename T>
+Vec3<T>::Vec3(const Vec3<T> & v) : Vec3() { data = v.data; }
+
+template<typename T>
 Vec3<T>::Vec3(const T s) : Vec3(s, s, s) {}
 
 template<typename T>
@@ -283,7 +298,7 @@ float32 Vec3<T>::getSquaredSize() const
 template<typename T>
 float32 Vec3<T>::getSize() const
 {
-	return sqrtf(getSquaredSize());
+	return sqrtf(x * x + y * y + z * z);
 }
 
 template<typename T>
@@ -308,10 +323,6 @@ Vec3<T> & Vec3<T>::normalize()
 template<typename T>
 bool Vec3<T>::operator==(const Vec3<T> & v) const
 {
-	/**
-	 * @brief IEEE comparison should be
-	 * faster than SIMD comparison
-	 */
 	return x == v.x && y == v.y && z == v.z;
 }
 
@@ -319,6 +330,30 @@ template<typename T>
 bool Vec3<T>::operator!=(const Vec3<T> & v) const
 {
 	return x != v.x || y != v.y || z != v.y;
+}
+
+template<typename T>
+bool Vec3<T>::operator<(const Vec3<T> & v) const
+{
+	return x < v.x && y < v.y && z < v.z;
+}
+
+template<typename T>
+bool Vec3<T>::operator<=(const Vec3<T> & v) const
+{
+	return x <= v.x && y <= v.y && z <= v.z;
+}
+
+template<typename T>
+bool Vec3<T>::operator>(const Vec3<T> & v) const
+{
+	return x > v.x && y > v.y && z > v.z;
+}
+
+template<typename T>
+bool Vec3<T>::operator>=(const Vec3<T> & v) const
+{
+	return x >= v.x && y >= v.y && z >= v.z;
 }
 
 //////////////////////////////
@@ -540,45 +575,16 @@ template<> const Vec3<float32> Vec3<float32>::up(0.f, 1.f, 0.f);
 template<> const Vec3<float32> Vec3<float32>::down(0.f, -1.f, 0.f);
 
 template<>
-float32 Vec3<float32>::getSquaredSize() const
-{
-	// Zero extra element
-	float32 _nan; memset(&_nan, 0xffffffff, sizeof(float32));
-	__m128	size = _mm_and_ps(data, _mm_set_ps(_nan, _nan, _nan, 0.f));
-			size = _mm_mul_ps(size, size);
-			size = _mm_hadd_ps(size, size);
-			size = _mm_hadd_ps(size, size);
-
-	return *((float32*)&size);
-}
-
-template<>
 Vec3<float32> Vec3<float32>::getNormal() const
 {
-	// Zero extra element
-	float32 _nan; memset(&_nan, 0xffffffff, sizeof(float32));
-	__m128	size = _mm_and_ps(data, _mm_set_ps(_nan, _nan, _nan, 0.f));
-			size = _mm_mul_ps(size, size);
-			size = _mm_hadd_ps(size, size);
-			size = _mm_hadd_ps(size, size);
-			// Square root of size
-			size = _mm_sqrt_ps(size);
-
+	const __m128 size = _mm_sqrt_ps(_mm_set1_ps(x * x + y * y + z * z));
 	return Vec3<float32>(_mm_div_ps(data, size));
 }
 
 template<>
 Vec3<float32> & Vec3<float32>::normalize()
 {
-	// Zero extra element
-	float32 _nan; memset(&_nan, 0xffffffff, sizeof(float32));
-	__m128	size = _mm_and_ps(data, _mm_set_ps(_nan, _nan, _nan, 0.f));
-			size = _mm_mul_ps(size, size);
-			size = _mm_hadd_ps(size, size);
-			size = _mm_hadd_ps(size, size);
-			// Square root of size
-			size = _mm_sqrt_ps(size);
-			
+	const __m128 size = _mm_sqrt_ps(_mm_set1_ps(x * x + y * y + z * z));
 	data = _mm_div_ps(data, size);
 	return *this;
 }
@@ -607,6 +613,30 @@ bool Vec3<float32>::operator!=(const Vec3<float32> & v) const
 		_mm_set1_ps(-FLT_EPSILON),
 		_CMP_LT_OQ
 	)) & 0xe;
+}
+
+template<>
+bool Vec3<float32>::operator<(const Vec3<float32> & v) const
+{
+	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_LT_OQ)) & 0xe) == 0xe;
+}
+
+template<>
+bool Vec3<float32>::operator<=(const Vec3<float32> & v) const
+{
+	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_LE_OQ)) & 0xe) == 0xe;
+}
+
+template<>
+bool Vec3<float32>::operator>(const Vec3<float32> & v) const
+{
+	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_GT_OQ)) & 0xe) == 0xe;
+}
+
+template<>
+bool Vec3<float32>::operator>=(const Vec3<float32> & v) const
+{
+	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_GE_OQ)) & 0xe) == 0xe;
 }
 
 template<>
@@ -717,16 +747,6 @@ Vec3<float32> & Vec3<float32>::operator/=(const float32 s)
 {
 	data = _mm_div_ps(data, _mm_set1_ps(s));
 	return *this;
-}
-
-template<>
-float32 Vec3<float32>::operator&(const Vec3<float32> & v) const
-{
-	__m128	mask = _mm_set_ps(1.f, 1.f, 1.f, 0.f);
-	__m128	dest = _mm_mul_ps(_mm_mul_ps(data, mask), _mm_mul_ps(v.data, mask));
-			dest = _mm_hadd_ps(dest, dest);
-			dest = _mm_hadd_ps(dest, dest);
-	return *((float32*)&dest);
 }
 
 template<>
