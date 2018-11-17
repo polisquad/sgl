@@ -11,6 +11,7 @@
 /**
  * CXX libraries
  */
+#include <new>
 #include <string>
 #include <vector>
 #include <random>
