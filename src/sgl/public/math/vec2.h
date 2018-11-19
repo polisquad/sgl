@@ -10,27 +10,34 @@
 template<typename T = float32>
 struct Vec2 : public SIMD<T>
 {
-	/**
-	 * @brief Friendship declarations
-	 * @{
-	 */
-	friend struct Vec3<T>;
-	friend struct Quat<T>;
-	friend struct Mat4<T>;
-	friend struct Math;
-	/** @} */
-
-protected:
-	/**
-	 * @brief Underlying data
-	 */
-	typename Vec2<T>::VT data;
-
 public:
-	/**
-	 * @brief References to vector coordinates
-	 */
-	T & x, & y;
+	union
+	{
+		/**
+		 * @brief SIMD data
+		 */
+		typename Vec2<T>::VT data;
+
+		/**
+		 * @brief C array representation
+		 */
+		T __vec[4];
+
+		/**
+		 * @brief Struct for single item access
+		 */
+		struct
+		{
+			T __gap[2];
+
+			/**
+			 * @brief Vector components
+			 * @{
+			 */
+			T y, x;
+			/** @} */
+		};
+	};
 
 public:
 	/**
@@ -51,6 +58,13 @@ public:
 	 * @param [in] data simd-like data structure
 	 */
 	inline Vec2(const typename Vec2::VT data);
+
+	/**
+	 * @brief Vec-constructor
+	 * 
+	 * @param [in] vec plain array
+	 */
+	inline Vec2(const T * __vec);
 
 	/**
 	 * @brief Coordinates-constructor
@@ -82,7 +96,7 @@ public:
 	 * 
 	 * @return read-only copy
 	 */
-	inline const T & operator[](uint8 i) const;
+	inline T & operator[](uint8 i);
 
 	/**
 	 * @brief Return squared size of vector
@@ -215,33 +229,40 @@ public:
 	inline float32 operator^(const Vec2<T> & v) const;
 
 	/**
+	 * @copydoc SIMD<T>::print()
+	 */
+	inline void print(FILE * stream = stdout) const;
+
+	/**
 	 * @brief Component type conversion operator
 	 * 
 	 * @result converted vector
 	 */
 	template<typename T2>
 	inline operator Vec2<T2>() const;
-
-	/**
-	 * @copydoc SIMD<T>::print()
-	 */
-	inline virtual void print(FILE * stream = stdout) const;
 };
 
-//////////////////
-// Constructors //
-//////////////////
+/////////////////////////////////////////////////
+// Constructors                                //
+/////////////////////////////////////////////////
 
 template<typename T>
-Vec2<T>::Vec2() :
-	x(((T*)&data)[3]),
-	y(((T*)&data)[2]) {}
+Vec2<T>::Vec2() {}
 
 template<typename T>
-Vec2<T>::Vec2(const Vec2<T> & v) : Vec2() { data = v.data; }
+Vec2<T>::Vec2(const Vec2<T> & v) : data(v.data) {}
 
 template<typename T>
-Vec2<T>::Vec2(const T s) : Vec2(s, s) {}
+Vec2<T>::Vec2(const typename Vec2<T>::VT data) : data(data) {}
+
+template<typename T>
+Vec2<T>::Vec2(const T * __vec) { memcpy(&this->__vec, __vec, 4 * sizeof(T)); }
+
+template<typename T>
+Vec2<T>::Vec2(const T x, const T y) : x(x), y(y) {}
+
+template<typename T>
+Vec2<T>::Vec2(const T s) : x(s), y(s) {}
 
 template<typename T>
 Vec2<T> & Vec2<T>::operator=(const Vec2<T> & v)
@@ -251,10 +272,10 @@ Vec2<T> & Vec2<T>::operator=(const Vec2<T> & v)
 }
 
 template<typename T>
-const T & Vec2<T>::operator[](uint8 i) const
+T & Vec2<T>::operator[](uint8 i)
 {
 	// SIMD vector is reversed
-	return ((T*)&data)[3 - i];
+	return __vec[3 - i];
 }
 
 template<typename T>
@@ -485,22 +506,7 @@ Vec2<T1>::operator Vec2<T2>() const
 /////////////////////////////////////////////////
 
 template<>
-Vec2<float32>::Vec2(const __m128 data) : Vec2()
-{
-	this->data = data;
-}
-
-template<>
-Vec2<float32>::Vec2(const float32 x, const float32 y) : Vec2()
-{
-	data = _mm_set_ps(x, y, 0.f, 0.f);
-}
-
-template<>
-Vec2<float32>::Vec2(const float32 s) : Vec2()
-{
-	data = _mm_set1_ps(s);
-}
+Vec2<float32>::Vec2(const float32 s) : data(_mm_set1_ps(s)) {}
 
 template<>
 Vec2<float32> Vec2<float32>::getNormal() const
@@ -514,64 +520,6 @@ Vec2<float32> & Vec2<float32>::normalize()
 {
 	const __m128 size = _mm_sqrt_ps(_mm_set1_ps(x * x + y * y));
 	data = _mm_div_ps(data, size);
-	return *this;
-}
-
-template<>
-Vec2<float32> Vec2<float32>::operator-() const
-{
-	return Vec2<float32>(_mm_xor_ps(data, _mm_set1_ps(-0.f)));
-}
-
-template<>
-Vec2<float32> Vec2<float32>::operator+(const Vec2<float32> & v) const
-{
-	return Vec2<float32>(_mm_add_ps(data, v.data));
-}
-
-template<>
-Vec2<float32> Vec2<float32>::operator-(const Vec2<float32> & v) const
-{
-	return Vec2<float32>(_mm_sub_ps(data, v.data));
-}
-
-template<>
-Vec2<float32> Vec2<float32>::operator*(const Vec2<float32> & v) const
-{
-	return Vec2<float32>(_mm_mul_ps(data, v.data));
-}
-
-template<>
-Vec2<float32> Vec2<float32>::operator/(const Vec2<float32> & v) const
-{
-	return Vec2<float32>(_mm_div_ps(data, v.data));
-}
-
-template<>
-Vec2<float32> & Vec2<float32>::operator+=(const Vec2<float32> & v)
-{
-	data = _mm_add_ps(data, v.data);
-	return *this;
-}
-
-template<>
-Vec2<float32> & Vec2<float32>::operator-=(const Vec2<float32> & v)
-{
-	data = _mm_sub_ps(data, v.data);
-	return *this;
-}
-
-template<>
-Vec2<float32> & Vec2<float32>::operator*=(const Vec2<float32> & v)
-{
-	data = _mm_mul_ps(data, v.data);
-	return *this;
-}
-
-template<>
-Vec2<float32> & Vec2<float32>::operator/=(const Vec2<float32> & v)
-{
-	data = _mm_div_ps(data, v.data);
 	return *this;
 }
 

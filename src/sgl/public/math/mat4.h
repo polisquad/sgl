@@ -10,18 +10,24 @@
 template<typename T = float32>
 struct Mat4 : public SIMD<T>
 {
-	/**
-	 * @brief Friendship declarations
-	 * @{
-	 */
-	friend struct Math;
-	/** @} */
+public:
+	union
+	{
+		/**
+		 * @brief SIMD data
+		 */
+		typename Mat4<T>::MT data;
 
-protected:
-	/**
-	 * @brief underlying data
-	 */
-	typename Mat4<T>::MT data;
+		/**
+		 * @brief 2D C array
+		 */
+		T __matrix_data[4][4];
+
+		/**
+		 * @brief 1D C array
+		 */
+		T __plain_data[16];
+	};
 
 public:
 	/**
@@ -63,7 +69,7 @@ public:
 	 * 
 	 * @return reference to the element
 	 */
-	inline T & operator()(uint8 i, uint8 j) const;
+	inline T & operator()(uint8 i, uint8 j);
 
 	/**
 	 * @brief Get a (modifiable) reference
@@ -73,7 +79,7 @@ public:
 	 * 
 	 * @return i-th element reference
 	 */
-	inline T & operator[](uint8 i) const;
+	inline T & operator[](uint8 i);
 
 	/**
 	 * @brief Row and column accessors
@@ -229,15 +235,14 @@ public:
 };
 
 template<typename T>
-T & Mat4<T>::operator()(uint8 i, uint8 j) const
+T & Mat4<T>::operator()(uint8 i, uint8 j)
 {
 	// AVX registers are inverted
-	j -= 3;
-	return *((T*)&(data[i]) - j);
+	return __matrix_data[i][3 - j];
 }
 
 template<typename T>
-T & Mat4<T>::operator[](uint8 i) const
+T & Mat4<T>::operator[](uint8 i)
 {
 	return operator()(i / 4, i % 4);
 }
@@ -251,8 +256,7 @@ Vec4<T> Mat4<T>::getRow(uint8 i) const
 template<typename T>
 Vec4<T> Mat4<T>::getCol(uint8 i) const
 {
-	Mat4<T> t = getTranspose();
-	return Vec4<T>(t.data[i]);
+	return Vec4<T>(__matrix_data[0][3 - i], __matrix_data[1][3 - i], __matrix_data[2][3 - i], __matrix_data[3][3 - i]);
 }
 
 template<typename T>

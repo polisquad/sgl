@@ -116,11 +116,11 @@ public:
 	/**
 	 * @copydoc Vec4<T>::print()
 	 */
-	inline virtual void print(FILE * stream = stdout) const;
+	inline void print(FILE * stream = stdout) const;
 };
 
 template<typename T>
-Quat<T>::Quat() {}
+Quat<T>::Quat() : Vec4<T>() {}
 
 template<typename T>
 T Quat<T>::getAngle() const

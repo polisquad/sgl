@@ -10,25 +10,32 @@
 template<typename T = float32>
 struct Vec4 : public SIMD<T>
 {
-	/**
-	 * @brief Friendship declarations
-	 * @{
-	 */
-	friend struct Mat4<T>;
-	friend struct Math;
-	/** @} */
-
-protected:
-	/**
-	 * @brief SIMD vector
-	 */
-	typename Vec4<T>::VT data;
-
 public:
-	/**
-	 * @brief References to vector coordinates
-	 */
-	T & x, & y, & z, & w;
+	union
+	{
+		/**
+		 * @brief SIMD data
+		 */
+		typename Vec2<T>::VT data;
+
+		/**
+		 * @brief C array representation
+		 */
+		T __vec[4];
+
+		/**
+		 * @brief Struct for single item access
+		 */
+		struct
+		{
+			/**
+			 * @brief Vector components
+			 * @{
+			 */
+			T w, z, y, x;
+			/** @} */
+		};
+	};
 
 public:
 	/**
@@ -49,6 +56,13 @@ public:
 	 * @param [in] data simd-like data structure
 	 */
 	inline Vec4(const typename Vec4::VT data);
+
+	/**
+	 * @brief Vec-constructor
+	 * 
+	 * @param [in] vec plain C array
+	 */
+	inline Vec4(const T * __vec);
 
 	/**
 	 * @brief Coordinates-constructor
@@ -87,7 +101,7 @@ public:
 	 * 
 	 * @return self
 	 */
-	Vec4<T> & operator=(const Vec4<T> & v);
+	inline Vec4<T> & operator=(const Vec4<T> & v);
 
 	/**
 	 * @brief Return read-only element of the simd vector
@@ -96,21 +110,21 @@ public:
 	 * 
 	 * @return read-only copy
 	 */
-	const T & operator[](uint8 i) const;
+	inline T & operator[](uint8 i);
 
 	/**
 	 * @brief Return squared size of vector
 	 * 
 	 * @return squared size
 	 */
-	float32 getSquaredSize() const;
+	inline float32 getSquaredSize() const;
 
 	/**
 	 * @brief Return size of vector
 	 * 
 	 * @return size (L^2-norm)
 	 */
-	float32 getSize() const;
+	inline float32 getSize() const;
 
 	/**
 	 * @brief Get normalized copy of vector
@@ -206,23 +220,6 @@ public:
 	/** @} */
 
 	/**
-	 * @brief Vector-matrix operations
-	 * @details Element-wise operations where vector
-	 * is replicated 4 times
-	 * 
-	 * @param [in]	v	vector
-	 * @param [in]	m	matrix
-	 * 
-	 * @return multiplied matrix
-	 * @{
-	 */
-	template<typename F> inline friend Mat4<F> operator+(const Vec4<F> & v, const Mat4<F> & m);
-	template<typename F> inline friend Mat4<F> operator-(const Vec4<F> & v, const Mat4<F> & m);
-	template<typename F> inline friend Mat4<F> operator*(const Vec4<F> & v, const Mat4<F> & m);
-	template<typename F> inline friend Mat4<F> operator/(const Vec4<F> & v, const Mat4<F> & m);
-	/** @} */
-
-	/**
 	 * @brief Vector-vector dot(scalar) product
 	 * 
 	 * @param [in] v other vector
@@ -246,7 +243,7 @@ public:
 	 * 
 	 * @param [in] stream output stream
 	 */
-	inline virtual void print(FILE * stream = stdout) const;
+	inline void print(FILE * stream = stdout) const;
 
 	/**
 	 * @brief Component type conversion operator
@@ -272,23 +269,25 @@ public:
 //////////////////
 
 template<typename T>
-Vec4<T>::Vec4() :
-	x(((T*)&data)[3]),
-	y(((T*)&data)[2]),
-	z(((T*)&data)[1]),
-	w(((T*)&data)[0]) {}
+Vec4<T>::Vec4() {}
 
 template<typename T>
-Vec4<T>::Vec4(const T s) : Vec4(s, s, s, s) {}
+Vec4<T>::Vec4(const Vec4<T> & v) : data(v.data) {}
 
 template<typename T>
-Vec4<T>::Vec4(const Vec4<T> & v) : Vec4() { data = v.data; }
+Vec4<T>::Vec4(const typename Vec4<T>::VT data) : data(data) {}
 
 template<typename T>
-Vec4<T>::Vec4(const Vec2<T> & v2, const T z, const T w) : Vec4(v2.x, v2.y, z, w) {}
+Vec4<T>::Vec4(const T * __vec) { memcpy(this->__vec, __vec, 4 * sizeof(T)); }
 
 template<typename T>
-Vec4<T>::Vec4(const Vec3<T> & v3, const T w) : Vec4(v3.x, v3.y, v3.z, w) {}
+Vec4<T>::Vec4(const T s) : x(s), y(s), z(s), w(s) {}
+
+template<typename T>
+Vec4<T>::Vec4(const Vec2<T> & v2, const T z, const T w) : x(v2.x), y(v2.y), z(z), w(w) {}
+
+template<typename T>
+Vec4<T>::Vec4(const Vec3<T> & v3, const T w) : x(v3.x), y(v3.y), z(v3.z), w(w) {}
 
 template<typename T>
 Vec4<T> & Vec4<T>::operator=(const Vec4<T> & v)
@@ -298,10 +297,10 @@ Vec4<T> & Vec4<T>::operator=(const Vec4<T> & v)
 }
 
 template<typename T>
-const T & Vec4<T>::operator[](uint8 i) const
+T & Vec4<T>::operator[](uint8 i)
 {
 	// SIMD vector is reversed
-	return ((T*)&data)[3 - i];
+	return __vec[3 - i];
 }
 
 template<typename T>
@@ -565,22 +564,10 @@ Vec4<T>::operator Vec3<T>() const
 /////////////////////////////////////////////////
 
 template<>
-Vec4<float32>::Vec4(const __m128 data) : Vec4()
-{
-	this->data = data;
-}
+Vec4<float32>::Vec4(const float32 x, const float32 y, const float32 z, const float32 w) : data(_mm_set_ps(x, y, z, w)) {}
 
 template<>
-Vec4<float32>::Vec4(const float32 x, const float32 y, const float32 z, const float32 w) : Vec4()
-{
-	data = _mm_set_ps(x, y, z, w);
-}
-
-template<>
-Vec4<float32>::Vec4(const float32 s) : Vec4()
-{
-	data = _mm_set1_ps(s);
-}
+Vec4<float32>::Vec4(const float32 s) : data(_mm_set1_ps(s)) {}
 
 template<>
 Vec4<float32> Vec4<float32>::getNormal() const
@@ -626,25 +613,25 @@ bool Vec4<float32>::operator!=(const Vec4<float32> & v) const
 template<>
 bool Vec4<float32>::operator<(const Vec4<float32> & v) const
 {
-	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_LT_OQ)) & 0xe) == 0xe;
+	return _mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_LT_OQ)) == 0xf;
 }
 
 template<>
 bool Vec4<float32>::operator<=(const Vec4<float32> & v) const
 {
-	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_LE_OQ)) & 0xe) == 0xe;
+	return _mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_LE_OQ)) == 0xf;
 }
 
 template<>
 bool Vec4<float32>::operator>(const Vec4<float32> & v) const
 {
-	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_GT_OQ)) & 0xe) == 0xe;
+	return _mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_GT_OQ)) == 0xf;
 }
 
 template<>
 bool Vec4<float32>::operator>=(const Vec4<float32> & v) const
 {
-	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_GE_OQ)) & 0xe) == 0xe;
+	return _mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_GE_OQ)) == 0xf;
 }
 
 template<>
@@ -755,15 +742,6 @@ Vec4<float32> & Vec4<float32>::operator/=(const float32 s)
 {
 	data = _mm_div_ps(data, _mm_set1_ps(s));
 	return *this;
-}
-
-template<>
-float32 Vec4<float32>::operator&(const Vec4<float32> & v) const
-{
-	__m128	res = _mm_mul_ps(data, v.data);
-			res = _mm_hadd_ps(res, res);
-			res = _mm_hadd_ps(res, res);
-	return *((float32*)&res);
 }
 
 template<>

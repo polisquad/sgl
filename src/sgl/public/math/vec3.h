@@ -10,27 +10,34 @@
 template<typename T = float32>
 struct Vec3 : public SIMD<T>
 {
-	/**
-	 * @brief Friendship declarations
-	 * @{
-	 */
-	friend struct Quat<T>;
-	friend struct Mat4<T>;
-	friend struct Box<T>;
-	friend struct Math;
-	/** @} */
-
-protected:
-	/**
-	 * @brief SIMD vector
-	 */
-	typename Vec3<T>::VT data;
-
 public:
-	/**
-	 * @brief References to vector coordinates
-	 */
-	T & x, & y, & z;
+	union
+	{
+		/**
+		 * @brief SIMD data
+		 */
+		typename Vec2<T>::VT data;
+
+		/**
+		 * @brief C array representation
+		 */
+		T __vec[4];
+
+		/**
+		 * @brief Struct for single item access
+		 */
+		struct
+		{
+			T __gap;
+
+			/**
+			 * @brief Vector components
+			 * @{
+			 */
+			T z, y, x;
+			/** @} */
+		};
+	};
 
 	/**
 	 * @brief Pre-defined vectors
@@ -61,6 +68,13 @@ public:
 	inline Vec3(const typename Vec3::VT data);
 
 	/**
+	 * @brief Vec-constructor
+	 * 
+	 * @param [in] vec plain c array
+	 */
+	inline Vec3(const T * vec);
+
+	/**
 	 * @brief Coordinates-constructor
 	 * 
 	 * @param [in] x,y,z coordinates values
@@ -89,7 +103,7 @@ public:
 	 * 
 	 * @return self
 	 */
-	Vec3<T> & operator=(const Vec3<T> & v);
+	inline Vec3<T> & operator=(const Vec3<T> & v);
 
 	/**
 	 * @brief Return read-only element of the simd vector
@@ -98,21 +112,21 @@ public:
 	 * 
 	 * @return read-only copy
 	 */
-	const T & operator[](uint8 i) const;
+	inline T & operator[](uint8 i);
 
 	/**
 	 * @brief Return squared size of vector
 	 * 
 	 * @return squared size
 	 */
-	float32 getSquaredSize() const;
+	inline float32 getSquaredSize() const;
 
 	/**
 	 * @brief Return size of vector
 	 * 
 	 * @return size (L^2-norm)
 	 */
-	float32 getSize() const;
+	inline float32 getSize() const;
 
 	/**
 	 * @brief Get normalized copy of vector
@@ -238,7 +252,7 @@ public:
 	/**
 	 * @copydoc SIMD<T>::print()
 	 */
-	inline virtual void print(FILE * stream = stdout) const;
+	inline void print(FILE * stream = stdout) const;
 
 	/**
 	 * @brief Component type conversion operator
@@ -261,19 +275,25 @@ public:
 //////////////////
 
 template<typename T>
-Vec3<T>::Vec3() :
-	x(((T*)&data)[3]),
-	y(((T*)&data)[2]),
-	z(((T*)&data)[1]) {}
+Vec3<T>::Vec3() {}
 
 template<typename T>
-Vec3<T>::Vec3(const Vec3<T> & v) : Vec3() { data = v.data; }
+Vec3<T>::Vec3(const Vec3<T> & v) : data(v.data) {}
 
 template<typename T>
-Vec3<T>::Vec3(const T s) : Vec3(s, s, s) {}
+Vec3<T>::Vec3(const typename Vec3<T>::VT data) : data(data) {}
 
 template<typename T>
-Vec3<T>::Vec3(const Vec2<T> & v2, const T z) : Vec3(v2.x, v2.y, z) {}
+Vec3<T>::Vec3(const T * __vec) { memcpy(this->__vec, __vec, 4 * sizeof(T)); }
+
+template<typename T>
+Vec3<T>::Vec3(const T x, const T y, const T z) : x(x), y(y), z(z) {}
+
+template<typename T>
+Vec3<T>::Vec3(const T s) : x(s), y(s), z(s) {}
+
+template<typename T>
+Vec3<T>::Vec3(const Vec2<T> & v2, const T z) : x(v2.x), y(v2.y), z(z) {}
 
 template<typename T>
 Vec3<T> & Vec3<T>::operator=(const Vec3<T> & v)
@@ -283,10 +303,10 @@ Vec3<T> & Vec3<T>::operator=(const Vec3<T> & v)
 }
 
 template<typename T>
-const T & Vec3<T>::operator[](uint8 i) const
+T & Vec3<T>::operator[](uint8 i)
 {
 	// SIMD vector is reversed
-	return ((T*)&data)[3 - i];
+	return __vec[3 - i];
 }
 
 template<typename T>
@@ -305,7 +325,7 @@ template<typename T>
 Vec3<T> Vec3<T>::getNormal() const
 {
 	const float32 size = getSize();
-	return size > 0.f ? Vec3<T>(x / size, y / size, z / size) : *Vec3<T>();
+	return Vec3<T>(x / size, y / size, z / size);
 }
 
 template<typename T>
@@ -354,6 +374,12 @@ template<typename T>
 bool Vec3<T>::operator>=(const Vec3<T> & v) const
 {
 	return x >= v.x && y >= v.y && z >= v.z;
+}
+
+template<typename T>
+Vec3<T> Vec3<T>::operator-() const
+{
+	return Vec3<T>(-x, -y, -z);
 }
 
 //////////////////////////////
@@ -549,22 +575,10 @@ Vec3<T>::operator Vec2<T>() const
 /////////////////////////////////////////////////
 
 template<>
-Vec3<float32>::Vec3(const __m128 data) : Vec3()
-{
-	this->data = data;
-}
+Vec3<float32>::Vec3(const float32 x, const float32 y, const float32 z) : data(_mm_set_ps(x, y, z, 0.f)) {}
 
 template<>
-Vec3<float32>::Vec3(const float32 x, const float32 y, const float32 z) : Vec3()
-{
-	data = _mm_set_ps(x, y, z, 0.f);
-}
-
-template<>
-Vec3<float32>::Vec3(const float32 s) : Vec3()
-{
-	data = _mm_set1_ps(s);
-}
+Vec3<float32>::Vec3(const float32 s) : data(_mm_set1_ps(s)) {}
 
 template<> const Vec3<float32> Vec3<float32>::zero(0.f);
 template<> const Vec3<float32> Vec3<float32>::forward(0.f, 0.f, -1.f);
@@ -616,21 +630,9 @@ bool Vec3<float32>::operator!=(const Vec3<float32> & v) const
 }
 
 template<>
-bool Vec3<float32>::operator<(const Vec3<float32> & v) const
-{
-	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_LT_OQ)) & 0xe) == 0xe;
-}
-
-template<>
 bool Vec3<float32>::operator<=(const Vec3<float32> & v) const
 {
 	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_LE_OQ)) & 0xe) == 0xe;
-}
-
-template<>
-bool Vec3<float32>::operator>(const Vec3<float32> & v) const
-{
-	return (_mm_movemask_ps(_mm_cmp_ps(data, v.data, _CMP_GT_OQ)) & 0xe) == 0xe;
 }
 
 template<>
@@ -640,15 +642,15 @@ bool Vec3<float32>::operator>=(const Vec3<float32> & v) const
 }
 
 template<>
-Vec3<float32> Vec3<float32>::operator+(const Vec3<float32> & v) const
-{
-	return Vec3<float32>(_mm_add_ps(data, v.data));
-}
-
-template<>
 Vec3<float32> Vec3<float32>::operator-() const
 {
 	return Vec3<float32>(_mm_xor_ps(data, _mm_set1_ps(-0.f)));
+}
+
+template<>
+Vec3<float32> Vec3<float32>::operator+(const Vec3<float32> & v) const
+{
+	return Vec3<float32>(_mm_add_ps(data, v.data));
 }
 
 template<>
