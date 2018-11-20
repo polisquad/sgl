@@ -31,9 +31,16 @@ public:
 
 public:
 	/**
-	 * @brief Default constructor
+	 * @brief Default-constructor
 	 */
 	inline Mat4();
+
+	/**
+	 * @brief Copy-constructor
+	 * 
+	 * @param [in] m other matrix
+	 */
+	inline Mat4(const Mat4<T> & m);
 
 	/**
 	 * @brief Data-constructor
@@ -60,6 +67,15 @@ public:
 	 * @param [in] buffer buffer of elements
 	 */
 	inline Mat4(const T * buffer);
+
+	/**
+	 * @brief Assignment operator (copy data)
+	 * 
+	 * @param [in] m other matrix
+	 * 
+	 * @return self
+	 */
+	Mat4<T> & operator=(const Mat4<T> & m);
 
 	/**
 	 * @brief Get a (modifiable) reference
@@ -235,6 +251,19 @@ public:
 };
 
 template<typename T>
+Mat4<T>::Mat4(const typename Mat4<T>::MT & data) { memcpy(this->data, data, sizeof(typename Mat4<T>::MT)); }
+
+template<typename T>
+Mat4<T>::Mat4(const Mat4<T> & m) { memcpy(data, m.data, sizeof(typename Mat4<T>::MT)); }
+
+template<typename T>
+Mat4<T> & Mat4<T>::operator=(const Mat4<T> & m)
+{
+	memcpy(data, m.data, sizeof(typename Mat4<T>::MT));
+	return *this;
+}
+
+template<typename T>
 T & Mat4<T>::operator()(uint8 i, uint8 j)
 {
 	// AVX registers are inverted
@@ -322,13 +351,6 @@ Mat4<float32>::Mat4() : data{
 	_mm_set1_ps(0.f),
 	_mm_set1_ps(0.f)
 } {}
-
-template<>
-Mat4<float32>::Mat4(const Mat4<float32>::MT & data)
-{
-	// Copy values
-	memcpy(this->data, data, 4 * sizeof(__m128));
-}
 
 template<>
 Mat4<float32>::Mat4(
@@ -787,15 +809,18 @@ Mat4<float32> Mat4<float32>::operator*(const Mat4<float32> & m) const
 
 	// Perform multiplication
 	for (uint8 i = 0; i < 4; ++i)
+	{
+		__m128 partial_sums[4];
+		
 		for (uint8 j = 0; j < 4; ++j)
-		{
-			// Perform dot product
-			v = _mm_mul_ps(data[i], mt.data[j]);
-			v = _mm_hadd_ps(v, v);
-			v = _mm_hadd_ps(v, v);
-
-			*((float32*)&(new_data[i]) + (3 - j)) = *((float32*)&v);
-		}
+			// Multiply row and column
+			partial_sums[j] = _mm_mul_ps(data[i], mt.data[j]);
+		
+		// Half adds
+		partial_sums[0]	= _mm_hadd_ps(partial_sums[0], partial_sums[1]);
+		partial_sums[2]	= _mm_hadd_ps(partial_sums[2], partial_sums[3]);
+		new_data[i]		= _mm_hadd_ps(partial_sums[0], partial_sums[2]);
+	}
 	
 	return Mat4<float32>(new_data);
 }
@@ -805,17 +830,13 @@ vec2 Mat4<float32>::operator*(const vec2 & v) const
 {
 	// Get SIMD data
 	const __m128 v_data = _mm_shuffle_ps(v.data, _mm_set1_ps(1.f), _MM_SHUFFLE(3, 2, 1, 0));
-	__m128 x, y;
+	__m128 x, y, zero = _mm_setzero_ps();
 
 	x = _mm_mul_ps(data[0], v_data);
-	x = _mm_hadd_ps(x, x);
-	x = _mm_hadd_ps(x, x);
-	
 	y = _mm_mul_ps(data[1], v_data);
-	y = _mm_hadd_ps(y, y);
-	y = _mm_hadd_ps(y, y);
-
-	return Vec2<float32>(_mm_unpackhi_ps(y, x));
+	
+	x = _mm_hadd_ps(y, x);
+	return Vec2<float32>(_mm_hadd_ps(zero, x));
 }
 
 template<>
@@ -826,18 +847,12 @@ vec3 Mat4<float32>::operator*(const vec3 & v) const
 	__m128 x, y, z, zero = _mm_set1_ps(0.f);
 	
 	x = _mm_mul_ps(data[0], v_data);
-	x = _mm_hadd_ps(x, x);
-	x = _mm_hadd_ps(x, x);
-	
 	y = _mm_mul_ps(data[1], v_data);
-	y = _mm_hadd_ps(y, y);
-	y = _mm_hadd_ps(y, y);
-	
 	z = _mm_mul_ps(data[2], v_data);
-	z = _mm_hadd_ps(z, z);
-	z = _mm_hadd_ps(z, z);
 
-	return Vec3<float32>(_mm_movehl_ps(_mm_unpackhi_ps(y, x), _mm_unpackhi_ps(zero, z)));
+	z = _mm_hadd_ps(zero, z);
+	x = _mm_hadd_ps(y, x);
+	return Vec3<float32>(_mm_hadd_ps(z, x));
 }
 
 template<>
@@ -848,22 +863,13 @@ vec4 Mat4<float32>::operator*(const vec4 & v) const
 	__m128 x, y, z, w;
 	
 	x = _mm_mul_ps(data[0], v_data);
-	x = _mm_hadd_ps(x, x);
-	x = _mm_hadd_ps(x, x);
-	
 	y = _mm_mul_ps(data[1], v_data);
-	y = _mm_hadd_ps(y, y);
-	y = _mm_hadd_ps(y, y);
-	
 	z = _mm_mul_ps(data[2], v_data);
-	z = _mm_hadd_ps(z, z);
-	z = _mm_hadd_ps(z, z);
-	
 	w = _mm_mul_ps(data[3], v_data);
-	w = _mm_hadd_ps(w, w);
-	w = _mm_hadd_ps(w, w);
 
-	return Vec4<float32>(_mm_movehl_ps(_mm_unpackhi_ps(y, x), _mm_unpackhi_ps(w, z)));
+	z = _mm_hadd_ps(w, z);
+	x = _mm_hadd_ps(y, x);
+	return Vec4<float32>(_mm_hadd_ps(z, x));
 }
 
 /////////////////////////////////////////////////
