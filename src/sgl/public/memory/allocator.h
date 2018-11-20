@@ -24,6 +24,12 @@ protected:
 
 public:
 	/**
+	 * @brief Header size
+	 */
+	static const uint32 headerSize;
+
+public:
+	/**
 	 * @brief Default-constructor
 	 */
 	Allocator();
@@ -42,7 +48,7 @@ public:
 	/**
 	 * @brief Initialize allocator
 	 */
-	virtual void init() = 0;
+	void init();
 
 	/**
 	 * @brief Allocate N bytes
@@ -59,6 +65,31 @@ public:
 	 * @param [in] ptr pointer to allocated memory
 	 */
 	virtual void free(void * ptr) = 0;
+
+	/**
+	 * @brief Static creators
+	 * 
+	 * @param [in] size allocator buffer size
+	 * 
+	 * @return created allocator
+	 */
+	template<class A = Allocator, typename ... TArgs>
+	static A * create(uint32 bufferSize, TArgs && ... args);
 };
+
+template<class A, typename ... TArgs>
+A * Allocator::create(uint32 bufferSize, TArgs && ... args)
+{
+	// Create buffer
+	// Default size alignment to 16 bytes
+	if (bufferSize & 0xf) bufferSize = (bufferSize | 0xf) + 0x1;
+	void * buffer = malloc(bufferSize);
+
+	// Create allocator
+	A * allocator = new A(buffer, bufferSize);
+	allocator->init(std::forward<TArgs>(args) ...);
+
+	return allocator;
+}
 
 #endif

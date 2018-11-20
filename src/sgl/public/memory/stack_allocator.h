@@ -24,21 +24,15 @@ public:
 	/**
 	 * @brief Initialize allocator
 	 */
-	virtual void init();
+	void init();
 
 	/**
-	 * @brief Allocate N bytes
-	 * 
-	 * @param [in] n number of bytes to allocate
-	 * 
-	 * @return pointer to the allocated chunk
+	 * @copydoc Allocator::alloc
 	 */
 	virtual void * alloc(uint32 n);
 	
 	/**
-	 * @brief Free previously allocated memory
-	 * 
-	 * @param [in] ptr pointer to allocated memory
+	 * @copydoc Allocator::free
 	 */
 	virtual void free(void * ptr);
 };

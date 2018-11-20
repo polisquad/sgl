@@ -3,6 +3,15 @@
 
 #include "allocator.h"
 
+#include "pool_allocator.h"
+
+/**
+ * @brief Forward declaration of allocator types
+ * @{
+ */
+struct StackAllocator;
+/** @} */
+
 /**
  * @struct ProxyAllocator memory/proxy_allocator.h
  * @brief A proxy allocator for a specific object
@@ -42,7 +51,7 @@ public:
 	/**
 	 * @brief Allocate memory for one object
 	 * 
-	 * @return address of memory chunk
+	 * @return Address of memory chunk
 	 */
 	inline pointer alloc();
 
@@ -52,6 +61,22 @@ public:
 	 * @param [in] ptr pointer to object
 	 */
 	inline void free(pointer ptr);
+	
+	/**
+	 * @brief Static creator
+	 * 
+	 * @param [in] n number of elements
+	 * 
+	 * @return Created proxy
+	 * @{
+	 */
+	template<class A>
+	static ProxyAllocator<T> * create(uint32 n);
+
+	/** @param [in]	args real allocator init arguments */
+	template<class A, typename ... TArgs>
+	static ProxyAllocator<T> * create(uint32 n, TArgs && ... args);
+	/** @} */
 };
 
 template<class T>
@@ -73,6 +98,22 @@ template<class T>
 void ProxyAllocator<T>::free(ProxyAllocator::pointer ptr)
 {
 	if (allocator) allocator->free(ptr);
+}
+
+template<class T>
+template<class A>
+ProxyAllocator<T> * ProxyAllocator<T>::create(uint32 n)
+{
+	// Create a proxy allocator
+	return new ProxyAllocator(Allocator::create<A>(n * (sizeof(T) + A::headerSize)));
+}
+
+template<class T>
+template<class A, typename ... TArgs>
+ProxyAllocator<T> * ProxyAllocator<T>::create(uint32 n, TArgs && ... args)
+{
+	// Create a proxy allocator
+	return new ProxyAllocator(Allocator::create<A>(n * (sizeof(T) + A::headerSize), args ...));
 }
 
 #endif
