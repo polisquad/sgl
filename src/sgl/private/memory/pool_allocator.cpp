@@ -32,7 +32,8 @@ void PoolAllocator::init(uint32 chunkSize)
 
 void * PoolAllocator::alloc(uint64 n)
 {
-	if (head && n <= chunkSize)
+	bool size_check = n <= chunkSize && !(bStrictAllocation && n < chunkSize);
+	if (head && size_check)
 	{
 		// Pop head of free chunks
 		void * chunk = block_mem(head);

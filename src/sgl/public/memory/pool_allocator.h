@@ -24,6 +24,12 @@ protected:
 
 public:
 	/**
+	 * @brief Allow only allocations of size chunkSize
+	 */
+	uint8 bStrictAllocation : 1;
+
+public:
+	/**
 	 * @brief Inherit constructors
 	 */
 	using Allocator::Allocator;
