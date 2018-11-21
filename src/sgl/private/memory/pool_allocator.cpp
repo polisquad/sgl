@@ -1,38 +1,42 @@
 #include "memory/pool_allocator.h"
 
+#define block_offset(block, offset)	reinterpret_cast<ubyte*>(block) + offset
+#define block_next(block)			*reinterpret_cast<void**>(block)
+#define block_mem(block)			(reinterpret_cast<void**>(block) + 1)
+#define mem_block(mem)				(reinterpret_cast<void**>(mem) - 1)
+#define align_dword(n)				n & 0x7 ? (n | 0x7) + 1 : n
+
 void PoolAllocator::init(uint32 chunkSize)
 {
 	// Set chunks size
-	this->chunkSize = chunkSize;
+	this->chunkSize = align_dword(chunkSize);
 
 	// Initialize linked list
 	head = start;
-	void	* last = static_cast<ubyte*>(end) - (chunkSize + sizeof(void*)),
+	void	* last = block_offset(end, -(chunkSize + sizeof(void*))),
 			* next = nullptr;
 
 	while (head < last)
 	{
-		// Allocate chunk with next pointer
-		next = head = static_cast<ubyte*>(head) + chunkSize;
-		head = static_cast<ubyte*>(head) + sizeof(void*);
-
-		// Set next pointer
-		*static_cast<void**>(next) = head;
+		next = block_offset(head, chunkSize + 0x8);
+		block_next(head) = next;
+		head = next;
 	}
 
-	// End linked list
-	*static_cast<void**>(next) = nullptr;
+	// Terminate linked list
+	block_next(head) = nullptr;
+	
+	// Head is start
 	head = start;
 }
 
-void * PoolAllocator::alloc(uint32 n)
+void * PoolAllocator::alloc(uint64 n)
 {
 	if (head && n <= chunkSize)
 	{
 		// Pop head of free chunks
-		void * chunk = head;
-		head = static_cast<ubyte*>(head) + chunkSize;
-		head = *static_cast<void**>(head);
+		void * chunk = block_mem(head);
+		head = block_next(head);
 
 		return chunk;
 	}
@@ -46,8 +50,8 @@ void PoolAllocator::free(void * ptr)
 	// had been allocated by this allocator
 
 	// Relink to linked list
-	void * next = static_cast<ubyte*>(ptr) + chunkSize;
-	*static_cast<void**>(next) = head;
+	ptr = mem_block(ptr);
+	block_next(ptr) = head;
 
 	// Set as new head
 	head = ptr;

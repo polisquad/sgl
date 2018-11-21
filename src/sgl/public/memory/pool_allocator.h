@@ -38,7 +38,7 @@ public:
 	/**
 	 * @copydoc Allocator::alloc
 	 */
-	virtual void * alloc(uint32 n);
+	virtual void * alloc(uint64 n);
 	
 	/**
 	 * @copydoc Allocator::free
