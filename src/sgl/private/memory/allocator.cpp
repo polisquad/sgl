@@ -23,25 +23,3 @@ Allocator::~Allocator()
 	// Dealloc attached buffer
 	if (start) ::free(start);
 }
-
-void Allocator::attachBuffer(void * start, void * end)
-{
-	this->start = start, this->end = end, this->size = (uint64)end - (uint64)start;
-}
-
-void Allocator::attachBuffer(void * start, uint64 size)
-{
-	this->start = start, this->end = reinterpret_cast<ubyte*>(start) + size, this->size = size;
-}
-
-void * Allocator::detachBuffer()
-{
-	void * buffer = start;
-	start = end = nullptr, size = 0;
-	return buffer;
-}
-
-bool Allocator::hasBlock(void * block)
-{
-	return block > start & block < end;
-}

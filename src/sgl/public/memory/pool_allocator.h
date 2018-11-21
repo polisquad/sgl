@@ -29,21 +29,32 @@ public:
 	using Allocator::Allocator;
 
 	/**
-	 * @copydoc Allocator::init
+	 * @copydoc Allocator::init()
 	 * 
 	 * @param [in] chunkSize size of a memory chunk
 	 */
 	void init(uint32 chunkSize = 64);
 
 	/**
-	 * @copydoc Allocator::alloc
+	 * @copydoc Allocator::alloc()
 	 */
 	virtual void * alloc(uint64 n);
 	
 	/**
-	 * @copydoc Allocator::free
+	 * @copydoc Allocator::free()
 	 */
 	virtual void free(void * ptr);
+
+	/**
+	 * @copydoc Allocator::reset()
+	 */
+	virtual inline void reset();
 };
+
+void PoolAllocator::reset()
+{
+	// Rebuild linked list
+	init(chunkSize);
+}
 
 #endif

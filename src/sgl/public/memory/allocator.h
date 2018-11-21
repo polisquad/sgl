@@ -58,9 +58,9 @@ public:
 	 * @{
 	 */
 	/** @param [in] end pointer to buffer end */
-	void attachBuffer(void * start, void * end);
+	inline void attachBuffer(void * start, void * end);
 	/** @param [in] size buffer length */
-	void attachBuffer(void * start, uint64 size);
+	inline void attachBuffer(void * start, uint64 size);
 	/** @} */
 
 	/**
@@ -68,7 +68,7 @@ public:
 	 * 
 	 * @return detached buffer
 	 */
-	void * detachBuffer();
+	inline void * detachBuffer();
 
 	/**
 	 * @brief Return @c true if has block
@@ -78,7 +78,7 @@ public:
 	 * @return @c true if block was (probably) allocated by this allocator
 	 * @c false otherwise
 	 */
-	bool hasBlock(void * block);
+	inline bool hasBlock(void * block);
 
 	/**
 	 * @brief Initialize allocator
@@ -102,6 +102,11 @@ public:
 	virtual void free(void * ptr) = 0;
 
 	/**
+	 * @brief Reset allocator
+	 */
+	virtual void reset() = 0;
+
+	/**
 	 * @brief Static creators
 	 * 
 	 * @param [in] size allocator buffer size
@@ -109,21 +114,42 @@ public:
 	 * @return created allocator
 	 */
 	template<class A = Allocator, typename ... TArgs>
-	static A * create(uint32 bufferSize, uint32 alignment, TArgs && ... args);
+	static A * create(uint64 bufferSize, TArgs && ... args);
 };
 
-template<class A, typename ... TArgs>
-A * Allocator::create(uint32 bufferSize, uint32 alignment, TArgs && ... args)
+void Allocator::attachBuffer(void * start, void * end)
 {
-	// A min alignment of sizeof(void*) is required
-	alignment = alignment < sizeof(void*) ? sizeof(void*) : alignment;
+	this->start = start, this->end = end, this->size = (uint64)end - (uint64)start;
+}
+
+void Allocator::attachBuffer(void * start, uint64 size)
+{
+	this->start = start, this->end = reinterpret_cast<ubyte*>(start) + size, this->size = size;
+}
+
+void * Allocator::detachBuffer()
+{
+	void * buffer = start;
+	start = end = nullptr, size = 0;
+	return buffer;
+}
+
+bool Allocator::hasBlock(void * block)
+{
+	return block > start & block < end;
+}
+
+template<class A, typename ... TArgs>
+A * Allocator::create(uint64 bufferSize, TArgs && ... args)
+{
+	static_assert(std::is_base_of<Allocator, A>::value, "A must derive from Allocator!");
 
 	// Align buffer size
-	bufferSize = (bufferSize | (alignment - 0x1)) + 0x1;
+	bufferSize = (bufferSize | (sizeof(void*) - 0x1)) + 0x1;
 	void * buffer;
 
 	// Use an aligned malloc
-	int32 status = posix_memalign(&buffer, alignment, bufferSize);
+	int32 status = posix_memalign(&buffer, sizeof(void*), bufferSize);
 	if (status == 0x0)
 	{
 		// Create allocator

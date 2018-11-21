@@ -23,19 +23,38 @@ public:
 	using Allocator::Allocator;
 
 	/**
-	 * @copydoc Allocator::init
+	 * @copydoc Allocator::init()
 	 */
 	void init();
 
 	/**
-	 * @copydoc Allocator::alloc
+	 * @copydoc Allocator::alloc()
 	 */
 	virtual void * alloc(uint64 n);
 
 	/**
-	 * @copydoc Allocator::free
+	 * @copydoc Allocator::free()
 	 */
 	virtual void free(void * ptr);
+
+	/**
+	 * @copydoc Allocator::reset()
+	 */
+	virtual inline void reset();
 };
+
+void ListAllocator::reset()
+{
+	#define block_next(block) *reinterpret_cast<void**>(block)
+	#define block_size(block) *(reinterpret_cast<uint64*>(block) + 1)
+
+	// Set head to start
+	head = start;
+	block_next(head) = nullptr;
+	block_size(head) = size - headerSize;
+
+	#undef block_next
+	#undef block_size
+}
 
 #endif

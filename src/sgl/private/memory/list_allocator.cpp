@@ -36,10 +36,18 @@ void * ListAllocator::alloc(uint64 n)
 		{
 			// Create new block
 			block_next(block_end) = block_next(it);
-			block_size(block_end) = block_size(it) - (n + 0x8);
+			block_size(block_end) = block_size(it) - (headerSize + n);
 
 			// Link new block
 			if (prev) block_next(prev) = block_end; else head = block_end;
+
+			// Update allocated block size
+			block_size(it) = n;
+		}
+		else
+		{
+			// Remove the whole block from the list
+			if (prev) block_next(prev) = block_next(it); else head = block_next(it);
 		}
 
 		return block_mem(it);
