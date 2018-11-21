@@ -47,13 +47,13 @@ void * PoolAllocator::alloc(uint64 n)
 
 void PoolAllocator::free(void * ptr)
 {
-	// We make the assumption that ptr
-	// had been allocated by this allocator
+	if (hasBlock(ptr))
+	{	
+		// Relink to linked list
+		ptr = mem_block(ptr);
+		block_next(ptr) = head;
 
-	// Relink to linked list
-	ptr = mem_block(ptr);
-	block_next(ptr) = head;
-
-	// Set as new head
-	head = ptr;
+		// Set as new head
+		head = ptr;
+	}
 }

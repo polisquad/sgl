@@ -59,43 +59,43 @@ void * ListAllocator::alloc(uint64 n)
 
 void ListAllocator::free(void * ptr)
 {
-	// We make the assumption was returned
-	// by this very allocator
-
-	// There's no head, make one
-	if (!head)
-		head = mem_block(ptr);
-	else
+	if (hasBlock(ptr))
 	{
-		// Get block start and end
-		void	* block_start	= mem_block(ptr),
-				* block_end		= block_end(block_start);
-
-		// Iterator to find closest block
-		void * it = head, * prev = nullptr;
-		while (it && it < block_start) prev = it, it = block_next(it);
-
-		if (!prev)
-			head = block_start;
-		else if (block_end(prev) == block_start)
-		{
-			// Merge with prev
-			block_size(prev) += block_size(block_start) + 0x8;
-			block_start = prev;
-		}
+		// There's no head, make one
+		if (!head)
+			head = mem_block(ptr);
 		else
-			// Link with prev
-			block_next(prev) = block_start;
-
-		if (block_end == it)
 		{
-			// Merge with next
-			block_size(block_start) += block_size(it) + headerSize;
-			block_next(block_start) = block_next(it);
+			// Get block start and end
+			void	* block_start	= mem_block(ptr),
+					* block_end		= block_end(block_start);
+
+			// Iterator to find closest block
+			void * it = head, * prev = nullptr;
+			while (it && it < block_start) prev = it, it = block_next(it);
+
+			if (!prev)
+				head = block_start;
+			else if (block_end(prev) == block_start)
+			{
+				// Merge with prev
+				block_size(prev) += block_size(block_start) + 0x8;
+				block_start = prev;
+			}
+			else
+				// Link with prev
+				block_next(prev) = block_start;
+
+			if (block_end == it)
+			{
+				// Merge with next
+				block_size(block_start) += block_size(it) + headerSize;
+				block_next(block_start) = block_next(it);
+			}
+			else
+				// Link with next
+				block_next(block_start) = it;
 		}
-		else
-			// Link with next
-			block_next(block_start) = it;
 	}
 }
 
