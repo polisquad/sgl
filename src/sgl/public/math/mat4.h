@@ -510,8 +510,8 @@ float32 Mat4<float32>::getDeterminant() const
 	det = _mm_hadd_ps(det, det);
 	det = _mm_hadd_ps(det, det);
 
-	__m128_getter _det_ = {det};
-	return _det_._a_[3];
+	__m128_getter_ps _det_ = {det};
+	return _det_._vec_[3];
 }
 
 template<>

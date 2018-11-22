@@ -24,6 +24,16 @@ struct SIMD<float32>
 	// Matrix type
 	typedef __m128 MT[4];
 };
+
+template<>
+struct SIMD<float64>
+{
+	// Vector type
+	typedef __m256d VT;
+
+	// Matrix type
+	typedef __m256d MT[4];
+};
 /** @} */
 
 /**
@@ -39,15 +49,36 @@ struct SIMD<int32>
 	// Matrix type
 	typedef __m128i MT[4];
 };
+
+template<>
+struct SIMD<uint32>
+{
+	// Vector type
+	typedef __m128i VT;
+
+	// Matrix type
+	typedef __m128i MT[4];
+};
+
+template<>
+struct SIMD<int64>
+{
+	// Vector type
+	typedef __m256i VT;
+
+	// Matrix type
+	typedef __m256i MT[4];
+};
 /** @} */
 
 /**
- * @brief Union to access simd vector elements
+ * @brief Getter for float-32 128-bit register
  */
-#define __m128_getter\
-	union {\
-		__m128 _v_;\
-		float32 _a_[4];\
-	}
+#define __m128_getter_ps \
+	union\
+	{\
+		__m128 _data_;\
+		float32 _vec_[4];\
+	}\
 
 #endif
