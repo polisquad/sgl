@@ -12,8 +12,8 @@ set(SGL_VERSION_MINOR 0)
 set(SGL_VERSION_PATCH 0) # Not really using it
 
 ## Build type config
-set(CMAKE_CXX_FLAGS_DEBUG			"-DSGL_BUILD_DEBUG=1 -O0")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO	"-DSGL_BUILD_DEVELOPMENT=1 -O3")
+set(CMAKE_CXX_FLAGS_DEBUG			"-DSGL_BUILD_DEBUG=1 -ggdb -O0")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO	"-DSGL_BUILD_DEVELOPMENT=1 -ggdb -O3")
 set(CMAKE_CXX_FLAGS_RELEASE			"-DSGL_BUILD_RELEASE=1 -Ofast")
 
 # Compiler setup --------------------------------
@@ -25,3 +25,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAG} -mavx2 -fopenmp") # Not sure about OpenMP
 # Code setup ------------------------------------
 ## Source code
 add_subdirectory(src)
+
+## Test setup -----------------------------------
+option(SGL_UNIT_TEST "enable unit testing" ON)
+if(SGL_UNIT_TEST)
+	add_subdirectory(test)
+endif(SGL_UNIT_TEST)
