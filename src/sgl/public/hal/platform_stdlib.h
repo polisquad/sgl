@@ -26,6 +26,7 @@
  */
 #include <new>
 #include <cassert>
+#include <memory>
 /** @} */
 
 #endif

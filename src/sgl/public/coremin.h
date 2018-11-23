@@ -1,0 +1,27 @@
+#ifndef SGL_COREMIN_H
+#define SGL_COREMIN_H
+
+/////////////////////////////////////////////////
+// Low level includes                          //
+/////////////////////////////////////////////////
+
+#include "core_types.h"
+
+/////////////////////////////////////////////////
+// Forward declarations                        //
+/////////////////////////////////////////////////
+
+/** @todo */
+
+/////////////////////////////////////////////////
+// Common headers                              //
+/////////////////////////////////////////////////
+
+#include "hal/platform_stdlib.h"
+#include "templates/singleton.h"
+#include "templates/unique_ptr.h"
+#include "templates/shared_ptr.h"
+#include "containers/array.h"
+#include "containers/queue.h"
+
+#endif
