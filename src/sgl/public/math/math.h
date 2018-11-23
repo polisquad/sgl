@@ -1,7 +1,7 @@
 #ifndef SGL_MATH_H
 #define SGL_MATH_H
 
-#include "math.tpp"
+#include "math.hpp"
 
 #include "vec2.h"
 #include "vec3.h"
@@ -155,6 +155,7 @@ bool Math::intersect(const Vec3<T> & p0, const Vec3<T> & p1, const Vec3<T> & po,
 
 // No specialization for Vec2<float32>
 
+#if PLATFORM_ENABLE_SIMD
 template<>
 Vec3<float32> Math::min(const Vec3<float32> & v1, const Vec3<float32> & v2)
 {
@@ -233,5 +234,6 @@ bool Math::intersect(const Vec3<float32> & p0, const Vec3<float32> & p1, const V
 
 	return true;
 }
+#endif
 
 #endif

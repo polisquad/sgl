@@ -1,2 +1,2 @@
-# Include submodules ----------------------------
+# Include modules -------------------------------
 add_subdirectory(sgl)

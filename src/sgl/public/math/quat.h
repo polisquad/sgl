@@ -195,6 +195,7 @@ Vec3<T> Quat<T>::right() const		{ return operator*(Vec3<T>::right); }
 // Float 32-bit specialization                 //
 /////////////////////////////////////////////////
 
+#if PLATFORM_ENABLE_SIMD
 template<>
 Quat<float32>::Quat(const Vec3<float32> & v, const float32 a) : Vec4(v.getNormal() * sinf(a / 2.f), cosf(a / 2.f)) {}
 
@@ -252,6 +253,7 @@ Quat<float32> Quat<float32>::operator*(const Quat<float32> & q) const
 	#undef sgn
 	#undef set
 }
+#endif
 
 template<>
 void Quat<float32>::print(FILE * stream) const

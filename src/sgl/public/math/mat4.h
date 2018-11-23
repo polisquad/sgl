@@ -36,13 +36,6 @@ public:
 	inline Mat4();
 
 	/**
-	 * @brief Copy-constructor
-	 * 
-	 * @param [in] m other matrix
-	 */
-	inline Mat4(const Mat4<T> & m);
-
-	/**
 	 * @brief Data-constructor
 	 * 
 	 * @param [in] data data to copy
@@ -67,15 +60,6 @@ public:
 	 * @param [in] buffer buffer of elements
 	 */
 	inline Mat4(const T * buffer);
-
-	/**
-	 * @brief Assignment operator (copy data)
-	 * 
-	 * @param [in] m other matrix
-	 * 
-	 * @return self
-	 */
-	Mat4<T> & operator=(const Mat4<T> & m);
 
 	/**
 	 * @brief Get a (modifiable) reference
@@ -254,16 +238,6 @@ template<typename T>
 Mat4<T>::Mat4(const typename Mat4<T>::MT & data) { memcpy(this->data, data, sizeof(typename Mat4<T>::MT)); }
 
 template<typename T>
-Mat4<T>::Mat4(const Mat4<T> & m) { memcpy(data, m.data, sizeof(typename Mat4<T>::MT)); }
-
-template<typename T>
-Mat4<T> & Mat4<T>::operator=(const Mat4<T> & m)
-{
-	memcpy(data, m.data, sizeof(typename Mat4<T>::MT));
-	return *this;
-}
-
-template<typename T>
 T & Mat4<T>::operator()(uint8 i, uint8 j)
 {
 	// AVX registers are inverted
@@ -344,6 +318,7 @@ inline Mat4<T> operator/(const T s, const Mat4<T> & m)
 // Float 32-bit specialization                 //
 /////////////////////////////////////////////////
 
+#if PLATFORM_ENABLE_SIMD
 template<>
 Mat4<float32>::Mat4() : data{
 	_mm_set1_ps(0.f),
@@ -1078,6 +1053,7 @@ Mat4<float32> Mat4<float32>::rotation(const Vec3<float32> & v, const float32 a)
 	 */
 	return Mat4<float32>::rotation(Quat<float32>(v, a));
 }
+#endif
 
 template<>
 void Mat4<float32>::print(FILE * stream)

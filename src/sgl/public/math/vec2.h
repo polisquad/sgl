@@ -46,19 +46,13 @@ public:
 	inline Vec2();
 
 	/**
-	 * @brief Copy-constructor
-	 * 
-	 * @param [in] v other vector
-	 */
-	inline Vec2(const Vec2<T> & v);
-
-	/**
 	 * @brief Data-constructor
 	 * 
 	 * @param [in] data simd-like data structure
 	 */
-	inline Vec2(const typename Vec2::VT data);
-
+	template<typename _T = T, typename = std::enable_if_t<!std::is_array<typename Vec2<_T>::VT>::value>>
+	inline Vec2(const typename Vec2<T>::VT data);
+	
 	/**
 	 * @brief Vec-constructor
 	 * 
@@ -79,15 +73,6 @@ public:
 	 * @param [in] s scalar value
 	 */
 	inline Vec2(const T s);
-
-	/**
-	 * @brief Assignment operation
-	 * 
-	 * @param [in] v other vector
-	 * 
-	 * @return self
-	 */
-	inline Vec2<T> & operator=(const Vec2<T> & v);
 
 	/**
 	 * @brief Return read-only element of the simd vector
@@ -250,26 +235,17 @@ template<typename T>
 Vec2<T>::Vec2() {}
 
 template<typename T>
-Vec2<T>::Vec2(const Vec2<T> & v) : data(v.data) {}
-
-template<typename T>
+template<typename, typename>
 Vec2<T>::Vec2(const typename Vec2<T>::VT data) : data(data) {}
 
 template<typename T>
-Vec2<T>::Vec2(const T * __vec) { memcpy(&this->__vec, __vec, 4 * sizeof(T)); }
+Vec2<T>::Vec2(const T * __vec) { memcpy(&this->__vec, __vec, sizeof(__vec)); }
 
 template<typename T>
 Vec2<T>::Vec2(const T x, const T y) : x(x), y(y) {}
 
 template<typename T>
 Vec2<T>::Vec2(const T s) : x(s), y(s) {}
-
-template<typename T>
-Vec2<T> & Vec2<T>::operator=(const Vec2<T> & v)
-{
-	data = v.data;
-	return *this;
-}
 
 template<typename T>
 T & Vec2<T>::operator[](uint8 i)
@@ -505,6 +481,7 @@ Vec2<T1>::operator Vec2<T2>() const
 // Float 32-bit specialization                 //
 /////////////////////////////////////////////////
 
+#if PLATFORM_ENABLE_SIMD
 template<>
 Vec2<float32>::Vec2(const float32 s) : data(_mm_set1_ps(s)) {}
 
@@ -522,6 +499,7 @@ Vec2<float32> & Vec2<float32>::normalize()
 	data = _mm_div_ps(data, size);
 	return *this;
 }
+#endif
 
 template<>
 void Vec2<float32>::print(FILE * stream) const

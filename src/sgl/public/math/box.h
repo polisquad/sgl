@@ -239,7 +239,6 @@ template<typename T>
 bool Box<T>::intersect(const Box<T> & b) const
 {
 	return (max > b.min & b.max > min) | (b.max > min & max > b.min);
-	//return ((max - b.min) & (b.max - min)) > 0.f;
 }
 
 template<typename T>
@@ -253,8 +252,12 @@ Box<T> Box<T>::overlap(const Box<T> & b) const
 		return Box<T>();
 }
 
-template<typename T>
-void Box<T>::print(FILE * stream) const
+/////////////////////////////////////////////////
+// Float-32 bit specialization                 //
+/////////////////////////////////////////////////
+
+template<>
+void Box<float32>::print(FILE * stream) const
 {
 	fprintf(stream, "min(%.3f, %.3f, %.3f) : max(%.3f, %.3f, %.3f)\n", min.x, min.y, min.z, max.x, max.y, max.z);
 }

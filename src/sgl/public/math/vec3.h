@@ -54,25 +54,19 @@ public:
 	inline Vec3();
 
 	/**
-	 * @brief Copy-constructor
-	 * 
-	 * @param [in] v other vector
-	 */
-	inline Vec3(const Vec3<T> & v);
-
-	/**
 	 * @brief Data-constructor
 	 * 
 	 * @param [in] data simd-like data structure
 	 */
+	template<typename _T = T, typename = std::enable_if_t<std::is_array<typename Vec2<_T>::VT>::value>>
 	inline Vec3(const typename Vec3::VT data);
-
+	
 	/**
 	 * @brief Vec-constructor
 	 * 
 	 * @param [in] vec plain c array
 	 */
-	inline Vec3(const T * vec);
+	inline Vec3(const T * __vec);
 
 	/**
 	 * @brief Coordinates-constructor
@@ -95,15 +89,6 @@ public:
 	 * @param [in]	z	missing component
 	 */
 	inline Vec3(const Vec2<T> & v2, const T z = T());
-
-	/**
-	 * @brief Assignment operation
-	 * 
-	 * @param [in] v other vector
-	 * 
-	 * @return self
-	 */
-	inline Vec3<T> & operator=(const Vec3<T> & v);
 
 	/**
 	 * @brief Return read-only element of the simd vector
@@ -278,9 +263,7 @@ template<typename T>
 Vec3<T>::Vec3() {}
 
 template<typename T>
-Vec3<T>::Vec3(const Vec3<T> & v) : data(v.data) {}
-
-template<typename T>
+template<typename, typename>
 Vec3<T>::Vec3(const typename Vec3<T>::VT data) : data(data) {}
 
 template<typename T>
@@ -294,13 +277,6 @@ Vec3<T>::Vec3(const T s) : x(s), y(s), z(s) {}
 
 template<typename T>
 Vec3<T>::Vec3(const Vec2<T> & v2, const T z) : x(v2.x), y(v2.y), z(z) {}
-
-template<typename T>
-Vec3<T> & Vec3<T>::operator=(const Vec3<T> & v)
-{
-	data = v.data;
-	return *this;
-}
 
 template<typename T>
 T & Vec3<T>::operator[](uint8 i)
@@ -564,16 +540,25 @@ Vec3<T1>::operator Vec3<T2>() const
 	return Vec3<T2>(static_cast<T2>(x), static_cast<T2>(y), static_cast<T2>(z));
 }
 
+#if PLATFORM_ENABLE_SIMD
 template<typename T>
 Vec3<T>::operator Vec2<T>() const
 {
 	return Vec2<T>(data);
 }
+#else
+template<typename T>
+Vec3<T>::operator Vec2<T>() const
+{
+	return Vec2<T>(__vec);
+}
+#endif
 
 /////////////////////////////////////////////////
 // Float 32-bit specialization                 //
 /////////////////////////////////////////////////
 
+#if PLATFORM_ENABLE_SIMD
 template<>
 Vec3<float32>::Vec3(const float32 x, const float32 y, const float32 z) : data(_mm_set_ps(x, y, z, 0.f)) {}
 
@@ -758,7 +743,7 @@ Vec3<float32> Vec3<float32>::operator^(const Vec3<float32> & v) const
 		_mm_mul_ps(_mm_shuffle_ps(data, data, _MM_SHUFFLE(1, 3, 2, 0)), v.data),
 		_mm_mul_ps(data, _mm_shuffle_ps(v.data, v.data, _MM_SHUFFLE(1, 3, 2, 0)))
 	);
-	return _mm_shuffle_ps(res, res, _MM_SHUFFLE(1, 3, 2, 0));
+	return Vec3<float32>(_mm_shuffle_ps(res, res, _MM_SHUFFLE(1, 3, 2, 0)));
 }
 
 template<>
@@ -776,6 +761,7 @@ Vec3<float32> & Vec3<float32>::lerp(const Vec3<float32> & v, float32 alpha)
 	);
 	return *this;
 }
+#endif
 
 template<>
 void Vec3<float32>::print(FILE * stream) const

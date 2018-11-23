@@ -1,5 +1,4 @@
 #include "test_math.h"
-
 #include <gtest/gtest.h>
 
 /**

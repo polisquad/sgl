@@ -44,19 +44,13 @@ public:
 	inline Vec4();
 
 	/**
-	 * @brief Copy-constructor
-	 * 
-	 * @param [in] v other vector
-	 */
-	inline Vec4(const Vec4<T> & v);
-
-	/**
 	 * @brief Data-constructor
 	 * 
 	 * @param [in] data simd-like data structure
 	 */
+	template<typename _T, typename = std::enable_if_t<std::is_array<typename Vec2<_T>::VT>::value>>
 	inline Vec4(const typename Vec4::VT data);
-
+	
 	/**
 	 * @brief Vec-constructor
 	 * 
@@ -93,15 +87,6 @@ public:
 	 * @param [in]	w	missing component
 	 */
 	inline Vec4(const Vec3<T> & v3, const T w = T());
-
-	/**
-	 * @brief Assignment operation
-	 * 
-	 * @param [in] v other vector
-	 * 
-	 * @return self
-	 */
-	inline Vec4<T> & operator=(const Vec4<T> & v);
 
 	/**
 	 * @brief Return read-only element of the simd vector
@@ -272,9 +257,7 @@ template<typename T>
 Vec4<T>::Vec4() {}
 
 template<typename T>
-Vec4<T>::Vec4(const Vec4<T> & v) : data(v.data) {}
-
-template<typename T>
+template<typename, typename>
 Vec4<T>::Vec4(const typename Vec4<T>::VT data) : data(data) {}
 
 template<typename T>
@@ -288,13 +271,6 @@ Vec4<T>::Vec4(const Vec2<T> & v2, const T z, const T w) : x(v2.x), y(v2.y), z(z)
 
 template<typename T>
 Vec4<T>::Vec4(const Vec3<T> & v3, const T w) : x(v3.x), y(v3.y), z(v3.z), w(w) {}
-
-template<typename T>
-Vec4<T> & Vec4<T>::operator=(const Vec4<T> & v)
-{
-	data = v.data;
-	return *this;
-}
 
 template<typename T>
 T & Vec4<T>::operator[](uint8 i)
@@ -547,22 +523,39 @@ Vec4<T1>::operator Vec4<T2>() const
 	return Vec4<T2>(static_cast<T2>(x), static_cast<T2>(y), static_cast<T2>(z), static_cast<T2>(w));
 }
 
+#if PLATFORM_ENABLE_SIMD
 template<typename T>
 Vec4<T>::operator Vec2<T>() const
 {
 	return Vec2<T>(data);
 }
+#else
+template<typename T>
+Vec4<T>::operator Vec2<T>() const
+{
+	return Vec2<T>(__vec);
+}
+#endif
 
+#if PLATFORM_ENABLE_SIMD
 template<typename T>
 Vec4<T>::operator Vec3<T>() const
 {
 	return Vec3<T>(data);
 }
+#else
+template<typename T>
+Vec4<T>::operator Vec3<T>() const
+{
+	return Vec3<T>(__vec);
+}
+#endif
 
 /////////////////////////////////////////////////
 // Float 32-bit specialization                 //
 /////////////////////////////////////////////////
 
+#if PLATFORM_ENABLE_SIMD
 template<>
 Vec4<float32>::Vec4(const float32 x, const float32 y, const float32 z, const float32 w) : data(_mm_set_ps(x, y, z, w)) {}
 
@@ -759,6 +752,7 @@ Vec4<float32> & Vec4<float32>::lerp(const Vec4<float32> & v, float32 alpha)
 	);
 	return *this;
 }
+#endif
 
 template<>
 void Vec4<float32>::print(FILE * stream) const

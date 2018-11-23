@@ -1,7 +1,8 @@
-#ifndef SGL_MATH_TPP
-#define SGL_MATH_TPP
+#ifndef SGL_MATH_HPP
+#define SGL_MATH_HPP
 
-#include "core/platform.h"
+#include "core_types.h"
+#include "hal/platform_math.h"
 
 /**
  * @brief Forward declarations of structs
@@ -38,7 +39,7 @@ template<typename>	struct Box;
  * @struct Math math.h
  * @brief A set of math functions
  */
-struct Math
+struct Math : public PlatformMath
 {
 public:
 	/**
@@ -67,13 +68,13 @@ public:
 	 * @return vector with min[max] elements
 	 * @{
 	 */
-	template<typename T> inline static Vec2<T> min(const Vec2<T> & v1, const Vec2<T> & v2);
-	template<typename T> inline static Vec3<T> min(const Vec3<T> & v1, const Vec3<T> & v2);
-	template<typename T> inline static Vec4<T> min(const Vec4<T> & v1, const Vec4<T> & v2);
+	template<typename T> FORCE_INLINE static Vec2<T> min(const Vec2<T> & v1, const Vec2<T> & v2);
+	template<typename T> FORCE_INLINE static Vec3<T> min(const Vec3<T> & v1, const Vec3<T> & v2);
+	template<typename T> FORCE_INLINE static Vec4<T> min(const Vec4<T> & v1, const Vec4<T> & v2);
 
-	template<typename T> inline static Vec2<T> max(const Vec2<T> & v1, const Vec2<T> & v2);
-	template<typename T> inline static Vec3<T> max(const Vec3<T> & v1, const Vec3<T> & v2);
-	template<typename T> inline static Vec4<T> max(const Vec4<T> & v1, const Vec4<T> & v2);
+	template<typename T> FORCE_INLINE static Vec2<T> max(const Vec2<T> & v1, const Vec2<T> & v2);
+	template<typename T> FORCE_INLINE static Vec3<T> max(const Vec3<T> & v1, const Vec3<T> & v2);
+	template<typename T> FORCE_INLINE static Vec4<T> max(const Vec4<T> & v1, const Vec4<T> & v2);
 	/** @} */
 
 	/**
@@ -125,7 +126,7 @@ public:
 	 * 
 	 * @return point of intersection
 	 */
-	template<typename T> inline static Vec3<T> linePlaneIntersect(const Vec3<T> & p0, const Vec3<T> & p1, const Vec3<T> & po, const Vec3<T> & pn);
+	template<typename T> FORCE_INLINE static Vec3<T> linePlaneIntersect(const Vec3<T> & p0, const Vec3<T> & p1, const Vec3<T> & po, const Vec3<T> & pn);
 
 	/**
 	 * @brief Intersect segment with plane

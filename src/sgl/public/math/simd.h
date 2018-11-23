@@ -1,7 +1,11 @@
 #ifndef SGL_VEC_H
 #define SGL_VEC_H
 
-#include "math.tpp"
+#include "math.hpp"
+
+#if PLATFORM_ENABLE_SIMD
+	#include <immintrin.h> // AVX header
+#endif
 
 /**
  * @struct SIMD simd.h
@@ -9,8 +13,20 @@
  * that provides specialization for templates
  */
 template<typename T>
-struct SIMD {};
+struct SIMD
+{
+	// Vector type
+	typedef T VT[4];
 
+	// Matrix type
+	typedef T MT[4][4];
+};
+
+/////////////////////////////////////////////////
+// SIMD types                                  //
+/////////////////////////////////////////////////
+
+#if PLATFORM_ENABLE_SIMD
 /**
  * @brief Specialization for floating-point types
  * @{
@@ -79,6 +95,7 @@ struct SIMD<int64>
 	{\
 		__m128 _data_;\
 		float32 _vec_[4];\
-	}\
+	}
+#endif
 
 #endif
