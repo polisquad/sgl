@@ -25,6 +25,7 @@
  * @{
  */
 #include <new>
+#include <cassert>
 /** @} */
 
 #endif

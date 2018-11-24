@@ -1,6 +1,19 @@
 #ifndef SGL_GENERIC_PLATFORM_H
 #define SGL_GENERIC_PLATFORM_H
 
+/// Templates to select a type based on pointer size
+/// @{
+template<typename T32, typename T64, unsigned char N>
+struct SelectIntPointerType {};
+
+template<typename T32, typename T64>
+struct SelectIntPointerType<T32, T64, 0x4> { typedef T32 type; };
+
+template<typename T32, typename T64>
+struct SelectIntPointerType<T32, T64, 0x8> { typedef T64 type; };
+/// @}
+
+
 /**
  * @struct GenericPlatformTypes generic/generic_platform.h
  * @brief Generic type definitions
@@ -31,6 +44,17 @@ struct GenericPlatformTypes
 	typedef float		float32;
 	typedef double		float64;
 	typedef long double	float128;
+	/** @} */
+
+	/**
+	 * @brief Pointer types
+	 * @{
+	 */
+	typedef SelectIntPointerType<int32, int64, sizeof(void*)>::type		intP;
+	typedef SelectIntPointerType<uint32, uint64, sizeof(void*)>::type	uintP;
+
+	typedef intP	ssizet;
+	typedef uintP	sizet;
 	/** @} */
 };
 
