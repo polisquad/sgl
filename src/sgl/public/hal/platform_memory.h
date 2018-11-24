@@ -22,6 +22,10 @@
  */
 struct Memory
 {
+	/// @copydoc PlatformMemory::align()
+	template<typename T = void*>
+	static FORCE_INLINE T align(T ptr, sizet alignment) { return PlatformMemory::align<T>(ptr, alignment); }
+
 	/// @brief Memory utility functions
 	/// @{
 	static FORCE_INLINE void *	memmove(void * dest, const void * src, uintP size)	{ return PlatformMemory::memmove(dest, src, size); }
