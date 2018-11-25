@@ -11,10 +11,10 @@ class MallocAnsi : public Malloc
 {
 public:
 	/// @copydoc Malloc::malloc()
-	virtual void * malloc(uintP n, uint32 alignment) override;
+	virtual void * malloc(uintP n, uint32 alignment = DEFAULT_ALIGNMENT) override;
 
 	/// @copydoc Malloc::realloc()
-	virtual void * realloc(void * original, uintP n, uint32 alignment) override;
+	virtual void * realloc(void * original, uintP n, uint32 alignment = DEFAULT_ALIGNMENT) override;
 
 	/// @copydoc Malloc::free()
 	virtual void free(void * original) override;

@@ -4,6 +4,8 @@
 #include "core_types.h"
 #include "hal/platform_memory.h"
 
+#define MEMORY_POOL_DO_SANITY_CHECKS 0
+
 /**
  * @struct MemoryPool generic/memory_pool.h
  * @brief A pool of fixed size memory blocks
@@ -54,20 +56,27 @@ protected:
 	/// @brief Number of free blocks
 	sizet numFreeBlocks;
 
+	/// @brief Pool size
+	sizet poolSize;
+
+	/// @brief Pool end address
+	void * poolEnd;
+
 public:
 	/**
 	 * @brief Default-constructor
 	 * 
 	 * @param [in]	_blockSize	size of a single block
 	 * @param [in]	_numBlocks	number of requested blocks
-	 * @param [in]	_buffer		The buffer on which to create the pool.
-	 * 							We don't require this to aligned
+	 * @param [in]	_buffer		the buffer on which to create the pool,
+	 * 							we don't require this to be aligned
+	 * @param [in]	alignment	pool alignment
 	 */
-	MemoryPool(sizet _blockSize, sizet _numBlocks, void * _buffer);
+	FORCE_INLINE MemoryPool(sizet _blockSize, sizet _numBlocks, void * _buffer, uint32 alignment = 0x1000);
 
 	/// Reset indices list
 	/// This wipes out all memory
-	void resetIndices();
+	inline void resetIndices();
 
 	/**
 	 * @brief Allocate a new block
@@ -76,30 +85,53 @@ public:
 	 * 
 	 * @return Allocated block
 	 */
-	void * allocate(sizet n);
+	inline void * allocate(sizet n);
+
+	/**
+	 * @brief Free block
+	 * 
+	 * @param [in] original originally allocated block pointer
+	 */
+	FORCE_INLINE void free(void * original);
+
+	/// @brief Find index from block pointer
+	FORCE_INLINE Index * getIndexFromBlock(void * block)
+	{
+		// Compute block relative offset
+		sizet blockOffset = (reinterpret_cast<sizet>(block) - reinterpret_cast<sizet>(pool)) / blockSize;
+	#if MEMORY_POOL_DO_SANITY_CHECKS
+		return (blockOffset >= 0 && blockOffset < numBlocks) ? indices + blockOffset : nullptr;
+	#else
+		return indices + blockOffset;
+	#endif
+	}
 
 	/// @brief Info functions
 	/// @{
 	FORCE_INLINE bool	isEmpty() const { return numFreeBlocks == numBlocks; }
 	FORCE_INLINE bool	canAllocate(sizet n) const { return n <= blockSize; }
 	FORCE_INLINE sizet	getUsable() const { return numFreeBlocks * blockSize; }
+	FORCE_INLINE bool	hasBlock(void * block) { return block >= pool & block < poolEnd; }
 	/// @}
 };
 
-MemoryPool::MemoryPool(sizet _blockSize, sizet _numBlocks, void * _buffer) :
+MemoryPool::MemoryPool(sizet _blockSize, sizet _numBlocks, void * _buffer, uint32 alignment) :
 	indices(nullptr),
 	pool(nullptr),
 	head(nullptr),
 	blockSize(_blockSize),
 	numBlocks(_numBlocks),
-	numFreeBlocks(_numBlocks)
+	numFreeBlocks(_numBlocks),
+	poolSize(_blockSize * _numBlocks),
+	poolEnd(nullptr)
 {
 	// Reserve space for indices
 	indices = reinterpret_cast<IndexList>(_buffer);
 	_buffer = indices + _numBlocks;
 
 	// Align up pool buffer
-	pool = Memory::align(_buffer, 0x1000);
+	pool = Memory::align(_buffer, alignment);
+	poolEnd = reinterpret_cast<ubyte*>(pool) + poolSize;
 
 	// Set indices
 	resetIndices();
@@ -129,9 +161,9 @@ void * MemoryPool::allocate(sizet n)
 	// Check size
 	assert(n <= blockSize);
 
-	if (head)
+	if (LIKELY(head != nullptr))
 	{
-		void * out = head;
+		void * out = head->block;
 
 		// Pop index
 		head = head->next;
@@ -141,6 +173,17 @@ void * MemoryPool::allocate(sizet n)
 	}
 
 	return nullptr;
+}
+
+void MemoryPool::free(void * original)
+{
+	// Push to head
+	Index * index = getIndexFromBlock(original);
+	index->next = head;
+	head = index;
+
+	// Update number of free blocks
+	++numFreeBlocks;
 }
 
 #endif

@@ -67,6 +67,32 @@ struct GenericPlatformMath
 		return a < b ? a : b;
 	}
 	/** @} */
+
+	/**
+	 * @brief Get smallest power of two greater than n
+	 * 
+	 * @param n lower bound
+	 * 
+	 * @return next p2
+	 * @{
+	 */
+	static CONSTEXPR FORCE_INLINE uint64 getNextPowerOf2(uint64 n)
+	{
+		// Case where n is already 2^x
+		if (!(n & (n - 1))) return n;
+
+		uint32 out = 1;
+		while (n) n >>= 1, out <<= 1;
+		return out;
+	}
+
+	static CONSTEXPR FORCE_INLINE uint8 getNextPowerOf2Index(uint64 n)
+	{
+		uint32 out = 0;
+		while (n) n >>= 1, out += 1;
+		return out;
+	}
+	/** @} */
 };
 
 /// Float-32 specialization

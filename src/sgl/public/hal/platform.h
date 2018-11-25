@@ -52,8 +52,8 @@
 #ifndef LIKELY
 	#define LIKELY(condition) (condition)
 #endif
-#ifndef UNLIKEY
-	#define UNLIKEY(condition) (condition)
+#ifndef UNLIKELY
+	#define UNLIKELY(condition) (condition)
 #endif
 
 /// Method modifiers

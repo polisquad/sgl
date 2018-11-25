@@ -12,7 +12,7 @@ void * MallocAnsi::malloc(uintP n, uint32 alignment)
 
 #if PLATFORM_UNIX
 	void * out;
-	if (UNLIKEY(::posix_memalign(&out, alignment, n) != 0)) return nullptr;
+	if (UNLIKELY(::posix_memalign(&out, alignment, n) != 0)) return nullptr;
 #else
 	// Implement some kind of aligned allocation
 	void * out = nullptr;
@@ -33,7 +33,7 @@ void * MallocAnsi::realloc(void * original, uintP n, uint32 alignment)
 		// Do not even try to realloc in place
 		// But why??
 		uintP usable = malloc_usable_size(original);
-		if (UNLIKEY(::posix_memalign(&out, alignment, n) != 0))
+		if (UNLIKELY(::posix_memalign(&out, alignment, n) != 0))
 			return nullptr;
 		else if (LIKELY(usable))
 			Memory::memcpy(out, original, PlatformMath::min(n, usable));
@@ -44,7 +44,7 @@ void * MallocAnsi::realloc(void * original, uintP n, uint32 alignment)
 	else if (!original)
 	{
 		// Mallocate
-		if (UNLIKEY(::posix_memalign(&out, alignment, n) != 0)) return nullptr;
+		if (UNLIKELY(::posix_memalign(&out, alignment, n) != 0)) return nullptr;
 	}
 	else
 	{
