@@ -1,13 +1,14 @@
 #ifndef SGL_EVENT_BUS_H
 #define SGL_EVENT_BUS_H
 
-#include "coremin.h"
 #include "event.h"
 
 /// Forward declarations
 /// @{
 class System;
 /// @}
+
+#define EVENT_BUS_MAX_QUEUE_LENGTH 64	// Maximum number of pending events
 
 /**
  * @class EventBus core/event_bus.h
@@ -24,26 +25,40 @@ protected:
 
 public:
 	/**
+	 * @brief Register a new client (system)
+	 * 
+	 * @param [in] client client to be registered
+	 */
+	FORCE_INLINE void registerClient(System * client);
+
+	/**
 	 * @brief Dispatch a message to other subsytems
 	 * 
 	 * @param [in] e dispatched event
 	 * @{
 	 */
-	void FORCE_INLINE notify(Event * e);
+	FORCE_INLINE void notify(Event * e);
 
 	/// @details Forces the message to be delivered right away
 	void notifyImmediate(Event * e);
-	/** @} */
+	/// @}
 
 	/// @brief Flush event queue and dispatch events
 	void flush();
 };
+
+void EventBus::registerClient(System * client)
+{
+	// Add to client array
+	clients.push_back(client);
+}
 
 void EventBus::notify(Event * e)
 {
 	// Note that the event is not dispatched in place
 	// All events are queued and dispatched at a certain point
 	eventQ.push(e);
+	if (UNLIKELY(eventQ.getNumClients() >= EVENT_BUS_MAX_QUEUE_LENGTH)) flush();
 }
 
 #endif

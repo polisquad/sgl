@@ -3,6 +3,7 @@
 
 #include "core_types.h"
 #include "hal/platform_stdlib.h"
+#include "templates/is_integral.h"
 
 /**
  * @struct GenericPlatformMath generic/generic_platform_math.h
@@ -65,6 +66,54 @@ struct GenericPlatformMath
 	static CONSTEXPR FORCE_INLINE T min(const T a, const T b)
 	{
 		return a < b ? a : b;
+	}
+	/** @} */
+
+	/**
+	 * @brief Align up
+	 * 
+	 * @param [in]	n			number to align
+	 * @param [in]	alignment	alignment to force
+	 * 
+	 * @return aligned result
+	 */
+	template<typename T>
+	static CONSTEXPR FORCE_INLINE T alignUp(T n, T alignment)
+	{
+		// T must be an integer type
+		static_assert(IsIntegralV(T), "Cannot align non-integral type");
+
+		// Align up
+		const T a = alignment - 1;
+		return n & a ? (n | a) + 1 : n;
+	}
+
+	/**
+	 * @brief Get smallest power of two greater than n
+	 * 
+	 * @param n lower bound
+	 * 
+	 * @return next p2
+	 * @{
+	 */
+	static CONSTEXPR FORCE_INLINE uint64 getNextPowerOf2(uint64 n)
+	{
+		// Case where n is already 2^x
+		if (!(n & (n - 1))) return n;
+
+		uint32 out = 1;
+		while (n) n >>= 1, out <<= 1;
+		return out;
+	}
+
+	static CONSTEXPR FORCE_INLINE uint8 getNextPowerOf2Index(uint64 n)
+	{
+		// Case where n is already 2^x
+		if (!(n & (n - 1))) n >>= 1;
+
+		uint32 out = 0;
+		while (n) n >>= 1, out += 1;
+		return out;
 	}
 	/** @} */
 };

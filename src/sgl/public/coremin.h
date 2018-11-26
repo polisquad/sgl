@@ -18,6 +18,10 @@
 /////////////////////////////////////////////////
 
 #include "hal/platform_stdlib.h"
+#include "hal/platform_memory.h"
+#include "templates/is_integral.h"
+#include "templates/is_pointer.h"
+#include "templates/enable_if.h"
 #include "templates/singleton.h"
 #include "templates/unique_ptr.h"
 #include "templates/shared_ptr.h"

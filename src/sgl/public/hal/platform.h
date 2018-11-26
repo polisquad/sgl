@@ -52,8 +52,8 @@
 #ifndef LIKELY
 	#define LIKELY(condition) (condition)
 #endif
-#ifndef UNLIKEY
-	#define UNLIKEY(condition) (condition)
+#ifndef UNLIKELY
+	#define UNLIKELY(condition) (condition)
 #endif
 
 /// Method modifiers
@@ -76,10 +76,8 @@
 
 /// Expose global plaftorm type definitions
 
-/**
- * @brief Integer types
- * @{
- */
+/// @brief Integer types
+/// @{
 typedef PlatformTypes::byte		byte;
 typedef PlatformTypes::int8		int8;
 typedef PlatformTypes::int16	int16;
@@ -91,15 +89,22 @@ typedef PlatformTypes::uint8	uint8;
 typedef PlatformTypes::uint16	uint16;
 typedef PlatformTypes::uint32	uint32;
 typedef PlatformTypes::uint64	uint64;
-/** @} */
+/// @}
 
-/**
- * @brief Floating-point types
- * @{
- */
+/// @brief Floating-point types
+/// @{
 typedef PlatformTypes::float32	float32;
 typedef PlatformTypes::float64	float64;
 typedef PlatformTypes::float128	float128;
-/** @} */
+/// @}
+
+/// @brief Pointer types
+/// @{
+typedef PlatformTypes::intP		intP;
+typedef PlatformTypes::uintP	uintP;
+
+typedef PlatformTypes::ssizet	ssizet;
+typedef PlatformTypes::sizet	sizet;
+/// @}
 
 #endif
