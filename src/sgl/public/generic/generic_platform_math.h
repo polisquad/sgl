@@ -88,6 +88,9 @@ struct GenericPlatformMath
 
 	static CONSTEXPR FORCE_INLINE uint8 getNextPowerOf2Index(uint64 n)
 	{
+		// Case where n is already 2^x
+		if (!(n & (n - 1))) n >>= 1;
+
 		uint32 out = 0;
 		while (n) n >>= 1, out += 1;
 		return out;

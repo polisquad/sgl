@@ -4,10 +4,10 @@
 #include "platform_memory.h"
 #include "platform_math.h"
 
-#define BINNED_POOL_SIZE 4096 * 1024		// Fixed pool size, 4 MB
-#define BINNED_BLOCK_MIN_SIZE 64			// Min block size (block size for first bucket), 64 B
+#define BINNED_POOL_SIZE 8 * 1024 * 1024	// Fixed pool size, 4 MB
+#define BINNED_BLOCK_MIN_SIZE 32			// Min block size (block size for first bucket), 32 B
 #define BINNED_BLOCK_MAX_SIZE 1024 * 1024	// Max block size (block size for last bucket), 1 MB
-#define BINNED_NUM_BUCKETS 15				// Should change according to min and max bucket size
+#define BINNED_NUM_BUCKETS 16				// Should change according to min and max bucket size
 #define BINNED_POOL_ALIGNMENT 0x1000		// 4 KB, size of a page
 
 /**
@@ -33,9 +33,15 @@ protected:
 	/// @brief Buckets tails
 	Bucket bucketsTails[BINNED_NUM_BUCKETS];
 
+	/// @brief Last allocated memory pool
+	MemoryPool * lastUsed;
+
 public:
 	/// @brief Default-constructor
 	MallocBinned();
+
+	/// @brief Destructor
+	~MallocBinned();
 
 	/// @group MallocInterface
 	/// @{
@@ -53,10 +59,20 @@ public:
 	/// @}
 
 protected:
+	/**
+	 * @brief Create a new pool
+	 * 
+	 * @param [in]	i	bucket index
+	 */
+	BucketPool * createBucketPool(uint8 i);
+
 	/// @brief Get associated bucket index
 	FORCE_INLINE uint8 getBucketIndexFromSize(sizet n)
 	{
-		return PlatformMath::getNextPowerOf2Index(n / BINNED_BLOCK_MIN_SIZE);
+		if (n <= BINNED_BLOCK_MIN_SIZE) return 0;
+
+		const uint8 minIndex = PlatformMath::getNextPowerOf2Index(BINNED_BLOCK_MIN_SIZE);
+		return PlatformMath::getNextPowerOf2Index(n) - minIndex;
 	}
 };
 
