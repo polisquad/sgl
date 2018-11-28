@@ -8,19 +8,12 @@
  */
 class System
 {
-public:
-	/// @todo delete
-	static uint64 counter;
-
 protected:
 	/// @brief System descriptive name
 	/** @todo I intend to make this some sort of string */
 	uint64 name;
 
 public:
-	/// @brief Default-constructor
-	FORCE_INLINE System() : name(++counter) {}
-
 	/**
 	 * @brief Handle incoming event
 	 * 
@@ -29,7 +22,7 @@ public:
 	virtual void handle(class Event * e) = 0;
 
 	/// @brief Get system descriptive name
-	FORCE_INLINE uint64 getName() const { return counter; }
+	FORCE_INLINE uint64 getName() const { return name; }
 };
 
 #endif
