@@ -90,6 +90,9 @@ void * MallocBinned::malloc(uintP n, uint32 alignment)
 
 void * MallocBinned::realloc(void * original, uintP n, uint32 alignment)
 {
+	// If no original block, just malloc it
+	if (UNLIKELY(original == nullptr)) return malloc(alignment);
+
 	// Get bucket index
 	const uint8 bucketIdx = getBucketIndexFromSize(n);
 	
@@ -169,6 +172,8 @@ void * MallocBinned::realloc(void * original, uintP n, uint32 alignment)
 
 void MallocBinned::free(void * original)
 {
+	ASSERT(original != nullptr, "Cannot free nullptr");
+
 	// Check last used pool
 	if (UNLIKELY(lastUsed && lastUsed->hasBlock(original)))
 	{

@@ -74,6 +74,12 @@
 	#define GCC_ALIGN(n)
 #endif
 
+/// Miscs
+
+#ifndef ASSERT
+	#define ASSERT(cond, text) assert(cond && text)
+#endif
+
 /// Expose global plaftorm type definitions
 
 /// @brief Integer types

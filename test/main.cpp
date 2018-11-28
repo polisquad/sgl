@@ -1,4 +1,7 @@
-#include <gtest/gtest.h>
+#include "public/test_containers.h"
+
+/// @brief Global allocator
+Malloc * gMalloc = nullptr;
 
 /**
  * @brief Run all unit tests
@@ -7,6 +10,12 @@
  */
 int main(int argc, char ** argv)
 {
+	// Context initialization
+	Memory::createGMalloc();
+
+	// Containers initialization
+	initContainers();
+
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }

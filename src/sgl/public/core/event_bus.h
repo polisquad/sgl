@@ -50,7 +50,7 @@ public:
 void EventBus::registerClient(System * client)
 {
 	// Add to client array
-	clients.push_back(client);
+	clients.push(client);
 }
 
 void EventBus::notify(Event * e)
