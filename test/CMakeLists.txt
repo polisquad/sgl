@@ -15,14 +15,14 @@ file(GLOB_RECURSE SOURCES private
 	*.cpp
 	*.cxx
 )
-add_executable(test
+add_executable(${PROJECT_NAME}_test
 
 	main.cpp
 	${SOURCES}
 )
 
 ## Link libraries
-target_link_libraries(test
+target_link_libraries(${PROJECT_NAME}_test
 	
 	sgl
 	${GTEST_BOTH_LIBRARIES}
@@ -30,7 +30,7 @@ target_link_libraries(test
 )
 
 ## Include dirs
-target_include_directories(test
+target_include_directories(${PROJECT_NAME}_test
 
 	PUBLIC
 		public
@@ -38,16 +38,16 @@ target_include_directories(test
 )
 
 ## Discover tests
-gtest_discover_tests(test
+gtest_discover_tests(${PROJECT_NAME}_test
 
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
 ## Setup post-build command to run tests
-add_custom_target(
+add_custom_target(test
 
-	TARGET				test
-	COMMAND				${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test
+	COMMAND				${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}_test
+	DEPENDS				${PROJECT_NAME}_test
 	WORKING_DIRECTORY	${PROJECT_SOURCE_DIR}
 	COMMENT				"Run all unit tests"
 )

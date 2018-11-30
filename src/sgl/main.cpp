@@ -20,7 +20,12 @@ namespace Test
 int main()
 {
 	Memory::createGMalloc();
-	return Test::array();
+
+	String name("sneppy");
+	String motto = name + " is the best";
+	printf("%s\n", *motto);
+
+	//return Test::array();
 }
 
 int32 Test::memory()

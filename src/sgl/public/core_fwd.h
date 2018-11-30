@@ -17,6 +17,7 @@ class Event;
 /// @{
 template<typename> class Array;
 template<typename> class Queue;
+class String;
 /// @}
 
 #endif

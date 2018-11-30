@@ -35,7 +35,7 @@ struct GenericPlatformTypes
 	typedef unsigned short		uint16;
 	typedef unsigned int		uint32;
 	typedef unsigned long long	uint64;
-	/** @} */
+	/// @}
 
 	/**
 	 * @brief Floating-point types
@@ -44,7 +44,7 @@ struct GenericPlatformTypes
 	typedef float		float32;
 	typedef double		float64;
 	typedef long double	float128;
-	/** @} */
+	/// @}
 
 	/**
 	 * @brief Pointer types
@@ -55,7 +55,19 @@ struct GenericPlatformTypes
 
 	typedef intP	ssizet;
 	typedef uintP	sizet;
-	/** @} */
+	/// @}
+
+	/**
+	 * @brief Character types
+	 * @{
+	 */
+	typedef char		ansichar;
+	typedef wchar_t		widechar;
+	typedef uint8		char8;
+	typedef uint16		char16;
+	typedef uint32		char32;
+	typedef widechar	tchar;
+	/// @}
 };
 
 #endif

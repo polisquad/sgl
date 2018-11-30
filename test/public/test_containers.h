@@ -3,6 +3,8 @@
 #include "hal/platform_memory.h"
 #include "containers/array.h"
 #include "containers/queue.h"
+#include "containers/string.h"
+#include "containers/containers.h"
 
 /**
  * @note All tests are run using the default allocator.
@@ -74,3 +76,11 @@ TEST(Containers, arr_stress_test)
 	array->filter([](uint64 elem) -> bool { return elem & 0x1; });
 	for (const auto elem : *array) EXPECT_TRUE(elem & 0x1);
 }
+
+/////////////////////////////////////////////////
+// String test                                 //
+/////////////////////////////////////////////////
+
+TEST(Containers, str_construct)		{ String str("sneppy"); EXPECT_TRUE(strncmp(*str, "sneppy", 6) == 0); }
+TEST(Containers, str_append_cstr)	{ String str("sneppy"); str += "rulez"; EXPECT_TRUE(strncmp(*str, "sneppyrulez", 11) == 0); }
+TEST(Containers, str_append_str)	{ String str("sneppy"); str += String("rulez"); EXPECT_TRUE(strncmp(*str, "sneppyrulez", 11) == 0); }

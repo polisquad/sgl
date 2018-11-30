@@ -139,7 +139,10 @@ public:
 	FORCE_INLINE bool isValid() const { return buffer != nullptr & size > 0; }
 
 	/// @brief Random access operator
+	/// @{
 	FORCE_INLINE T & operator[](uint64 i) { return buffer[i]; }
+	FORCE_INLINE const T & operator[](uint64 i) const { return buffer[i]; }
+	/// @}
 
 	/**
 	 * @brief Returns reference to i-th element or creates it
@@ -180,6 +183,12 @@ public:
 		return View(buffer + start, end - start);
 	}
 
+	/// @brief Returns const pointer to underlying data buffer
+	/// @{
+	FORCE_INLINE const T * operator*() const { return buffer; }
+	FORCE_INLINE const T * getData() const { return operator*(); }
+	/// @}
+
 	/// @brief Iterators
 	/// @{
 	FORCE_INLINE Iterator begin() { return Iterator(buffer); }
@@ -208,7 +217,7 @@ public:
 		return i;
 	}
 
-	/// @return 
+	/// @return self
 	FORCE_INLINE Array<T> & operator += (const T & elem)
 	{
 		push(elem);
@@ -226,6 +235,8 @@ public:
 	 * @{
 	 */
 	uint64 push(const T elems[], uint64 n);
+	uint64 pushUnsafe(const T elems[], uint64 n);
+	/// @}
 
 	/**
 	 * @brief Insert element in position
@@ -317,6 +328,19 @@ public:
 
 	/// @brief Detach existing buffer
 	FORCE_INLINE void detachBuffer() { buffer = nullptr; }
+
+	/**
+	 * @brief Reserve space
+	 * 
+	 * @param [in]	n	number of elements to reserve space for
+	 */
+	void reserve(sizet n)
+	{
+		// Resize to reserve if necessary
+		sizet _size = size;
+		while (_size < n) _size *= 2;
+		resize(_size);
+	}
 
 	/**
 	 * @brief Clone array
@@ -437,6 +461,24 @@ uint64 Array<T>::push(const T elems[], uint64 n)
 	// Construct objects
 	for (uint64 j = i, k = 0; k < n; ++j, ++k)
 		new (buffer + j) T(elems[k]);
+	
+	// Return modified index
+	return i;
+}
+
+template<typename T>
+uint64 Array<T>::pushUnsafe(const T elems[], uint64 n)
+{
+	const uint64 i = count;
+
+	// Resize if necessary
+	count += n;
+	sizet _size = size;
+	while (count > _size) _size *= 2;
+	resize(_size);
+
+	// Copy memory
+	PlatformMemory::memcpy(buffer + i, elems, n * sizeof(T));
 	
 	// Return modified index
 	return i;
