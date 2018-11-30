@@ -109,7 +109,7 @@ public:
 		count(0)
 	{
 		// Allocate initial buffer
-		buffer = reinterpret_cast<T*>(malloc(size * sizeof(T)));
+		buffer = reinterpret_cast<T*>(allocator->malloc(size * sizeof(T)));
 	}
 
 	/**
@@ -153,12 +153,12 @@ public:
 	{
 		// Increment buffer size as much as necessary
 		sizet _size = size;
-		while (_size < i) _size *= 2;
+		const uint64 _count = PlatformMath::max(count, i + 1);
+		while (_size < _count) _size *= 2;
 		resize(_size);
 
 		// Update count
-		count = PlatformMath::max(count, i + 1);
-
+		count = _count;
 		return buffer[i];
 	}
 
@@ -506,16 +506,18 @@ uint64 Array<T>::insert(const T elems[], uint64 n, uint64 i)
 template<typename T>
 Array<T> & Array<T>::append(const Array<T> & arr)
 {
-	const uint64 i = count;
-	count += arr.count;
+	// Since it's possible to auto-append
+	// a single array, use a separate count
+	const uint64 _count = count + arr.count;
 
 	// Resize if necessary
 	sizet _size = size;
-	while (_size < count) _size *= 2;
+	while (_size < _count) _size *= 2;
 	resize(_size);
 
 	// Copy elements
-	PlatformMemory::memcpy(buffer + i, arr.buffer, arr.count * sizeof(T));
+	PlatformMemory::memcpy(buffer + count, arr.buffer, arr.count * sizeof(T));
+	count = _count;
 	return *this;
 }
 
