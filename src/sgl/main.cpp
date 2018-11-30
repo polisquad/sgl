@@ -23,8 +23,7 @@ namespace Test
 int main()
 {
 	Memory::createGMalloc();
-
-	return 0;
+	return Test::array();
 }
 
 int32 Test::memory()
