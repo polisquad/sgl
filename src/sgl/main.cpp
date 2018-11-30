@@ -1,7 +1,6 @@
 #include "core_types.h"
 #include "hal/platform_memory.h"
 #include "hal/malloc_binned.h"
-#include "hal/malloc_pooled.h"
 #include "hal/platform_math.h"
 #include "generic/memory_pool.h"
 #include "coremin.h"
@@ -21,11 +20,7 @@ namespace Test
 int main()
 {
 	Memory::createGMalloc();
-	
-	Array<uint64> arr;
-	for (uint64 i = 0; i < 1024; ++i) arr.insert(i);
-	for (auto elem : arr) printf("%d\n", elem);
-	printf("%llu\n", arr[0]);
+	return Test::array();
 }
 
 int32 Test::memory()

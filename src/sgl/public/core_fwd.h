@@ -7,8 +7,16 @@
 // Forward declarations                        //
 /////////////////////////////////////////////////
 
-// Misc
+/// Misc
+/// @{
 class Malloc;
 class Event;
+/// @}
+
+/// Containers
+/// @{
+template<typename> class Array;
+template<typename> class Queue;
+/// @}
 
 #endif

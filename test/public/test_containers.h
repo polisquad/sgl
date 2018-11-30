@@ -30,7 +30,7 @@ void initContainers()
 // Array tests                                 //
 /////////////////////////////////////////////////
 
-TEST(Containers, arr_push)			{ EXPECT_EQ(1, array->push(1)); }
+TEST(Containers, arr_push)			{ EXPECT_EQ(0, array->push(1)); }
 TEST(Containers, arr_random_access)	{ EXPECT_EQ(1, array->operator[](0)); }
 TEST(Containers, arr_insert)		{ array->insert(0, 0); EXPECT_EQ(0, array->operator[](0)); }
 TEST(Containers, arr_oob_access)	{ array->operator()(7) = 7; EXPECT_EQ(7, array->operator[](7)); }
@@ -69,4 +69,8 @@ TEST(Containers, arr_stress_test)
 	array->append(*array);
 	for (uint64 i = 0; i < 256; ++i) EXPECT_EQ(array->operator[](i), array->operator[](i + 1024));
 	EXPECT_EQ(2048, array->getCount());
+
+	// Remove filter
+	array->filter([](uint64 elem) -> bool { return elem & 0x1; });
+	for (const auto elem : *array) EXPECT_TRUE(elem & 0x1);
 }

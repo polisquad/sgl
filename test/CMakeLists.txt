@@ -44,11 +44,10 @@ gtest_discover_tests(test
 )
 
 ## Setup post-build command to run tests
-add_custom_command(
+add_custom_target(
 
 	TARGET				test
-	POST_BUILD
 	COMMAND				${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test
-	COMMENT				"Running all unit tests"
 	WORKING_DIRECTORY	${PROJECT_SOURCE_DIR}
+	COMMENT				"Run all unit tests"
 )
