@@ -25,6 +25,13 @@ int main()
 	String motto = name + " is the best";
 	printf("%s\n", *motto);
 
+	String path("${workspaceFolder}");
+	path /= "gui";
+	path /= "widget.blade";
+	printf("%s\n", *path);
+
+	printf("%d\n", String("sneppy").compare("lpraat"));
+
 	//return Test::array();
 }
 

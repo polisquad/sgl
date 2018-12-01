@@ -2,6 +2,7 @@
 #define SGL_STRING_H
 
 #include "containers/array.h"
+#include "hal/platform_string.h"
 
 /**
  * @class String containers/string.h
@@ -92,6 +93,70 @@ public:
 	FORCE_INLINE const Array<ansichar> & getArray() const { return data; }
 	/// @}
 
+	/// @brief Comparison operators
+	/// @{
+
+	/**
+	 * @return	zero if strings are equal,
+	 * 			greater than zero if first greater,
+	 * 			less than zero otherwise
+	 * @{
+	 */
+	FORCE_INLINE int32 compare(const ansichar * s, sizet n) const
+	{
+		return PlatformString::strncmp(c_str(), s, PlatformMath::max(getCount(), n));
+	}
+	FORCE_INLINE int32 compare(const ansichar s[]) const
+	{
+		return PlatformString::strcmp(c_str(), s);
+	}
+	FORCE_INLINE int32 compare(const String & s) const
+	{
+		return PlatformString::strncmp(c_str(), s.c_str(), PlatformMath::max(getCount(), s.getCount()));
+	}
+
+	/// @note Case insensitive
+	/// @{
+	FORCE_INLINE int32 comparei(const ansichar s[], sizet n) const
+	{
+		return PlatformString::strncmpi(c_str(), s, PlatformMath::max(getCount(), n));
+	}
+	FORCE_INLINE int32 comparei(const ansichar s[]) const
+	{
+		return PlatformString::strcmpi(c_str(), s);
+	}
+	FORCE_INLINE int32 comparei(const String & s) const
+	{
+		return PlatformString::strncmpi(c_str(), s.c_str(), PlatformMath::max(getCount(), s.getCount()));
+	}
+	/// @}
+	/// @}
+
+	FORCE_INLINE bool operator==(const String & s) const { return compare(s) == 0; }
+	FORCE_INLINE bool operator!=(const String & s) const { return compare(s) != 0; }
+	FORCE_INLINE bool operator<(const String & s) const { return compare(s) < 0; }
+	FORCE_INLINE bool operator>(const String & s) const { return compare(s) > 0; }
+	FORCE_INLINE bool operator<=(const String & s) const { return compare(s) <= 0; }
+	FORCE_INLINE bool operator>=(const String & s) const { return compare(s) >= 0; }
+
+	/// @}
+
+	/**
+	 * @brief Append a single character at the end
+	 * 
+	 * @param [in] c character
+	 * 
+	 * @return self
+	 * @{
+	 */
+	FORCE_INLINE String & operator+=(ansichar c)
+	{
+		data.push(c);
+		return *this;
+	}
+	FORCE_INLINE String & append(ansichar c) { return operator+=(c); }
+	/// @}
+
 	/**
 	 * @brief Add characters at the end of the string
 	 * 
@@ -145,7 +210,6 @@ public:
 	FORCE_INLINE String & append(const ansichar s[]) { return operator+=(s); }
 	/// @}
 
-public:
 	/**
 	 * @brief Concatenate two strings
 	 * @todo Overload for rvalue reference
@@ -162,6 +226,62 @@ public:
 		out += s;
 
 		return out;
+	}
+	
+	/**
+	 * @brief Append path component
+	 * 
+	 * @param [in] p path to append
+	 */
+	FORCE_INLINE String & operator/=(const String & s)
+	{
+		const ansichar PLATFORM_PATH_SEPARATOR = '/';
+
+		// Remove trailing path separator
+		rtrim(PLATFORM_PATH_SEPARATOR);
+
+		// L-trim path
+		uint64 count = 0;
+		while (s.data[count] == PLATFORM_PATH_SEPARATOR) ++count;
+
+		// Append
+		append(PLATFORM_PATH_SEPARATOR);
+		return append(*s + count, s.getCount() - count);
+	}
+
+	/// @brief Remove leading characters
+	FORCE_INLINE String & ltrim(ansichar c = ' ')
+	{
+		uint64 count = 0;
+		while (data[count] == c) ++count;
+		data.removeAt(0, count);
+
+		return *this;
+	}
+
+	/// @brief Remove trailing characters
+	FORCE_INLINE String & rtrim(ansichar c = ' ')
+	{
+		uint64 count = data.getCount() - 1;
+		while (data[count] == c) --count;
+		data.shrinkTo(count);
+
+		return *this;
+	}
+
+	/**
+	 * @brief Remove leading and trailing occurences of character
+	 * 
+	 * @param [in] c character
+	 * 
+	 * @return self
+	 */
+	FORCE_INLINE String & trim(ansichar c = ' ')
+	{
+		// Remove leading
+		ltrim(c);
+		// Remove trailing
+		return rtrim(c);
 	}
 };
 

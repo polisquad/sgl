@@ -208,7 +208,7 @@ public:
 	FORCE_INLINE uint64 push(const T & elem)
 	{
 		const uint64 i = count;
-		if (size < ++count) resize(size * 2);
+		if (UNLIKELY(size < ++count)) resize(size * 2);
 
 		// Construct element
 		new (buffer + i) T(elem);
@@ -299,6 +299,26 @@ public:
 	 * @return count of removed elements
 	 */
 	uint64 removeAt(uint64 i, uint64 n = 1);
+
+	/**
+	 * @brief same as @ref removeAt(i, MAX_INT)
+	 * 
+	 * @param [in] i new last element
+	 * 
+	 * @return count of removed elements
+	 */
+	FORCE_INLINE uint64 shrinkTo(uint64 i)
+	{
+		// Just udpate count
+		if (LIKELY(i < count))
+		{
+			const uint64 removed = count - i;
+			count = i + 1;
+			return removed;
+		}
+		
+		return 0;
+	}
 	
 	/**
 	 * @brief Remove elements using a filter
@@ -434,7 +454,7 @@ protected:
 	FORCE_INLINE bool resize(sizet n)
 	{
 		// Resize only if requested size is bigger
-		if (n > size)
+		if (LIKELY(n > size))
 		{
 			buffer = reinterpret_cast<T*>(allocator->realloc(buffer, n * sizeof(T)));
 			assert(buffer);
@@ -490,7 +510,7 @@ uint64 Array<T>::insert(const T & elem, uint64 i)
 	if (i < count)
 	{
 		// Resize if necessary
-		if (++count > size) resize(size * 2);
+		if (LIKELY(size < ++count)) resize(size * 2);
 		
 		// Move all trailing elements
 		memmove(buffer + i + 1, buffer + i, (count - i) * sizeof(T));
@@ -515,7 +535,7 @@ uint64 Array<T>::insert(const T & elem, uint64 i)
 template<typename T>
 uint64 Array<T>::insert(const T elems[], uint64 n, uint64 i)
 {
-	if (i < count)
+	if (LIKELY(i < count))
 	{
 		count += n;
 
@@ -566,7 +586,7 @@ Array<T> & Array<T>::append(const Array<T> & arr)
 template<typename T>
 uint64 Array<T>::removeAt(uint64 i, uint64 n)
 {
-	if (i < count)
+	if (LIKELY(i < count))
 	{
 		// Calculate removed
 		const uint64 removed = n < count - i ? n : count - i;
