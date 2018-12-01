@@ -109,7 +109,7 @@ public:
 		count(0)
 	{
 		// Allocate initial buffer
-		buffer = reinterpret_cast<T*>(malloc(size * sizeof(T)));
+		buffer = reinterpret_cast<T*>(allocator->malloc(size * sizeof(T)));
 	}
 
 	/**
@@ -139,7 +139,10 @@ public:
 	FORCE_INLINE bool isValid() const { return buffer != nullptr & size > 0; }
 
 	/// @brief Random access operator
+	/// @{
 	FORCE_INLINE T & operator[](uint64 i) { return buffer[i]; }
+	FORCE_INLINE const T & operator[](uint64 i) const { return buffer[i]; }
+	/// @}
 
 	/**
 	 * @brief Returns reference to i-th element or creates it
@@ -153,12 +156,12 @@ public:
 	{
 		// Increment buffer size as much as necessary
 		sizet _size = size;
-		while (_size < i) _size *= 2;
+		const uint64 _count = PlatformMath::max(count, i + 1);
+		while (_size < _count) _size *= 2;
 		resize(_size);
 
 		// Update count
-		count = PlatformMath::max(count, i + 1);
-
+		count = _count;
 		return buffer[i];
 	}
 
@@ -180,6 +183,12 @@ public:
 		return View(buffer + start, end - start);
 	}
 
+	/// @brief Returns const pointer to underlying data buffer
+	/// @{
+	FORCE_INLINE const T * operator*() const { return buffer; }
+	FORCE_INLINE const T * getData() const { return operator*(); }
+	/// @}
+
 	/// @brief Iterators
 	/// @{
 	FORCE_INLINE Iterator begin() { return Iterator(buffer); }
@@ -199,7 +208,7 @@ public:
 	FORCE_INLINE uint64 push(const T & elem)
 	{
 		const uint64 i = count;
-		if (size < ++count) resize(size * 2);
+		if (UNLIKELY(size < ++count)) resize(size * 2);
 
 		// Construct element
 		new (buffer + i) T(elem);
@@ -208,7 +217,7 @@ public:
 		return i;
 	}
 
-	/// @return 
+	/// @return self
 	FORCE_INLINE Array<T> & operator += (const T & elem)
 	{
 		push(elem);
@@ -226,6 +235,8 @@ public:
 	 * @{
 	 */
 	uint64 push(const T elems[], uint64 n);
+	uint64 pushUnsafe(const T elems[], uint64 n);
+	/// @}
 
 	/**
 	 * @brief Insert element in position
@@ -288,6 +299,26 @@ public:
 	 * @return count of removed elements
 	 */
 	uint64 removeAt(uint64 i, uint64 n = 1);
+
+	/**
+	 * @brief same as @ref removeAt(i, MAX_INT)
+	 * 
+	 * @param [in] i new last element
+	 * 
+	 * @return count of removed elements
+	 */
+	FORCE_INLINE uint64 shrinkTo(uint64 i)
+	{
+		// Just udpate count
+		if (LIKELY(i < count))
+		{
+			const uint64 removed = count - i;
+			count = i + 1;
+			return removed;
+		}
+		
+		return 0;
+	}
 	
 	/**
 	 * @brief Remove elements using a filter
@@ -317,6 +348,19 @@ public:
 
 	/// @brief Detach existing buffer
 	FORCE_INLINE void detachBuffer() { buffer = nullptr; }
+
+	/**
+	 * @brief Reserve space
+	 * 
+	 * @param [in]	n	number of elements to reserve space for
+	 */
+	void reserve(sizet n)
+	{
+		// Resize to reserve if necessary
+		sizet _size = size;
+		while (_size < n) _size *= 2;
+		resize(_size);
+	}
 
 	/**
 	 * @brief Clone array
@@ -410,7 +454,7 @@ protected:
 	FORCE_INLINE bool resize(sizet n)
 	{
 		// Resize only if requested size is bigger
-		if (n > size)
+		if (LIKELY(n > size))
 		{
 			buffer = reinterpret_cast<T*>(allocator->realloc(buffer, n * sizeof(T)));
 			assert(buffer);
@@ -443,12 +487,30 @@ uint64 Array<T>::push(const T elems[], uint64 n)
 }
 
 template<typename T>
+uint64 Array<T>::pushUnsafe(const T elems[], uint64 n)
+{
+	const uint64 i = count;
+
+	// Resize if necessary
+	count += n;
+	sizet _size = size;
+	while (count > _size) _size *= 2;
+	resize(_size);
+
+	// Copy memory
+	PlatformMemory::memcpy(buffer + i, elems, n * sizeof(T));
+	
+	// Return modified index
+	return i;
+}
+
+template<typename T>
 uint64 Array<T>::insert(const T & elem, uint64 i)
 {
 	if (i < count)
 	{
 		// Resize if necessary
-		if (++count > size) resize(size * 2);
+		if (LIKELY(size < ++count)) resize(size * 2);
 		
 		// Move all trailing elements
 		memmove(buffer + i + 1, buffer + i, (count - i) * sizeof(T));
@@ -473,7 +535,7 @@ uint64 Array<T>::insert(const T & elem, uint64 i)
 template<typename T>
 uint64 Array<T>::insert(const T elems[], uint64 n, uint64 i)
 {
-	if (i < count)
+	if (LIKELY(i < count))
 	{
 		count += n;
 
@@ -506,23 +568,25 @@ uint64 Array<T>::insert(const T elems[], uint64 n, uint64 i)
 template<typename T>
 Array<T> & Array<T>::append(const Array<T> & arr)
 {
-	const uint64 i = count;
-	count += arr.count;
+	// Since it's possible to auto-append
+	// a single array, use a separate count
+	const uint64 _count = count + arr.count;
 
 	// Resize if necessary
 	sizet _size = size;
-	while (_size < count) _size *= 2;
+	while (_size < _count) _size *= 2;
 	resize(_size);
 
 	// Copy elements
-	PlatformMemory::memcpy(buffer + i, arr.buffer, arr.count * sizeof(T));
+	PlatformMemory::memcpy(buffer + count, arr.buffer, arr.count * sizeof(T));
+	count = _count;
 	return *this;
 }
 
 template<typename T>
 uint64 Array<T>::removeAt(uint64 i, uint64 n)
 {
-	if (i < count)
+	if (LIKELY(i < count))
 	{
 		// Calculate removed
 		const uint64 removed = n < count - i ? n : count - i;

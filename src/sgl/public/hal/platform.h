@@ -113,4 +113,14 @@ typedef PlatformTypes::ssizet	ssizet;
 typedef PlatformTypes::sizet	sizet;
 /// @}
 
+/// @brief Character types
+/// @{
+typedef PlatformTypes::ansichar	ansichar;
+typedef PlatformTypes::widechar	widechar;
+typedef PlatformTypes::tchar	tchar;
+typedef PlatformTypes::char8	char8;
+typedef PlatformTypes::char16	char16;
+typedef PlatformTypes::char32	char32;
+/// @}
+
 #endif
