@@ -14,7 +14,25 @@
 #define GL_ENTRYPOINTS(expansion) \
 	expansion(PFNGLCLEARCOLORPROC, glClearColor) \
 	expansion(PFNGLCLEARPROC, glClear) \
+	expansion(PFNGLFLUSHPROC, glFlush) \
+	expansion(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays) \
+	expansion(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray) \
+	expansion(PFNGLENABLEPROC, glEnable) \
+	expansion(PFNGLDISABLEPROC, glDisable) \
+	expansion(PFNGLGENBUFFERSPROC, glGenBuffers) \
+	expansion(PFNGLBINDBUFFERPROC, glBindBuffer) \
+	expansion(PFNGLBUFFERDATAPROC, glBufferData) \
+	expansion(PFNGLBUFFERSUBDATAPROC, glBufferSubData) \
+	expansion(PFNGLNAMEDBUFFERDATAPROC, glNamedBufferData) \
+	expansion(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer) \
+	expansion(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray) \
+	expansion(PFNGLDRAWARRAYSPROC, glDrawArrays) \
+	expansion(PFNGLDRAWELEMENTSPROC, glDrawElements) \
+	expansion(PFNGLCOMPILESHADERPROC, glCompileShader) \
+	expansion(PFNGLATTACHSHADERPROC, glAttachShader) \
 	expansion(PFNGLCREATEPROGRAMPROC, glCreateProgram) \
+	expansion(PFNGLLINKPROGRAMPROC, glLinkProgram) \
+	expansion(PFNGLUSEPROGRAMPROC, glUseProgram) \
 	expansion(PFNGLBINDTEXTUREPROC, glBindTexture)
 
 #define GL_DECLARE_ENTRYPOINTS(type, func) extern type func;

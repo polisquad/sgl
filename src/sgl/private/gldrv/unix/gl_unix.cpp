@@ -1,4 +1,5 @@
 #include "gldrv/unix/gl_unix.h"
+#include "gldrv/gldrv.h"
 #include "app/unix/unix_app_misc.h"
 
 #include "SDL.h"
@@ -9,6 +10,26 @@ namespace GLFuncPointers
 	GL_ENTRYPOINTS(GL_DECLARE_ENTRYPOINTS)
 }
 #undef GL_DECLARE_ENTRYPOINTS
+
+
+/**
+ * @brief Platform specific OpenGL context
+ */
+struct OpenGLContext
+{
+	/// @brief Bound window
+	SDL_Window * window;
+
+	/// @brief Bound context
+	SDL_GLContext context;
+
+	/// @brief Viewport framebuffer ID
+	GLuint viewportFramebuffer;
+
+	/// @brief Requirement of OpenGL 3.2 core profile
+	GLuint vao;
+};
+
 
 // Only visible in this unit
 namespace
@@ -29,24 +50,6 @@ namespace
 		return SDL_GL_GetCurrentContext();
 	}
 
-	/**
-	 * @brief Platform specific OpenGL context
-	 */
-	struct OpenGLContext
-	{
-		/// @brief Bound window
-		SDL_Window * window;
-
-		/// @brief Bound context
-		SDL_GLContext context;
-
-		/// @brief Viewport framebuffer ID
-		GLuint viewportFramebuffer;
-
-		/// @brief Requirement of OpenGL 3.2 core profile
-		GLuint vao;
-	};
-
 	/// @brief Creates a dummy window, used for context initialization
 	FORCE_INLINE void createDummyGLWindow(OpenGLContext * outContext)
 	{
@@ -62,7 +65,7 @@ namespace
 		outContext->window	= dummyWindow;
 	}
 
-	void createOpenGLContext(OpenGLContext * outContext)
+	void createOpenGLContextCore(OpenGLContext * outContext)
 	{
 		// Don't lose current context
 		SDL_Window * currW	= SDL_GL_GetCurrentWindow();
@@ -78,6 +81,121 @@ namespace
 
 		contextMakeCurrent(currW, currC);
 	}
+}
+
+
+/**
+ * @class ScopeContext
+ * @brief A scope context automatically activate and deactivate
+ * a given context in its scope
+ */
+class ScopeContext
+{
+protected:
+	/// @brief Saved context
+	/// @{
+	SDL_Window * prevWindow;
+	SDL_GLContext prevContext;
+	bool bSameContext;
+	/// @}
+
+public:
+	FORCE_INLINE ScopeContext(OpenGLContext * context)
+	{
+		// Save current context for restoring it later
+		prevWindow = SDL_GL_GetCurrentWindow();
+		prevContext = SDL_GL_GetCurrentContext();
+		bSameContext = prevContext == context->context;
+
+		if (!bSameContext)
+		{
+			// Flush queue of previous context before
+			// switching context
+			if (prevContext != nullptr) glFlush();
+			contextMakeCurrent(context->window, context->context);
+		}
+	}
+
+	FORCE_INLINE ~ScopeContext()
+	{
+		// We need to restore the previous context
+		// if it is different from scoped
+		if (!bSameContext)
+		{
+			// Finish queue of scoped
+			glFlush();
+
+			if (prevContext != nullptr)
+				contextMakeCurrent(prevWindow, prevContext);
+			else
+				contextMakeCurrent(nullptr, nullptr);
+		}
+	}
+};
+
+
+/**
+ * @struct OpenGLDevice
+ * @brief Platform specific OpenGL device
+ */
+struct OpenGLDevice
+{
+	/// @brief Shared context
+	OpenGLContext sharedContext;
+
+	/// @brief Rendering context
+	OpenGLContext renderingContext;
+
+	/// @brief Default-constructor
+	OpenGLDevice()
+	{
+		// Shared context
+		createDummyGLWindow(&sharedContext);
+		createOpenGLContextCore(&sharedContext);
+
+		if (UNLIKELY(sharedContext.context == nullptr))
+		{
+			/// @todo Handle error
+			return;
+		}
+
+		{
+			ScopeContext scope(&sharedContext);
+
+			// Generate a vao
+			glGenVertexArrays(1, &sharedContext.vao);
+			glBindVertexArray(sharedContext.vao);
+
+			initGLContextWithDefaults();
+		}
+
+		// Rendering context
+		createDummyGLWindow(&renderingContext);
+		createOpenGLContextCore(&renderingContext);
+
+		if (UNLIKELY(renderingContext.context == nullptr))
+		{
+			/// @todo Handle error
+			return;
+		}
+
+		{
+			ScopeContext scope(&renderingContext);
+			
+			// Generate a vao
+			glGenVertexArrays(1, &renderingContext.vao);
+			glBindVertexArray(renderingContext.vao);
+
+			initGLContextWithDefaults();
+		}
+	}
+};
+
+
+/// @brief Create a default platform device
+OpenGLDevice * createDefaultOpenGLDevice()
+{
+	return new OpenGLDevice;
 }
 
 /// @brief Initializes OpenGL using SDL
@@ -96,7 +214,7 @@ bool initOpenGL()
 	if (!bInitialized) // Init only once
 	{
 		// Load default OpenGL library
-		if (SDL_GL_LoadLibrary(nullptr) != 0)
+		if (UNLIKELY(SDL_GL_LoadLibrary(nullptr) != 0))
 		{
 			/// @todo Handle error
 			return false;
@@ -113,7 +231,7 @@ bool initOpenGL()
 		// Create a dummy context to load OpenGL
 		OpenGLContext dummyContext;
 		createDummyGLWindow(&dummyContext);
-		createOpenGLContext(&dummyContext);
+		createOpenGLContextCore(&dummyContext);
 
 		if (dummyContext.context != nullptr)
 		{

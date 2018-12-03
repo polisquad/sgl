@@ -102,45 +102,51 @@ public:
 	 * 			less than zero otherwise
 	 * @{
 	 */
-	FORCE_INLINE int32 compare(const ansichar * s, sizet n) const
-	{
-		return PlatformString::strncmp(c_str(), s, PlatformMath::max(getCount(), n));
-	}
-	FORCE_INLINE int32 compare(const ansichar s[]) const
-	{
-		return PlatformString::strcmp(c_str(), s);
-	}
-	FORCE_INLINE int32 compare(const String & s) const
-	{
-		return PlatformString::strncmp(c_str(), s.c_str(), PlatformMath::max(getCount(), s.getCount()));
-	}
+	FORCE_INLINE int32 compare(const ansichar * s, sizet n) const { return PlatformString::strcmp(c_str(), s); }
+	FORCE_INLINE int32 compare(const ansichar s[]) const { return PlatformString::strcmp(c_str(), s); }
+	FORCE_INLINE int32 compare(const String & s) const { return PlatformString::strcmp(c_str(), s.c_str()); }
+	FORCE_INLINE friend int32 compare(const ansichar s1[], const String & s2) { return PlatformString::strcmp(s1, *s2); }
 
 	/// @note Case insensitive
 	/// @{
-	FORCE_INLINE int32 comparei(const ansichar s[], sizet n) const
-	{
-		return PlatformString::strncmpi(c_str(), s, PlatformMath::max(getCount(), n));
-	}
-	FORCE_INLINE int32 comparei(const ansichar s[]) const
-	{
-		return PlatformString::strcmpi(c_str(), s);
-	}
-	FORCE_INLINE int32 comparei(const String & s) const
-	{
-		return PlatformString::strncmpi(c_str(), s.c_str(), PlatformMath::max(getCount(), s.getCount()));
-	}
+	FORCE_INLINE int32 comparei(const ansichar s[], sizet n) const { return PlatformString::strcmpi(c_str(), s); }
+	FORCE_INLINE int32 comparei(const ansichar s[]) const { return PlatformString::strcmpi(c_str(), s); }
+	FORCE_INLINE int32 comparei(const String & s) const { return PlatformString::strcmpi(c_str(), s.c_str()); }
+	FORCE_INLINE friend int32 comparei(const ansichar s1[], const String & s2) { return PlatformString::strcmpi(s1, *s2); }
 	/// @}
 	/// @}
 
-	FORCE_INLINE bool operator==(const String & s) const { return compare(s) == 0; }
-	FORCE_INLINE bool operator!=(const String & s) const { return compare(s) != 0; }
-	FORCE_INLINE bool operator<(const String & s) const { return compare(s) < 0; }
-	FORCE_INLINE bool operator>(const String & s) const { return compare(s) > 0; }
-	FORCE_INLINE bool operator<=(const String & s) const { return compare(s) <= 0; }
-	FORCE_INLINE bool operator>=(const String & s) const { return compare(s) >= 0; }
+	/// String-string comparison
+	/// @{
+	template<typename StringType> FORCE_INLINE bool operator==(const StringType & s) const { return compare(s) == 0; }
+	template<typename StringType> FORCE_INLINE bool operator!=(const StringType & s) const { return compare(s) != 0; }
+	template<typename StringType> FORCE_INLINE bool operator<(const StringType & s) const { return compare(s) < 0; }
+	template<typename StringType> FORCE_INLINE bool operator>(const StringType & s) const { return compare(s) > 0; }
+	template<typename StringType> FORCE_INLINE bool operator<=(const StringType & s) const { return compare(s) <= 0; }
+	template<typename StringType> FORCE_INLINE bool operator>=(const StringType & s) const { return compare(s) >= 0; }
+	/// @{
+
+	/// C-string-String comparison
+	/// @{
+	FORCE_INLINE friend bool operator==(const ansichar s1[], const String & s2) { return PlatformString::strcmp(s1, *s2) == 0; }
+	FORCE_INLINE friend bool operator!=(const ansichar s1[], const String & s2) { return PlatformString::strcmp(s1, *s2) != 0; }
+	FORCE_INLINE friend bool operator<(const ansichar s1[], const String & s2) { return PlatformString::strcmp(s1, *s2) < 0; }
+	FORCE_INLINE friend bool operator<=(const ansichar s1[], const String & s2) { return PlatformString::strcmp(s1, *s2) <= 0; }
+	FORCE_INLINE friend bool operator>(const ansichar s1[], const String & s2) { return PlatformString::strcmp(s1, *s2) > 0; }
+	FORCE_INLINE friend bool operator>=(const ansichar s1[], const String & s2) { return PlatformString::strcmp(s1, *s2) >= 0; }
+	/// @}
 
 	/// @}
 
+private:
+	/// @brief Null-terminate string buffer
+	FORCE_INLINE void teminateBuffer()
+	{
+		data.appendSpace(1);
+		data[data.getCount()] = '\0';
+	}
+	
+public:
 	/**
 	 * @brief Append a single character at the end
 	 * 
@@ -151,7 +157,15 @@ public:
 	 */
 	FORCE_INLINE String & operator+=(ansichar c)
 	{
+		// Make space for null character
+		data.appendSpace(2);
 		data.push(c);
+
+		// The terminating character is not really necessary
+		// but we leverage it in string comparison and in
+		// C-string conversion
+		data[data.getCount()] = '\0';
+
 		return *this;
 	}
 	FORCE_INLINE String & append(ansichar c) { return operator+=(c); }
@@ -167,7 +181,15 @@ public:
 	 */
 	FORCE_INLINE String & append(const ansichar * buffer, sizet size)
 	{
-		if (buffer && size) data.pushUnsafe(buffer, size);
+		if (buffer && size) 
+		{
+			data.appendSpace(size + 1);
+			data.pushUnsafe(buffer, size);
+
+			/// @see append(ansichar)
+			data[data.getCount()] = '\0';
+		}
+
 		return *this;
 	}
 
@@ -183,6 +205,11 @@ public:
 	{
 		// Append data, should be sufficient
 		data.append(s.data);
+
+		// @see append(ansichar)
+		data.appendSpace(1);
+		data[data.getCount()] = '\0';
+
 		return *this;
 	}
 	FORCE_INLINE String & append(const String & s) { return operator+=(s); }
@@ -202,7 +229,11 @@ public:
 		{
 			// Get length and push to array
 			const uint64 length = strlen(s);
+			data.appendSpace(length + 1);
 			data.pushUnsafe(s, length);
+
+			// @see append(ansichar)
+			data[data.getCount()] = '\0';
 		}
 
 		return *this;
@@ -227,6 +258,47 @@ public:
 
 		return out;
 	}
+
+	/// @brief Remove leading characters
+	FORCE_INLINE String & ltrim(ansichar c = ' ')
+	{
+		uint64 count = 0;
+		while (data[count] == c) ++count;
+		data.removeAt(0, count);
+
+		// Null terminate
+		data[getCount()] = '\0';
+
+		return *this;
+	}
+
+	/// @brief Remove trailing characters
+	FORCE_INLINE String & rtrim(ansichar c = ' ')
+	{
+		uint64 count = data.getCount() - 1;
+		while (data[count] == c) --count;
+		data.shrinkTo(count);
+
+		// Null termiante
+		data[getCount()] = '\0';
+
+		return *this;
+	}
+
+	/**
+	 * @brief Remove leading and trailing occurences of character
+	 * 
+	 * @param [in] c character
+	 * 
+	 * @return self
+	 */
+	FORCE_INLINE String & trim(ansichar c = ' ')
+	{
+		// Remove leading
+		ltrim(c);
+		// Remove trailing
+		return rtrim(c);
+	}
 	
 	/**
 	 * @brief Append path component
@@ -245,43 +317,8 @@ public:
 		while (s.data[count] == PLATFORM_PATH_SEPARATOR) ++count;
 
 		// Append
-		append(PLATFORM_PATH_SEPARATOR);
+		data.push(PLATFORM_PATH_SEPARATOR);
 		return append(*s + count, s.getCount() - count);
-	}
-
-	/// @brief Remove leading characters
-	FORCE_INLINE String & ltrim(ansichar c = ' ')
-	{
-		uint64 count = 0;
-		while (data[count] == c) ++count;
-		data.removeAt(0, count);
-
-		return *this;
-	}
-
-	/// @brief Remove trailing characters
-	FORCE_INLINE String & rtrim(ansichar c = ' ')
-	{
-		uint64 count = data.getCount() - 1;
-		while (data[count] == c) --count;
-		data.shrinkTo(count);
-
-		return *this;
-	}
-
-	/**
-	 * @brief Remove leading and trailing occurences of character
-	 * 
-	 * @param [in] c character
-	 * 
-	 * @return self
-	 */
-	FORCE_INLINE String & trim(ansichar c = ' ')
-	{
-		// Remove leading
-		ltrim(c);
-		// Remove trailing
-		return rtrim(c);
 	}
 };
 
