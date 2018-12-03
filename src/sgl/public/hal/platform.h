@@ -43,6 +43,9 @@
 #ifndef PLATFORM_HAS_TOUCH_MAIN_SCREEN
 	#define PLATFORM_HAS_TOUCH_MAIN_SCREEN 0
 #endif
+#ifndef PLATFORM_USE_PTHREADS
+	#define PLATFORM_USE_PTHREADS 1
+#endif
 
 /// Compiler attributes
 

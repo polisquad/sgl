@@ -7,6 +7,9 @@
 #include "core/event_bus.h"
 #include "core/logger.h"
 #include "coremin.h"
+#include "hal/runnable_thread.h"
+#include "hal/runnable_pthread.h"
+#include "hal/runnable.h"
 
 Malloc * gMalloc = nullptr;
 
@@ -20,20 +23,24 @@ namespace Test
 	/// @}
 }
 
+class PrimeWorker : public Runnable
+{
+public:
+	PrimeWorker() {}
+
+	virtual FORCE_INLINE uint32 run() override
+	{
+		printf("Hello, I'm a thread!");
+
+		return EXIT_SUCCESS;
+	}
+};
+
 int main()
 {
 	Memory::createGMalloc();
-
-	String name("sneppy");
-	String motto = name.rtrim() + " is the best";
-	printf("%s\n", *motto);
-
-	String path("${workspaceFolder}");
-	path /= "gui";
-	path /= String("widget.bladessss").rtrim('s');
-	printf("%s\n", *path);
-
-	printf("%d\n", String("sneppy").compare("lpraat"));
+	RunnableThread * thread = RunnableThread::create(new PrimeWorker, "MyThread", 0);
+	delete thread;
 
 	//return Test::array();
 }
