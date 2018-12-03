@@ -25,12 +25,12 @@ int main()
 	Memory::createGMalloc();
 
 	String name("sneppy");
-	String motto = name + " is the best";
+	String motto = name.rtrim() + " is the best";
 	printf("%s\n", *motto);
 
 	String path("${workspaceFolder}");
 	path /= "gui";
-	path /= "widget.blade";
+	path /= String("widget.bladessss").rtrim('s');
 	printf("%s\n", *path);
 
 	printf("%d\n", String("sneppy").compare("lpraat"));

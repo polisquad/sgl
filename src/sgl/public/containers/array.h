@@ -351,16 +351,27 @@ public:
 
 	/**
 	 * @brief Reserve space
-	 * 
-	 * @param [in]	n	number of elements to reserve space for
+	 * @note Count is not incremented
+	 * @{
 	 */
-	void reserve(sizet n)
+	/// @param [in] n size of the vector to reserve
+	FORCE_INLINE void reserve(sizet n)
 	{
 		// Resize to reserve if necessary
 		sizet _size = size;
 		while (_size < n) _size *= 2;
 		resize(_size);
 	}
+	
+	/// @param [in] n additional space to reserve
+	FORCE_INLINE void appendSpace(sizet n)
+	{
+		const uint64 _count = count + n;
+		sizet _size = size;
+		while (_size < _count) _size *= 2;
+		resize(_size);
+	}
+	/// @}
 
 	/**
 	 * @brief Clone array
