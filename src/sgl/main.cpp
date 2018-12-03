@@ -26,21 +26,42 @@ namespace Test
 class PrimeWorker : public Runnable
 {
 public:
-	PrimeWorker() {}
+	Array<uint32> * primes;
+	uint32 max;
+
+public:
+	PrimeWorker(Array<uint32> * _primes, uint32 _max = 100000) : primes(_primes), max(_max) {}
 
 	virtual FORCE_INLINE uint32 run() override
 	{
-		printf("Hello, I'm a thread!");
+		for (uint32 n = 1; n < max; ++n)
+		{
+			if (isPrime(n)) primes->push(n);
+		}
 
 		return EXIT_SUCCESS;
+	}
+
+private:
+	FORCE_INLINE bool isPrime(uint32 n)
+	{
+		for (uint32 i = 2; i <= n / 2; ++i)
+		{
+			if (n % i == 0) return true;
+		}
+
+		return false;
 	}
 };
 
 int main()
 {
 	Memory::createGMalloc();
-	RunnableThread * thread = RunnableThread::create(new PrimeWorker, "MyThread", 0);
+	Array<uint32> primes; primes.reserve(1000);
+	RunnableThread * thread = RunnableThread::create(new PrimeWorker(&primes, 80), "MyThread", 0);
 	delete thread;
+
+	for (const auto n : primes) printf("%u\n", n);
 
 	//return Test::array();
 }

@@ -1,8 +1,23 @@
-#include "hal/runnable_thread.h"
-#include "hal/runnable.h"
+#include "hal/threading.h"
 
 /// @todo Remove
 #include "hal/runnable_pthread.h"
+
+/////////////////////////////////////////////////
+// Globals                                     //
+/////////////////////////////////////////////////
+
+/// @brief Global audio thread ... but we don't have audio LOL
+RunnableThread * gAudioThread = nullptr;
+
+/// @brief Global rendering thread
+RunnableThread * gRenderingThread = nullptr;
+
+/// @brief Return true if current thread is rendering thread
+FORCE_INLINE bool isInRenderingThread()
+{
+	return gRenderingThread && PlatformTLS::getCurrentThreadId() == gRenderingThread->getThreadId();
+}
 
 /////////////////////////////////////////////////
 // RunnableThread implementation               //
