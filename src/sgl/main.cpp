@@ -7,6 +7,9 @@
 #include "core/event_bus.h"
 #include "core/logger.h"
 #include "coremin.h"
+#include "gldrv/unix/gl_unix.h"
+#include "app/unix/unix_app.h"
+#include "engine/engine_loop.h"
 
 Malloc * gMalloc = nullptr;
 
@@ -20,20 +23,26 @@ namespace Test
 	/// @}
 }
 
+#include "SDL.h"
+
 int main()
 {
 	Memory::createGMalloc();
+	static EngineLoop gEngineLoop;
+	gEngineLoop.preInit();
 
-	String name("sneppy");
-	String motto = name + " is the best";
-	printf("%s\n", *motto);
+	String windowTitle("RDS");
+	SDL_Window * window = SDL_CreateWindow(*windowTitle, 0, 0, 1280, 720, SDL_WINDOW_OPENGL);
+	SDL_GLContext context = SDL_GL_CreateContext(window);
+	SDL_GL_MakeCurrent(window, context);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	String path("${workspaceFolder}");
-	path /= "gui";
-	path /= "widget.blade";
-	printf("%s\n", *path);
-
-	printf("%d\n", String("sneppy").compare("lpraat"));
+	glClearColor(1.f, 0.2f, 0.2f, 1.f);
+	while (1)
+	{
+		glClear(GL_COLOR_BUFFER_BIT);
+		SDL_GL_SwapWindow(window);
+	}
 
 	//return Test::array();
 }

@@ -20,11 +20,33 @@ add_library(${PROJECT_NAME}
 	${HEADERS}
 )
 
+## Manage dependencies
+### OpenGL
+find_package(SDL2 REQUIRED)
+find_package(OpenGL REQUIRED)
+
+if(NOT SDL2_FOUND)
+	message(FATAL_ERROR "SDL2 not found! `sudo apt-get install libsdl2-dev`")
+endif(NOT SDL2_FOUND)
+
+if(NOT OpenGL_FOUND)
+	message(FATAL_ERROR "No GL library found!")
+endif(NOT OpenGL_FOUND)
+
+## Link third-party libraries
+target_link_libraries(${PROJECT_NAME}
+
+	${SDL2_LIBRARIES}
+	${OPENGL_LIBRARIES}
+)
+
 ## Include directories
 target_include_directories(${PROJECT_NAME}
 
 	PUBLIC
 		public
+		${SDL2_INCLUDE_DIRS}
+		${OPENGL_INCLUDE_DIR}
 )
 
 # Setup test executable -------------------------

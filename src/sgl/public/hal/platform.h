@@ -64,6 +64,9 @@
 #ifndef CONSTEXPR
 	#define CONSTEXPR constexpr
 #endif
+#ifndef VOID_FUNC
+	#define VOID_FUNC {}
+#endif
 
 /// Alignment
 

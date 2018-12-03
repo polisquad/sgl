@@ -3,6 +3,8 @@
 
 #include "core_types.h"
 
+#include <cassert>
+
 /**
  * @class Singletong templates/singleton.h
  * @brief Defines a singleton with methods to access it

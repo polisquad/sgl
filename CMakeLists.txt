@@ -23,6 +23,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAG} -mavx2 -fopenmp") # Not sure about OpenMP
 
 # Code setup ------------------------------------
+## Third party
+add_subdirectory(vendor)
+
 ## Source code
 add_subdirectory(src)
 
