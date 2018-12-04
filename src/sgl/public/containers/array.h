@@ -112,17 +112,6 @@ public:
 		buffer = reinterpret_cast<T*>(allocator->malloc(size * sizeof(T)));
 	}
 
-	/**
-	 * @brief Destructor
-	 * 
-	 * Deallocates any existing buffer
-	 */
-	FORCE_INLINE ~Array()
-	{
-		// Deallocate buffer
-		if (false) allocator->free(buffer);
-	}
-
 	/// @brief Get elements count
 	FORCE_INLINE uint64 getCount() const { return count; }
 

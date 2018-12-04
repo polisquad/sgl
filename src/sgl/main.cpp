@@ -17,22 +17,15 @@ namespace Test
 	FORCE_INLINE int32 memory();
 	FORCE_INLINE int32 array();
 	FORCE_INLINE int32 queue();
+	FORCE_INLINE int32 map();
 	/// @}
 }
 
 int main()
 {
 	Memory::createGMalloc();
-	
-	Map<uint64, String> map;
-	map.insert(map.makePair(13, "sneppy13"));
-	map.insert(map.makePair(17, "sneppy17"));
-	map.insert(map.makePair(12, "sneppy12"));
-	map.insert(map.makePair(11, "sneppy11"));
-	auto pair = map[13];
-	printf("Found pair (%llu, %s)\n", pair.getKey(), *pair.getValue());
 
-	//return Test::array();
+	return Test::map();
 }
 
 int32 Test::memory()
@@ -123,6 +116,27 @@ int32 Test::array()
 
 	printf("------------------------------\n");
 
+	aAnsi.reset();
+	aBinned.reset();
+	std::vector<uint64> stdvec; stdvec.reserve(2);
+
+	start = clock();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		aAnsi.push(i);
+	printf("AAnsi::push     | %ld ticks\n", clock() - start);
+
+	start = clock();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		aBinned.push(i);
+	printf("ABinned::push   | %ld ticks\n", clock() - start);
+
+	start = clock();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		stdvec.push_back(i);
+	printf("stdvec::push    | %ld ticks\n", clock() - start);
+
+	printf("------------------------------\n");
+
 	return 0;
 }
 
@@ -142,12 +156,56 @@ int32 Test::queue()
 	start = clock();
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		qAnsi.push(i);
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		qAnsi.pop();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		qAnsi.push(i);
 	printf("QAnsi           | %ld ticks\n", clock() - start);
 
 	start = clock();
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		qBinned.push(i);
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		qBinned.pop();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		qBinned.push(i);
 	printf("QBinned         | %ld ticks\n", clock() - start);
+
+	printf("------------------------------\n");
+
+	return 0;
+}
+
+#include <map>
+#include <string>
+
+int32 Test::map()
+{
+	auto start = clock();
+	Map<uint64, uint64> map(new MallocBinned);
+	std::map<uint64, uint64> stdmap;
+
+	printf("------------------------------\n");
+	
+	start = clock();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		map.insert(i, i / 2);
+	printf("TreeMap::insert | %ld ticks\n", clock() - start);
+
+	start = clock();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		stdmap.insert(std::make_pair(i, i / 2));
+	printf("std::map::insert| %ld ticks\n", clock() - start);
+	
+	start = clock();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		map[i] *= 2;
+	printf("TreeMap::[]     | %ld ticks\n", clock() - start);
+
+	start = clock();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		stdmap[i] *= 2;
+	printf("std::map::[]    | %ld ticks\n", clock() - start);
 
 	printf("------------------------------\n");
 

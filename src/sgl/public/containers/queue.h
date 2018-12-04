@@ -103,8 +103,6 @@ T Queue<T>::pop()
 		
 		return node->data;
 	}
-
-	return nullptr;
 }
 
 #endif

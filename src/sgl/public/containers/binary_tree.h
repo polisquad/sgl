@@ -23,7 +23,7 @@ protected:
 	/**
 	 * @brief A single node of a tree
 	 */
-	struct Node
+	struct GCC_ALIGN(0x10) Node
 	{
 		friend BinaryTree;
 
@@ -85,11 +85,58 @@ protected:
 		/// @}
 	};
 
+public:
 	/**
 	 * @class Iterator
 	 * @brief BinaryTree iterator
 	 */
 	class Iterator
+	{
+		friend BinaryTree;
+
+	private:
+		/// @brief Iterated tree
+		BinaryTree * tree;
+
+		/// @brief Used key
+		T key;
+
+		/// @brief Current node
+		Node * node;
+
+	public:
+
+		/// @brief Iterator methods
+		/// @{
+		FORCE_INLINE Iterator & operator++() { node = tree->find_internal(key, node); return *this; }
+		FORCE_INLINE bool operator==(const Iterator & iter) const { return node == iter.node; } // Checking node should be sufficient
+		FORCE_INLINE bool operator!=(const Iterator & iter) const { return node != iter.node; }
+		FORCE_INLINE T & operator*() const { return node->data; }
+		FORCE_INLINE T * operator->() const { return &node->data; }
+		/// @}
+
+	private:
+		/// @brief Private default-constructors
+		/// @{
+		FORCE_INLINE Iterator(BinaryTree * _tree, const T & _key, Node * start = nullptr) :
+			tree(_tree),
+			key(_key)
+		{
+			// First search
+			node = tree->find_internal(key, start);
+		}
+
+		/// Never searches, is null and that's it
+		FORCE_INLINE Iterator(BinaryTree * _tree, Node * start = nullptr) :
+			tree(_tree) {}
+		/// @}
+	};
+
+	/**
+	 * @class ConstIterator
+	 * @brief BinaryTree const iterator
+	 */
+	class ConstIterator
 	{
 		friend BinaryTree;
 
@@ -108,23 +155,27 @@ protected:
 		/// @brief Iterator methods
 		/// @{
 		FORCE_INLINE Iterator & operator++() { node = tree.find_internal(key, node); return *this; }
-		FORCE_INLINE bool & operator==(const Iterator & iter) const { node == iter.node; }
-		FORCE_INLINE bool & operator!=(const Iterator & iter) const { node != iter.node; }
-		FORCE_INLINE T & operator*() const { return node->data; }
-		FORCE_INLINE T & operator->() const { return node->data; }
+		FORCE_INLINE bool operator==(const Iterator & iter) const { return node == iter.node; }
+		FORCE_INLINE bool operator!=(const Iterator & iter) const { return node != iter.node; }
+		FORCE_INLINE const T & operator*() const { return node->data; }
+		FORCE_INLINE const T & operator->() const { return node->data; }
 		/// @}
 
 	private:
 		/// @brief Private default-constructors
 		/// @{
-		FORCE_INLINE Iterator(BinaryTree * _tree, const T & _key, Node * _node = nullptr) :
+		FORCE_INLINE ConstIterator(BinaryTree * _tree, const T & _key, Node * start = nullptr) :
 			tree(_tree),
-			key(_key),
-			node(_node) {}
+			key(_key)
+		{
+			// First search
+			node = tree->find_internal(key, start);
+		}
 
-		FORCE_INLINE Iterator(BinaryTree * _tree, Node * _node = nullptr) :
-			tree(_tree),
-			node(_node) {}
+		/// Never searches, is null and that's it
+		FORCE_INLINE ConstIterator(BinaryTree * _tree, Node * start = nullptr) :
+			tree(_tree) {}
+		/// @}
 	};
 
 protected:
@@ -134,36 +185,27 @@ protected:
 	/// @brief Allocator used for nodes allocation
 	Malloc * allocator;
 
+	/// @brief Total number of nodes
+	uint64 numNodes;
+
+	/// @brief Allocated size
+	sizet allocatedSize;
+
 public:
 	/// @brief Default constructor
 	FORCE_INLINE BinaryTree(Malloc * _allocator = gMalloc) :
 		root(nullptr),
-		allocator(_allocator) {}
-
-	/**
-	 * @brief Search for an element starting from the root
-	 * 
-	 * @param [in]	key	key used in the search
-	 * @param [out]	out	out element if found
-	 * 
-	 * @return @c true if found, @c false otherwise
-	 */
-	FORCE_INLINE bool search(const T & key, T & out) const
-	{
-		Node * node = find_internal(key, root);
-		if (node != nullptr)
-		{
-			out = node->data;
-			return true;
-		}
-
-		return false;
-	}
+		allocator(_allocator),
+		numNodes(0),
+		allocatedSize(0) {}
 
 	/// @brief Iterators
 	/// @{
-	FORCE_INLINE Iterator find(const T & key) { return Iterator(this, key, root); }
-	FORCE_INLINE Iterator end() { return Iterator(this, nullptr); }
+	FORCE_INLINE Iterator find(const T & key)	{ return Iterator(this, key, root); }
+	FORCE_INLINE Iterator end()					{ return Iterator(this, nullptr); }
+	
+	FORCE_INLINE ConstIterator find(const T & key) const	{ return ConstIterator(this, key, root); }
+	FORCE_INLINE ConstIterator end() const					{ return ConstIterator(this, nullptr); }
 	/// @}
 
 	/**
@@ -180,12 +222,14 @@ public:
 		Node * node = reinterpret_cast<Node*>(allocator->malloc(sizeof(Node)));
 		new (node) Node(elem); // Created red by default
 
+	#if SGL_BUILD_DEBUG
+		allocatedSize += sizeof(Node);
+		++numNodes;
+	#endif
+
 		if (UNLIKELY(root == nullptr))
-		{
 			// Set root
-			node->color = 0; // Root is always black
 			setRoot(node);
-		}
 		else
 			// Insert node
 			rb_insert(node);
@@ -196,12 +240,73 @@ public:
 	FORCE_INLINE BinaryTree<T> & add(const T & elem) { return operator+=(elem); }
 	/// @}
 
+	/**
+	 * @brief Like @ref operator+=() but returns inserted element
+	 * 
+	 * @return inserted element
+	 */
+	FORCE_INLINE T & insert(const T & elem)
+	{
+		Node * node = reinterpret_cast<Node*>(allocator->malloc(sizeof(Node)));
+		new (node) Node(elem); // Red by default
+	
+	#if SGL_BUILD_DEBUG
+		allocatedSize += sizeof(Node);
+		++numNodes;
+	#endif
+
+		if (UNLIKELY(root == nullptr))
+			// Set root
+			setRoot(node);
+		else
+			// Insert node
+			rb_insert(node);
+		
+		// Return inserted data
+		return node->data;
+	}
+
+	/**
+	 * @brief Same as @ref insert() but don't insert if already exists
+	 * 
+	 * @return inserted element
+	 */
+	FORCE_INLINE T & insertUnique(const T & elem)
+	{
+		Node * node = reinterpret_cast<Node*>(allocator->malloc(sizeof(Node), alignof(Node)));
+		new (node) Node(elem); // Red by default
+
+		if (UNLIKELY(root == nullptr))
+		{
+			// Set root
+			setRoot(node);
+			return node->data;
+		}
+		else
+		{
+			// Insert node
+			Node * inserted = rb_insertUnique(node);
+			if (inserted != node)
+				allocator->free(node); /// @todo Should we really call destructor?
+		#if SGL_BUILD_DEBUG
+			else
+			{
+				allocatedSize += sizeof(Node);
+				++numNodes;
+			}
+		#endif
+
+			return inserted->data;
+		}
+	}
+
 #if SGL_BUILD_DEBUG
 	void printDebug() const
 	{
 		printDebug_internal(root, 0);
 	}
 
+private:
 	void printDebug_internal(Node * it, uint32 depth = 0) const
 	{
 
@@ -231,18 +336,14 @@ protected:
 	 * 
 	 * @return ref to previous root
 	 */
-	FORCE_INLINE Node * setRoot(Node * _root)
+	FORCE_INLINE void setRoot(Node * _root)
 	{
 		ASSERT(_root != nullptr, "Root cannot be nullptr");
-		Node * oldRoot = root;
 
 		// Set new root with root properties
 		root = _root;
 		root->parent = nullptr;
 		root->color = BLACK;
-
-		// Return old root
-		return oldRoot;
 	}
 
 	/// @brief Find node given a key and a starting node
@@ -251,12 +352,36 @@ protected:
 	/// R&B insertion and rotation methods
 	/// @{
 
-	/// @brief Insert node
-	FORCE_INLINE void rb_insert(Node * _node)
+	/**
+	 * @brief Insert new node
+	 * 
+	 * Performs a binary insert and then repairs R&B tree
+	 * 
+	 * @param [in] _node node to insert
+	 * 
+	 * @return inserted node
+	 */
+	FORCE_INLINE Node * rb_insert(Node * _node)
 	{
 		// Insert binary and repair
 		binaryInsert(_node);
 		rb_repair(_node);
+
+		return _node;
+	}
+
+	/// @brief Insert unique node
+	FORCE_INLINE Node * rb_insertUnique(Node * _node)
+	{
+		Node * exists = binaryInsertUnique(_node);
+		if (exists == nullptr)
+		{
+			// If node was inserted, repair tree
+			rb_repair(_node);
+			return _node;
+		}
+
+		return exists;
 	}
 
 	/// @brief Applies red and black properties after binary insert
@@ -286,6 +411,10 @@ protected:
 	}
 
 	/// @brief Rotate right
+	/// 
+	/// This functions are inlined because called in
+	/// limited context (i.e. insert and delete, they
+	/// private btw)
 	FORCE_INLINE void rb_rotateRight(Node * pivot)
 	{
 		Node * super = pivot->parent;
@@ -311,6 +440,10 @@ protected:
 
 	/// @brief Insert node in a binary-tree fashion and set to red
 	void binaryInsert(Node * _node);
+
+	/// @brief Insert unique node in a binary-tree fashion
+	/// @return Existing node or @c nullptr if _node was inserted
+	Node * binaryInsertUnique(Node * _node);
 };
 
 template<typename T>
@@ -320,9 +453,9 @@ typename BinaryTree<T>::Node * BinaryTree<T>::find_internal(const T & key, Node 
 	while (it)
 	{
 		if (it->data < key)
-			it = it->left;
-		else if (it->data > key)
 			it = it->right;
+		else if (it->data > key)
+			it = it->left;
 		else
 			// Nice, we don't even need the equality operator
 			return it;
@@ -394,14 +527,24 @@ void BinaryTree<T>::rb_repair(Node * it)
 	}
 }
 
+/**
+ * Comparison uses the operator< and operator>
+ * define by the type T.
+ * 
+ * We don't require T to override operator==
+ * because we can assert equality by excluding
+ * the two former cases.
+ * 
+ * This comes handy when using key-value pairs,
+ * for we can reserve operator== for full equality
+ * (i.e. both key and value), as defined in @ref Pair.
+ */
 template<typename T>
 void BinaryTree<T>::binaryInsert(Node * _node)
 {
 	if (UNLIKELY(root == nullptr))
-	{
 		// Make root
 		setRoot(_node);
-	}
 	else
 	{
 		Node * it = root, * prev = nullptr;
@@ -419,19 +562,63 @@ void BinaryTree<T>::binaryInsert(Node * _node)
 				it = it->left;
 				bLeft = 1;
 			}
+			// Right
 			else
 			{
-				bLeft = 0;
 				it = it->right;
+				bLeft = 0;
 			}
 		}
 
-		_node->parent = prev;
+		// Insert node as new leaf
 		if (bLeft)
 			prev->setLeft(_node);
 		else
 			prev->setRight(_node);
 	}
+}
+
+template<typename T>
+typename BinaryTree<T>::Node * BinaryTree<T>::binaryInsertUnique(Node * _node)
+{
+	if (UNLIKELY(root == nullptr))
+		setRoot(_node);
+	else
+	{
+		Node * it = root, * prev = nullptr;
+		ubyte bLeft = 0;
+
+		// Walk tree
+		while (it)
+		{
+			// Set here since we update 'it' conditionally
+			prev = it;
+
+			// Left
+			if (_node->data < it->data)
+			{
+				it = it->left;
+				bLeft = 1;
+			}
+			// Right
+			else if (_node->data > it->data)
+			{
+				it = it->right;
+				bLeft = 0;
+			}
+			// Already exists
+			else
+				return it;
+		}
+
+		// Insert node as new leaf
+		if (bLeft)
+			prev->setLeft(_node);
+		else
+			prev->setRight(_node);
+	}
+
+	return nullptr;
 }
 
 #endif
