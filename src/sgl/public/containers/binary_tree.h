@@ -25,7 +25,9 @@ protected:
 	 */
 	struct Node
 	{
-	public:
+		friend BinaryTree;
+
+	private:
 		/// @brief Data of the node
 		T data;
 
@@ -41,7 +43,7 @@ protected:
 		/// 1: red, 0: black
 		uint8 color : 1;
 
-	public:
+	private:
 		/// @brief Default-constructor
 		FORCE_INLINE Node(const T & _data, Node * _parent = nullptr, Node * _left = nullptr, Node * _right = nullptr) :
 			data(_data),
@@ -83,6 +85,48 @@ protected:
 		/// @}
 	};
 
+	/**
+	 * @class Iterator
+	 * @brief BinaryTree iterator
+	 */
+	class Iterator
+	{
+		friend BinaryTree;
+
+	protected:
+		/// @brief Iterated tree
+		BinaryTree * tree;
+
+		/// @brief Used key
+		T key;
+
+		/// @brief Current node
+		Node * node;
+
+	public:
+
+		/// @brief Iterator methods
+		/// @{
+		FORCE_INLINE Iterator & operator++() { node = tree.find_internal(key, node); return *this; }
+		FORCE_INLINE bool & operator==(const Iterator & iter) const { node == iter.node; }
+		FORCE_INLINE bool & operator!=(const Iterator & iter) const { node != iter.node; }
+		FORCE_INLINE T & operator*() const { return node->data; }
+		FORCE_INLINE T & operator->() const { return node->data; }
+		/// @}
+
+	private:
+		/// @brief Private default-constructors
+		/// @{
+		FORCE_INLINE Iterator(BinaryTree * _tree, const T & _key, Node * _node = nullptr) :
+			tree(_tree),
+			key(_key),
+			node(_node) {}
+
+		FORCE_INLINE Iterator(BinaryTree * _tree, Node * _node = nullptr) :
+			tree(_tree),
+			node(_node) {}
+	};
+
 protected:
 	/// @brief Root node
 	Node * root;
@@ -95,6 +139,32 @@ public:
 	FORCE_INLINE BinaryTree(Malloc * _allocator = gMalloc) :
 		root(nullptr),
 		allocator(_allocator) {}
+
+	/**
+	 * @brief Search for an element starting from the root
+	 * 
+	 * @param [in]	key	key used in the search
+	 * @param [out]	out	out element if found
+	 * 
+	 * @return @c true if found, @c false otherwise
+	 */
+	FORCE_INLINE bool search(const T & key, T & out) const
+	{
+		Node * node = find_internal(key, root);
+		if (node != nullptr)
+		{
+			out = node->data;
+			return true;
+		}
+
+		return false;
+	}
+
+	/// @brief Iterators
+	/// @{
+	FORCE_INLINE Iterator find(const T & key) { return Iterator(this, key, root); }
+	FORCE_INLINE Iterator end() { return Iterator(this, nullptr); }
+	/// @}
 
 	/**
 	 * @brief Push an element in the tree
@@ -117,10 +187,9 @@ public:
 			setRoot(node);
 		}
 		else
-		{
 			// Insert node
 			rb_insert(node);
-		}
+		
 		return *this;
 	}
 	FORCE_INLINE BinaryTree<T> & push(const T & elem) { return operator+=(elem); }
@@ -176,6 +245,9 @@ protected:
 		return oldRoot;
 	}
 
+	/// @brief Find node given a key and a starting node
+	Node * find_internal(const T & key, Node * start = nullptr) const;
+
 	/// R&B insertion and rotation methods
 	/// @{
 
@@ -183,7 +255,7 @@ protected:
 	FORCE_INLINE void rb_insert(Node * _node)
 	{
 		// Insert binary and repair
-		binary_insert(_node);
+		binaryInsert(_node);
 		rb_repair(_node);
 	}
 
@@ -192,16 +264,72 @@ protected:
 	void rb_repair(Node * it);
 
 	/// @brief Rotate left
-	FORCE_INLINE void rb_rotateLeft(Node * parent);
+	FORCE_INLINE void rb_rotateLeft(Node * pivot)
+	{
+		Node * super = pivot->parent;
+		Node * it = pivot->right;
+		
+		if (super != nullptr)
+		{
+			if (super->left == pivot)
+				super->setLeft(it);
+			else
+				super->setRight(it);
+		}
+		else
+			// Is root, change root
+			setRoot(it);
+
+		// Finish rotation
+		pivot->setRight(it->left);
+		it->setLeft(pivot);
+	}
 
 	/// @brief Rotate right
-	FORCE_INLINE void rb_rotateRight(Node * parent);
+	FORCE_INLINE void rb_rotateRight(Node * pivot)
+	{
+		Node * super = pivot->parent;
+		Node * it = pivot->left;
+		
+		if (super != nullptr)
+		{
+			if (super->left == pivot)
+				super->setLeft(it);
+			else
+				super->setRight(it);
+		}
+		else
+			// Is root, change root
+			setRoot(it);
 
-	/// @brief Insert node in a binary-tree fashion and set to red
-	FORCE_INLINE void binary_insert(Node * _node);
+		// Finish rotation
+		pivot->setLeft(it->right);
+		it->setRight(pivot);
+	}
 
 	/// @}
+
+	/// @brief Insert node in a binary-tree fashion and set to red
+	void binaryInsert(Node * _node);
 };
+
+template<typename T>
+typename BinaryTree<T>::Node * BinaryTree<T>::find_internal(const T & key, Node * start) const
+{
+	Node * it = start ? start : root;
+	while (it)
+	{
+		if (it->data < key)
+			it = it->left;
+		else if (it->data > key)
+			it = it->right;
+		else
+			// Nice, we don't even need the equality operator
+			return it;
+	}
+
+	return nullptr;
+}
 
 template<typename T>
 void BinaryTree<T>::rb_repair(Node * it)
@@ -267,51 +395,7 @@ void BinaryTree<T>::rb_repair(Node * it)
 }
 
 template<typename T>
-void BinaryTree<T>::rb_rotateLeft(Node * pivot)
-{
-	Node * super = pivot->parent;
-	Node * it = pivot->right;
-	
-	if (super != nullptr)
-	{
-		if (super->left == pivot)
-			super->setLeft(it);
-		else
-			super->setRight(it);
-	}
-	else
-		// Is root, change root
-		setRoot(it);
-
-	// Finish rotation
-	pivot->setRight(it->left);
-	it->setLeft(pivot);
-}
-
-template<typename T>
-void BinaryTree<T>::rb_rotateRight(Node * pivot)
-{
-	Node * super = pivot->parent;
-	Node * it = pivot->left;
-	
-	if (super != nullptr)
-	{
-		if (super->left == pivot)
-			super->setLeft(it);
-		else
-			super->setRight(it);
-	}
-	else
-		// Is root, change root
-		setRoot(it);
-
-	// Finish rotation
-	pivot->setLeft(it->right);
-	it->setRight(pivot);
-}
-
-template<typename T>
-void BinaryTree<T>::binary_insert(Node * _node)
+void BinaryTree<T>::binaryInsert(Node * _node)
 {
 	if (UNLIKELY(root == nullptr))
 	{

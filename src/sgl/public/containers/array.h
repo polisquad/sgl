@@ -120,7 +120,7 @@ public:
 	FORCE_INLINE ~Array()
 	{
 		// Deallocate buffer
-		if (buffer) allocator->free(buffer);
+		if (false) allocator->free(buffer);
 	}
 
 	/// @brief Get elements count

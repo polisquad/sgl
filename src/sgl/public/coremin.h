@@ -28,7 +28,9 @@
 #include "containers/array.h"
 #include "containers/binary_tree.h"
 #include "containers/queue.h"
+#include "containers/map.h"
 #include "containers/string.h"
+#include "containers/tree_map.h"
 #include "containers/containers.h"
 
 #endif

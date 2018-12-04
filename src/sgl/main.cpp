@@ -24,9 +24,13 @@ int main()
 {
 	Memory::createGMalloc();
 	
-	BinaryTree<uint64> tree;
-	for (uint64 i = 0; i < 32; ++i) tree += PlatformMath::rand() % 64;
-	tree.printDebug();
+	Map<uint64, String> map;
+	map.insert(map.makePair(13, "sneppy13"));
+	map.insert(map.makePair(17, "sneppy17"));
+	map.insert(map.makePair(12, "sneppy12"));
+	map.insert(map.makePair(11, "sneppy11"));
+	auto pair = map[13];
+	printf("Found pair (%llu, %s)\n", pair.getKey(), *pair.getValue());
 
 	//return Test::array();
 }
