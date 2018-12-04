@@ -23,17 +23,10 @@ namespace Test
 int main()
 {
 	Memory::createGMalloc();
-
-	String name("sneppy");
-	String motto = name.rtrim() + " is the best";
-	printf("%s\n", *motto);
-
-	String path("${workspaceFolder}");
-	path /= "gui";
-	path /= String("widget.bladessss").rtrim('s');
-	printf("%s\n", *path);
-
-	printf("%d\n", String("sneppy").compare("lpraat"));
+	
+	BinaryTree<uint64> tree;
+	for (uint64 i = 0; i < 32; ++i) tree += PlatformMath::rand() % 64;
+	tree.printDebug();
 
 	//return Test::array();
 }
