@@ -112,6 +112,67 @@ public:
 		buffer = reinterpret_cast<T*>(allocator->malloc(size * sizeof(T)));
 	}
 
+	/// @brief Copy-constructor
+	/// @{
+	FORCE_INLINE Array(const Array<T> & arr) :
+		allocator(arr.allocator),
+		buffer(nullptr),
+		size(arr.size),
+		count(arr.count)
+	{
+		// Memcpy buffer
+		buffer = reinterpret_cast<T*>(allocator->malloc(size * sizeof(T)));
+		PlatformMemory::memcpy(buffer, arr.buffer, size * sizeof(T));
+	}
+	FORCE_INLINE Array(Array<T> && arr) :
+		allocator(arr.allocator),
+		buffer(arr.buffer), // Steal memory
+		size(arr.size),
+		count(arr.count)
+	{
+		// Take back memory from rvalue
+		arr.buffer = nullptr;
+	}
+	/// @}
+
+	/// @brief Destructor, destructs objects and deallocates buffer
+	FORCE_INLINE ~Array()
+	{
+		if (buffer)
+		{
+			// Destruct objects
+			destructObjects(0, count);
+			// Deallocate buffer
+			allocator->free(buffer);
+		}
+	}
+
+	/// @brief Assignment operator
+	/// @{
+	FORCE_INLINE Array<T> & operator=(const Array<T> & arr)
+	{
+		// Deep copy
+		allocator	= arr.allocator;
+		count		= arr.count;
+
+		// Memcpy buffer
+		reset(arr.size);
+		PlatformMemory::memcpy(buffer, arr.buffer, size * sizeof(T));
+	}
+	FORCE_INLINE Array<T> & operator=(Array<T> && arr)
+	{
+		allocator	= arr.allocator;
+		count		= arr.count;
+
+		// Take memory
+		size	= arr.size;
+		buffer	= arr.buffer;
+
+		// Take it back
+		arr.buffer = nullptr;
+	}
+	/// @}
+
 	/// @brief Get elements count
 	FORCE_INLINE uint64 getCount() const { return count; }
 
@@ -187,6 +248,16 @@ public:
 	FORCE_INLINE ConstIterator end() const { return ConstIterator(buffer + count); }
 	/// @}
 
+private:
+	/**
+	 * @brief Destruct object(s)
+	 * 
+	 * @param [in]	i	index of first object
+	 * @param [in]	n	count of objects
+	 */
+	void destructObjects(uint64 i, uint64 n = 1);
+
+public:
 	/**
 	 * @brief Push element to the back
 	 * 
@@ -266,17 +337,28 @@ public:
 	/// @}
 
 	/// @brief Remove all elements from the array
-	FORCE_INLINE void empty() { count = 0; }
-
-	/// @copybrief empty()
-	/// Additionally, free and recreate buffer with size = 2
-	FORCE_INLINE void reset()
+	FORCE_INLINE void empty() 
 	{
+		// Destruct first
+		destructObjects(0, count);			
 		count = 0;
+	}
+
+	/**
+	 * @brief Reset buffer to desired size
+	 * 
+	 * All data is effectively wiped out
+	 * 
+	 * @param [in] _size new size
+	 */
+	FORCE_INLINE void reset(sizet _size = 2)
+	{
+		// Empty out array
+		empty();
 		
 		// Recreate buffer
 		allocator->free(buffer);
-		buffer = reinterpret_cast<T*>(allocator->malloc((size = 2) * sizeof(T)));
+		buffer = reinterpret_cast<T*>(allocator->malloc((size = _size) * sizeof(T)));
 	}
 
 	/**
@@ -468,6 +550,14 @@ protected:
 };
 
 template<typename T>
+void Array<T>::destructObjects(uint64 i, uint64 n)
+{
+	// Call object destructors
+	for (uint64 _i = i; i < n; ++i, ++_i)
+		buffer[_i].~T();
+}
+
+template<typename T>
 uint64 Array<T>::push(const T elems[], uint64 n)
 {
 	const uint64 i = count;
@@ -588,8 +678,9 @@ uint64 Array<T>::removeAt(uint64 i, uint64 n)
 {
 	if (LIKELY(i < count))
 	{
-		// Calculate removed
+		// Destruct objects
 		const uint64 removed = n < count - i ? n : count - i;
+		destructObjects(i, removed);
 
 		// Move trailing elements
 		memmove(buffer + i, buffer + i + n, (count - (i + removed)) * sizeof(T));
@@ -612,8 +703,11 @@ uint64 Array<T>::filter(Filter filter)
 	for (uint64 i = 0; i < count; ++i)
 		if (filter(buffer[i])) buffer[j++] = buffer[i];
 	
-	// Update count
+	// Destruct removed objects
 	const uint64 removed = count - j;
+	destructObjects(j, removed);
+
+	// Update count
 	count = j;
 	return removed;
 }

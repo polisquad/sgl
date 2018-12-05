@@ -24,8 +24,7 @@ namespace Test
 int main()
 {
 	Memory::createGMalloc();
-
-	return Test::map();
+	return Test::array();
 }
 
 int32 Test::memory()
