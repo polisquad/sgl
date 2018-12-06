@@ -300,6 +300,40 @@ public:
 		}
 	}
 
+	/// @brief Like @ref insertUnique() but replaces the value of any already existing element
+	FORCE_INLINE T & emplace(const T & elem)
+	{
+		Node * node = reinterpret_cast<Node*>(allocator->malloc(sizeof(Node), alignof(Node)));
+		new (node) Node(elem); // Red by default
+
+		if (UNLIKELY(root == nullptr))
+		{
+			// Set root
+			setRoot(node);
+			return node->data;
+		}
+		else
+		{
+			// Try to insert unique node
+			Node * inserted = rb_insertUnique(node);
+			if (inserted != node)
+			{
+				// Replace data
+				inserted->data = node->data;
+				allocator->free(node);
+			}
+		#if SGL_BUILD_DEBUG
+			else
+			{
+				allocatedSize += sizeof(Node);
+				++numNodes;
+			}
+		#endif
+
+			return inserted->data;
+		}
+	}
+
 #if SGL_BUILD_DEBUG
 	void printDebug() const
 	{

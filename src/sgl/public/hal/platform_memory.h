@@ -11,7 +11,7 @@
 #elif PLATFORM_UNIX
 	#include "unix/unix_platform_memory.h"
 #else
-	#error Unkown platform
+	#error "Unkown platform"
 #endif
 
 #include "memory_base.h"

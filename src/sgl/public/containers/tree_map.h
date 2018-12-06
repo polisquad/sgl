@@ -67,7 +67,7 @@ public:
 	virtual FORCE_INLINE PairT insert(const PairT & pair) override
 	{
 		// Insert in tree
-		return tree.insert(pair);
+		return tree.insertUnique(pair);
 	}
 };
 

@@ -1,4 +1,5 @@
 #include "hal/threading.h"
+#include "hal/thread_manager.h"
 
 /// @todo Remove
 #include "hal/runnable_pthread.h"
@@ -29,7 +30,8 @@ RunnableThread::RunnableThread() :
 
 RunnableThread::~RunnableThread()
 {
-	/// @todo Remove from thread manager ... when there is one!
+	// Remove from thread manager
+	ThreadManager::getPtr()->remove(this->getThreadId());
 }
 
 RunnableThread * RunnableThread::create(Runnable * _runnable, const ansichar * _name, uint32 stackSize)
@@ -48,4 +50,25 @@ RunnableThread * RunnableThread::create(Runnable * _runnable, const ansichar * _
 	}
 
 	return thread;
+}
+
+//////////////////////////////////////////////////
+// ThreadManager implementation                 //
+//////////////////////////////////////////////////
+
+const String & ThreadManager::getThreadName(uint64 id)
+{
+	// Returned string if no thread found
+	static String emptyString;
+
+	const auto it = threads.find(id);
+	if (it != threads.end())
+		return (it->second)->getThreadName();
+	else
+		return emptyString;
+}
+
+void ThreadManager::remove(RunnableThread * thread)
+{
+	return remove(thread->getThreadId());
 }

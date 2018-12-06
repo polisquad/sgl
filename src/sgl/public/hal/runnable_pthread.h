@@ -4,6 +4,7 @@
 #include "core_types.h"
 #include "hal/platform_memory.h"
 #include "hal/runnable_thread.h"
+#include "hal/thread_manager.h"
 
 #if PLATFORM_USE_PTHREADS
 
@@ -75,8 +76,11 @@ protected:
 	{
 		assert(_self);
 
-		// Thread life-cycle
+		// Add to thread manager
 		RunnablePThread * self = reinterpret_cast<RunnablePThread*>(_self);
+		ThreadManager::getPtr()->add(self->getThreadId(), self);
+
+		// Thread life-cycle
 		self->preRun(), self->run(), self->postRun();
 
 		// Exit silently

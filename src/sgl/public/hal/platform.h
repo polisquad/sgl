@@ -23,7 +23,7 @@
 #elif PLATFORM_UNIX
 	#include "unix/unix_platform.h"
 #else
-	#error Unkown platform
+	#error "Unkown platform"
 #endif
 
 /// Finalize defines
