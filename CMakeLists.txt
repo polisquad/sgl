@@ -20,7 +20,7 @@ set(CMAKE_CXX_FLAGS_RELEASE			"-DSGL_BUILD_RELEASE=1 -Ofast")
 ## CXX preferences
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAG} -mavx2 -fopenmp") # Not sure about OpenMP
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAG} -mavx2 -fopenmp -pthread") # Not sure about OpenMP
 
 # Code setup ------------------------------------
 ## Third party

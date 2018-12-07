@@ -12,26 +12,15 @@
 template<class T>
 class Singleton
 {
-protected:
-	/**
-	 * @brief Global singleton instance
-	 */
-	static T * instance;
-
 public:
-	/**
-	 * @brief Default-constructor
-	 */
-	Singleton();
+	
+	/// @brief Default-constructor
+	FORCE_INLINE Singleton() = default;
 
-	/**
-	 * @brief Deleted copy constructor
-	 */
+	/// @brief Copy-constructor, removed
 	Singleton(const Singleton & s) = delete;
 
-	/**
-	 * @brief Deleted assignment operator
-	 */
+	/// @brief Assignment-operator, removed
 	Singleton & operator=(const Singleton & s) = delete;
 
 	/**
@@ -49,28 +38,18 @@ public:
 	static FORCE_INLINE T * getPtr();
 };
 
-template<typename T>
-T * Singleton<T>::instance = nullptr;
-
-template<class T>
-Singleton<T>::Singleton()
-{
-	// Assert single instance
-	assert(!instance);
-	instance = static_cast<T*>(this);
-}
-
 template<class T>
 T & Singleton<T>::get()
 {
-	assert(instance);
-	return *instance;
+	// Return global instance
+	static T instance;
+	return instance;
 }
 
 template<class T>
 T * Singleton<T>::getPtr()
 {
-	return instance;
+	return &get();
 }
 
 #endif

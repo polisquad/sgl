@@ -1,5 +1,6 @@
 #include "gldrv/unix/gl_unix.h"
 #include "gldrv/gldrv.h"
+#include "hal/critical_section.h"
 #include "app/unix/unix_app_misc.h"
 
 #include "SDL.h"
@@ -10,7 +11,6 @@ namespace GLFuncPointers
 	GL_ENTRYPOINTS(GL_DECLARE_ENTRYPOINTS)
 }
 #undef GL_DECLARE_ENTRYPOINTS
-
 
 /**
  * @brief Platform specific OpenGL context
@@ -29,7 +29,6 @@ struct OpenGLContext
 	/// @brief Requirement of OpenGL 3.2 core profile
 	GLuint vao;
 };
-
 
 // Only visible in this unit
 namespace
@@ -83,7 +82,6 @@ namespace
 	}
 }
 
-
 /**
  * @class ScopeContext
  * @brief A scope context automatically activate and deactivate
@@ -133,7 +131,6 @@ public:
 	}
 };
 
-
 /**
  * @struct OpenGLDevice
  * @brief Platform specific OpenGL device
@@ -146,10 +143,17 @@ struct OpenGLDevice
 	/// @brief Rendering context
 	OpenGLContext renderingContext;
 
+	/// @brief Guards against mulit-thread access
+	CriticalSection * accessControl;
+
 	/// @brief Default-constructor
 	OpenGLDevice()
 	{
+		// Init access control
+		accessControl = new CriticalSection;
+
 		// Shared context
+		assert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0) == 0);
 		createDummyGLWindow(&sharedContext);
 		createOpenGLContextCore(&sharedContext);
 
@@ -168,6 +172,7 @@ struct OpenGLDevice
 
 			initGLContextWithDefaults();
 		}
+		assert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1) == 0);
 
 		// Rendering context
 		createDummyGLWindow(&renderingContext);
@@ -189,8 +194,16 @@ struct OpenGLDevice
 			initGLContextWithDefaults();
 		}
 	}
-};
 
+	/// @brief Destructor
+	~OpenGLDevice()
+	{
+		// Detach current context
+		contextMakeCurrent(nullptr, nullptr);
+
+		delete accessControl;
+	}
+};
 
 /// @brief Create a default platform device
 OpenGLDevice * createDefaultOpenGLDevice()
@@ -259,3 +272,9 @@ bool initOpenGL()
 
 	return bOpenGLSupported;
 }
+
+/// @brief Transfers data to on-screen framebuffer (0)
+/* bool blitToViewport(OpenGLDevice * device)
+{
+	OpenGLContext * const context = ;
+} */
