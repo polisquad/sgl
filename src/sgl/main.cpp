@@ -3,13 +3,11 @@
 #include "hal/malloc_binned.h"
 #include "hal/platform_math.h"
 #include "generic/memory_pool.h"
-#include "core/engine.h"
-#include "core/event_bus.h"
-#include "core/logger.h"
 #include "coremin.h"
 #include "hal/runnable_thread.h"
 #include "hal/runnable_pthread.h"
 #include "hal/runnable.h"
+#include "hal/threading.h"
 
 // Just using it to measure threading performance
 #include <omp.h>
@@ -70,9 +68,9 @@ int main()
 {
 	Memory::createGMalloc();
 	Array<RunnableThread*> threads;
-	Array<uint32> primes;
-	const uint64 k = 1024 * 512;
-	const uint8 num_threads = 7;
+	Array<uint32> primes(2);
+	const uint64 k = 1024 * 128;
+	const uint8 num_threads = 17;
 
 	double start = omp_get_wtime();
 	for (uint32 i = 0; i < num_threads; ++i)
