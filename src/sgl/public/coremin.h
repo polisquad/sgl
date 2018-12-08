@@ -25,6 +25,8 @@
 #include "templates/singleton.h"
 #include "templates/unique_ptr.h"
 #include "templates/shared_ptr.h"
+#include "templates/signed.h"
+#include "templates/unsigned.h"
 #include "containers/array.h"
 #include "containers/binary_tree.h"
 #include "containers/queue.h"

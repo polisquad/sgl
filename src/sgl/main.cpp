@@ -6,6 +6,9 @@
 #include "coremin.h"
 #include "gldrv/unix/gl_unix.h"
 #include "engine/engine_loop.h"
+#include "hal/thread_safe_counter.h"
+#include "rhi/rhi_resources.h"
+#include "templates/ref_count.h"
 
 Malloc * gMalloc = nullptr;
 
@@ -27,49 +30,6 @@ int main()
 	Memory::createGMalloc();
 	static EngineLoop gEngineLoop;
 	gEngineLoop.preInit();
-
-	String windowTitle("Real Driving Simulator");
-	SDL_Window * window = SDL_CreateWindow(*windowTitle, 0, 0, 1280, 720, SDL_WINDOW_OPENGL);
-	SDL_GLContext context = SDL_GL_CreateContext(window);
-	SDL_GL_MakeCurrent(window, context);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-	static const float32 vertices[4][2] = {
-		{0.5f, 0.5f},
-		{0.5f, -0.5f},
-		{-0.5f, -0.5f},
-		{-0.5f, 0.5f}
-	};
-
-	static uint8 indices[4] = {0, 1, 2, 3};
-
-	uint32 vao, vbo, ebo;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &ebo);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, sizeof(float32), GL_FLOAT, GL_FALSE, 0, nullptr);
-	glEnableVertexAttribArray(0);
-
-	uint32 program = glCreateProgram();
-	glLinkProgram(program);
-	glUseProgram(program);
-
-	glClearColor(1.f, 0.4f, 0.2f, 1.f);
-	while (1)
-	{
-		glClear(GL_COLOR_BUFFER_BIT);
-		glDrawElements(GL_TRIANGLES, 4, GL_UNSIGNED_BYTE, nullptr);
-		SDL_GL_SwapWindow(window);
-	}
 
 	//return Test::array();
 }

@@ -7,7 +7,7 @@ OpenGLRHI::OpenGLRHI() :
 	initOpenGL();
 
 	// Create a platform device
-	platformDevice = createDefaultOpenGLDevice();
+	platformDevice = createDefaultGLDevice();
 
 	/// @todo Then I should init RHI globals
 	/// ... but I don't have RHI globals LOL

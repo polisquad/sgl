@@ -14,6 +14,8 @@
 	#error Unkown platform
 #endif
 
+#include "gl_resources.h"
+
 /**
  * @class OpenGLRHI gldrv/gldrv.h
  * @brief OpenGL specific RHI implementation
@@ -22,7 +24,7 @@ class OpenGLRHI : public RHI
 {
 protected:
 	/// @brief Platform specific device
-	struct OpenGLDevice * platformDevice;
+	struct GLDevice * platformDevice;
 
 public:
 	/// @brief Default-constructor
@@ -33,8 +35,8 @@ public:
 // OpenGL platform API                         //
 /////////////////////////////////////////////////
 
-struct OpenGLContext;
-struct OpenGLDevice;
+struct GLContext;
+struct GLDevice;
 
 /**
  * @brief Initializes the OpenGL context
@@ -48,7 +50,7 @@ bool initOpenGL();
  * 
  * @return pointer to created device
  */
-OpenGLDevice * createDefaultOpenGLDevice();
+GLDevice * createDefaultGLDevice();
 
 /////////////////////////////////////////////////
 

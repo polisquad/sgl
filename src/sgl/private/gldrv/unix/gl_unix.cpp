@@ -15,7 +15,7 @@ namespace GLFuncPointers
 /**
  * @brief Platform specific OpenGL context
  */
-struct OpenGLContext
+struct GLContext
 {
 	/// @brief Bound window
 	SDL_Window * window;
@@ -50,7 +50,7 @@ namespace
 	}
 
 	/// @brief Creates a dummy window, used for context initialization
-	FORCE_INLINE void createDummyGLWindow(OpenGLContext * outContext)
+	FORCE_INLINE void createDummyGLWindow(GLContext * outContext)
 	{
 		// Create a new dummy window
 		SDL_Window * dummyWindow = SDL_CreateWindow("dump", 0, 0, 0, 0, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
@@ -64,7 +64,7 @@ namespace
 		outContext->window	= dummyWindow;
 	}
 
-	void createOpenGLContextCore(OpenGLContext * outContext)
+	void createGLContextCore(GLContext * outContext)
 	{
 		// Don't lose current context
 		SDL_Window * currW	= SDL_GL_GetCurrentWindow();
@@ -98,7 +98,7 @@ protected:
 	/// @}
 
 public:
-	FORCE_INLINE ScopeContext(OpenGLContext * context)
+	FORCE_INLINE ScopeContext(GLContext * context)
 	{
 		// Save current context for restoring it later
 		prevWindow = SDL_GL_GetCurrentWindow();
@@ -132,22 +132,22 @@ public:
 };
 
 /**
- * @struct OpenGLDevice
+ * @struct GLDevice
  * @brief Platform specific OpenGL device
  */
-struct OpenGLDevice
+struct GLDevice
 {
 	/// @brief Shared context
-	OpenGLContext sharedContext;
+	GLContext sharedContext;
 
 	/// @brief Rendering context
-	OpenGLContext renderingContext;
+	GLContext renderingContext;
 
 	/// @brief Guards against mulit-thread access
 	CriticalSection * accessControl;
 
 	/// @brief Default-constructor
-	OpenGLDevice()
+	GLDevice()
 	{
 		// Init access control
 		accessControl = new CriticalSection;
@@ -155,7 +155,7 @@ struct OpenGLDevice
 		// Shared context
 		assert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0) == 0);
 		createDummyGLWindow(&sharedContext);
-		createOpenGLContextCore(&sharedContext);
+		createGLContextCore(&sharedContext);
 
 		if (UNLIKELY(sharedContext.context == nullptr))
 		{
@@ -176,7 +176,7 @@ struct OpenGLDevice
 
 		// Rendering context
 		createDummyGLWindow(&renderingContext);
-		createOpenGLContextCore(&renderingContext);
+		createGLContextCore(&renderingContext);
 
 		if (UNLIKELY(renderingContext.context == nullptr))
 		{
@@ -196,7 +196,7 @@ struct OpenGLDevice
 	}
 
 	/// @brief Destructor
-	~OpenGLDevice()
+	~GLDevice()
 	{
 		// Detach current context
 		contextMakeCurrent(nullptr, nullptr);
@@ -206,9 +206,119 @@ struct OpenGLDevice
 };
 
 /// @brief Create a default platform device
-OpenGLDevice * createDefaultOpenGLDevice()
+GLDevice * createDefaultGLDevice()
 {
-	return new OpenGLDevice;
+	return new GLDevice;
+}
+
+/// @todo I'm waiting to bring in math.h
+template<typename T>
+struct Vec2
+{
+	T x,y;
+
+	Vec2() = default;
+	Vec2(T _x, T _y) : x(_x), y(_y) {}
+};
+
+/// @brief Transfers data to on-screen framebuffer (0)
+bool blitToViewport(GLDevice * device, const GLViewport & viewport, const Vec2<uint32> & backbufferSize)
+{
+	GLContext * const context = viewport.getContext();
+
+	// Lock device usage
+	ScopeLock _(device->accessControl);
+
+	{
+		// Make active viewport context
+		ScopeContext _(context);
+
+		// Bind screen framebuffer to draw buffer
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glDrawBuffer(GL_BACK);
+
+		// Bind viewport buffer to read buffer
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, context->viewportFramebuffer);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+		glDisable(GL_FRAMEBUFFER_SRGB);
+
+		int width = 0, height = 0;
+		SDL_GL_GetDrawableSize(context->window, &width, &height);
+
+		// Draw filter and rectangle
+		GLenum filter;
+		GLint destX0, destY0, destX1, destY1;
+
+		// Nothing to draw
+		if (!width | !height) return false;
+
+		if (width == backbufferSize.x & height == backbufferSize.y)
+		{
+			// Size matches, use nearest filter
+			filter = GL_NEAREST;
+
+			// Flip vertically
+			destX0 = destY1 = 0;
+			destX1 = width, destY0 = height;
+		}
+		else
+		{
+			filter = GL_LINEAR;
+
+			const float32 targetAspectRatio = float32(backbufferSize.x) / float32(backbufferSize.y);
+			const float32 windowAspectRatio = float32(width) / float32(height);
+
+			if (targetAspectRatio > windowAspectRatio)
+			{
+				const float32 scaledW = height * targetAspectRatio;
+				const float32 scaledX = (float32(width) - scaledW) / 2.f;
+
+				destX0 = scaledX, destY1 = 0;
+				destX1 = scaledX + scaledW, destY1 = height;
+			}
+			else if (targetAspectRatio < windowAspectRatio)
+			{
+				/// @todo this is wrong
+				const float32 scaledH = width * targetAspectRatio;
+				const float32 scaledY = (float32(height) - scaledH) / 2.f;
+
+				destX0 = 0, destY1 = scaledY;
+				destX1 = width, destY1 = scaledY + scaledH;
+			}
+			else
+			{
+				// Flip vertically
+				destX0 = destY1 = 0;
+				destX1 = width, destY0 = height;
+			}
+		}
+
+		// Blit viewport framebuffer to screen
+		glBlitFramebuffer(0, 0, backbufferSize.x, backbufferSize.y, destX0, destY0, destX1, destY1, GL_COLOR_BUFFER_BIT, filter);
+
+		{
+			// Swap backbuffer
+			SDL_GL_SwapWindow(context->window);
+			glEnable(GL_FRAMEBUFFER_SRGB);
+		}
+	} // ScopeContext(context)
+
+	return true;
+}
+
+/// @brief Wrapper for glFinish
+FORCE_INLINE void flushIfNeeded() { glFinish(); }
+
+/// @brief Get current window backbuffer size
+Vec2<uint32> getBackbufferSize()
+{
+	auto window = SDL_GL_GetCurrentWindow();
+
+	int width = 0, height = 0;
+	if (window) SDL_GL_GetDrawableSize(window, &width, &height);
+
+	return Vec2<uint32>(width, height);
 }
 
 /// @brief Initializes OpenGL using SDL
@@ -242,9 +352,9 @@ bool initOpenGL()
 		if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE) != 0);
 
 		// Create a dummy context to load OpenGL
-		OpenGLContext dummyContext;
+		GLContext dummyContext;
 		createDummyGLWindow(&dummyContext);
-		createOpenGLContextCore(&dummyContext);
+		createGLContextCore(&dummyContext);
 
 		if (dummyContext.context != nullptr)
 		{
@@ -272,9 +382,3 @@ bool initOpenGL()
 
 	return bOpenGLSupported;
 }
-
-/// @brief Transfers data to on-screen framebuffer (0)
-/* bool blitToViewport(OpenGLDevice * device)
-{
-	OpenGLContext * const context = ;
-} */

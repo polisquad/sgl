@@ -17,6 +17,7 @@
 	expansion(PFNGLFLUSHPROC, glFlush) \
 	expansion(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays) \
 	expansion(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray) \
+	expansion(PFNGLBINDFRAMEBUFFERPROC, glBindFramebuffer) \
 	expansion(PFNGLENABLEPROC, glEnable) \
 	expansion(PFNGLDISABLEPROC, glDisable) \
 	expansion(PFNGLGENBUFFERSPROC, glGenBuffers) \
@@ -33,6 +34,10 @@
 	expansion(PFNGLCREATEPROGRAMPROC, glCreateProgram) \
 	expansion(PFNGLLINKPROGRAMPROC, glLinkProgram) \
 	expansion(PFNGLUSEPROGRAMPROC, glUseProgram) \
+	expansion(PFNGLREADBUFFERPROC, glReadBuffer) \
+	expansion(PFNGLDRAWBUFFERPROC, glDrawBuffer) \
+	expansion(PFNGLBLITFRAMEBUFFERPROC, glBlitFramebuffer) \
+	expansion(PFNGLFINISHPROC, glFinish) \
 	expansion(PFNGLBINDTEXTUREPROC, glBindTexture)
 
 #define GL_DECLARE_ENTRYPOINTS(type, func) extern type func;
