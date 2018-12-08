@@ -35,6 +35,9 @@ struct Memory
 	static FORCE_INLINE void *	memzero(void * dest, void * src, uintP size)		{ return PlatformMemory::memmove(dest, src, size); }
 	/// @}
 
+	/// @brief Swap two generic memory regions
+	static FORCE_INLINE void memswap(void * mem1, void * mem2, sizet size) { return PlatformMemory::memswap(mem1, mem2, size); }
+
 	/// @brief Create global allocation routine
 	static void createGMalloc();
 };

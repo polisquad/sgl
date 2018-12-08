@@ -40,6 +40,85 @@ struct GenericPlatformMemory
 	static FORCE_INLINE void *	memzero(void * dest, void * src, sizet size)		{ return ::memmove(dest, src, size); }
 	/// @}
 
+private:
+	/// @brief Swap two generic values
+	template<typename T>
+	static FORCE_INLINE void swapValues(T & a, T & b)
+	{
+		T t = a;
+		a = b, b = t;
+	}
+
+	/// @brief Swap two big memory chunks
+	static FORCE_INLINE void swapMemoryChunks(void * RESTRICT mem1, void * RESTRICT mem2, sizet size)
+	{
+		// We don't want to allocate an entire new memory chunk.
+		// We rather iterate over the memory bytes, and swap them
+		// one by one
+
+		union
+		{
+			void * _void;
+			ubyte * _byte;
+			uint16 * _dbyte;
+			uint32 * _word;
+			uint64 * _dword;
+		} a = {mem1}, b = {mem2};
+
+		// Swap 8 at once
+		for (; size >= 8; size -= 8)
+			swapValues(*a._dword++, *b._dword++);
+		
+		// Swap 4 at once
+		for (; size >= 4; size -= 4)
+			swapValues(*a._word++, *b._word++);
+		
+		// Swap 2 at once
+		for (; size >= 2; size -= 2)
+			swapValues(*a._dbyte++, *b._dbyte++);
+		
+		// Swap remaining byte
+		if (size > 0)
+			swapValues(*a._byte++, *b._byte++);
+	}
+
+public:
+	/// @brief Swap two memory regions of fixed size
+	static FORCE_INLINE void memswap(void * mem1, void * mem2, sizet size)
+	{
+		switch (size)
+		{
+			case 0:
+				/// Nothing to swap
+				break;
+			
+			case 1:
+				swapValues(*(ubyte*)mem1, *(ubyte*)mem2);
+				break;
+			
+			case 2:
+				swapValues(*(uint16*)mem1, *(uint16*)mem2);
+				break;
+			
+			case 4:
+				swapValues(*(uint32*)mem1, *(uint32*)mem2);
+				break;
+			
+			case 8:
+				swapValues(*(uint64*)mem1, *(uint64*)mem2);
+				break;
+			
+			case 16:
+				swapValues(*((uint64*&)mem1)++, *((uint64*&)mem2)++);
+				swapValues(*(uint64*)mem1, *(uint64*)mem2);
+				break;
+			
+			default:
+				swapMemoryChunks(mem1, mem2, size);
+				break;
+		}
+	}
+
 	/// @brief Return the default allocator
 	static class Malloc * baseMalloc();
 };

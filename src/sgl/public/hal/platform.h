@@ -58,6 +58,9 @@
 #ifndef UNLIKELY
 	#define UNLIKELY(condition) (condition)
 #endif
+#ifndef RESTRICT
+	#define RESTRICT
+#endif
 
 /// Method modifiers
 
@@ -74,7 +77,7 @@
 	#define GCC_PACK(n)
 #endif
 #ifndef GCC_ALIGN
-	#define GCC_ALIGN(n)
+	#define GCC_ALIGN(n) alignas(n)
 #endif
 
 /// Miscs

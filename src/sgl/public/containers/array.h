@@ -34,6 +34,18 @@ public:
 		uint64 count;
 
 	public:
+		/// @brief Default-constructor
+		View() : buffer(nullptr), count(0) {}
+
+		/// @brief Copy-constructor
+		View(const View & view) : buffer(view.buffer), count(view.count) {}
+
+		/// @brief Array-constructor
+		/// @{
+		View(T * _buffer, uint64 _count) : buffer(_buffer), count(_count) {}
+		View(T * begin, T * end) : buffer(begin), count((reinterpret_cast<uint64>(end) - reinterpret_cast<uint64>(begin)) / sizeof(T)) {};
+		/// @}
+		
 		/// @brief Get elements count
 		FORCE_INLINE uint64 getCount() const { return count; }
 
@@ -49,34 +61,12 @@ public:
 
 		/// @brief Iterators
 		/// @{
-		FORCE_INLINE T * begin() { return buffer; }
-		FORCE_INLINE const T * begin() const { return buffer; }
+		FORCE_INLINE Iterator begin() { return buffer; }
+		FORCE_INLINE ConstIterator begin() const { return buffer; }
 		
-		FORCE_INLINE T * end() { return buffer + count; }
-		FORCE_INLINE const T * end() const { return buffer + count; }
+		FORCE_INLINE Iterator end() { return buffer + count; }
+		FORCE_INLINE ConstIterator end() const { return buffer + count; }
 		/// @}
-
-		/**
-		 * Removed methods
-		 * @{
-		 */
-
-		/// @brief Assignment-operator
-		View & operator=(const View & view) = delete;
-
-		/// @}
-	protected:
-		/// Constructors are not accessible
-		/// From outside Array class
-		
-		/// @brief Default-constructor
-		View() : buffer(nullptr), count(0) {}
-
-		/// @brief Copy-constructor
-		View(const View & view) : buffer(view.buffer), count(view.count) {}
-
-		/// @brief Array-constructor
-		View(T * _buffer, uint64 _count) : buffer(_buffer), count(_count) {}
 	};
 
 protected:
@@ -226,12 +216,18 @@ public:
 	 * @param [in] start,end start and end indices of the view
 	 * 
 	 * @return sliced view of the array
+	 * @{
 	 */
 	FORCE_INLINE View operator()(uint64 start, uint64 end) const
 	{
 		ASSERT(start < end, "Start should be greater than end");
 		return View(buffer + start, end - start);
 	}
+	FORCE_INLINE View operator()(Iterator start, Iterator end) const
+	{
+		return View(start, end);
+	}
+	/// @}
 
 	/// @brief Returns const pointer to underlying data buffer
 	/// @{

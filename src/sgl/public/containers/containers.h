@@ -2,7 +2,10 @@
 #define SGL_CONTAINERS_H
 
 #include "core_types.h"
+#include "hal/platform_memory.h"
 #include "templates/enable_if.h"
+#include "templates/is_container.h"
+#include "templates/is_trivially_copyable.h"
 
 /// Forward declarations
 /// @{
@@ -10,25 +13,44 @@ template<typename> class Array;
 template<typename> class Queue;
 /// @}
 
+namespace
+{
+	/// @brief Swap two elements
+	/// @{
+	template<typename T>
+	FORCE_INLINE EnableIfT<IsTriviallyCopyableV(T), void> swap(T & a, T & b)
+	{
+		// Swap memory chunks
+		Memory::memswap(&a, &b, sizeof(T));
+	}
+	template<typename T>
+	FORCE_INLINE EnableIfT<!IsTriviallyCopyableV(T), void> swap(T & a, T & b)
+	{
+		// We resort to user specified class method
+		a.swap(b);
+	}
+	/// @}
+};
+
 /**
  * @namespace Containers
  * @brief Utilities for containers
  */
 namespace Containers
 {
-	template<typename R, typename T>
-	FORCE_INLINE auto enumerate(R (*_func)(T t, uint64 i), uint64 _i = 0)
+	template<typename RetT, typename T>
+	FORCE_INLINE auto enumerate(RetT (*_func)(T t, uint64 i), uint64 _i = 0)
 	{
 		struct {
 			/// @brief Enumerate variable
 			uint64 i;
 
 			/// @brief Functor
-			typedef R (*Func)(T, uint64);
+			typedef RetT (*Func)(T, uint64);
 			Func func;
 
 			/// @brief Run func
-			FORCE_INLINE R operator()(T t)
+			FORCE_INLINE RetT operator()(T t)
 			{
 				// Call function
 				return func(t, i++);
@@ -52,8 +74,8 @@ namespace Containers
 	 * 
 	 * @return container of same type filtered
 	 */
-	template<class Container, typename Filter>
-	Container filter(const Container & container, Filter filter);
+	template<class ContainerT, typename FilterFunc>
+	ContainerT filter(const ContainerT & container, FilterFunc filter);
 
 	/**
 	 * @brief Map a function on a container
@@ -67,14 +89,42 @@ namespace Containers
 	 * 
 	 * @return container of same type with map applied
 	 */
-	template<class Container, typename Map>
-	Container map(const Container & container, Map func);
+	template<class ContainerT, typename MapFunc>
+	ContainerT map(const ContainerT & container, MapFunc func);
+
+	/**
+	 * @brief Partition container elements using a pivot value
+	 * 
+	 * This function operates in-place and requires the container
+	 * to have a forward iterator
+	 * 
+	 * @param [in]	begin	container start
+	 * @param [in]	end		container end
+	 * @param [in]	pivot	pivot value
+	 * 
+	 * @return position of pivot value
+	 */
+	template<typename IterT, typename T>
+	IterT partition(const IterT & begin, const IterT & end, const T & pivot);
+
+	/**
+	 * @brief Performs heap-sort sorting
+	 * 
+	 * @param [in]	begin	container's start
+	 * @param [in]	end		container's end
+	 */
+	template<typename IterT>
+	void sort(const IterT & begin, const IterT & end);
+
+	/// @see sort()
+	template<typename ContainerT>
+	FORCE_INLINE void sort(ContainerT & container) { sort(container.begin(), container.end()); }
 };
 
-template<class Container, typename Filter>
-Container Containers::filter(const Container & container, Filter filter)
+template<class ContainerT, typename FilterFunc>
+ContainerT Containers::filter(const ContainerT & container, FilterFunc filter)
 {
-	Container out;
+	ContainerT out;
 
 	// Keep only elements that satisfy the filter
 	for (const auto elem : container)
@@ -83,16 +133,57 @@ Container Containers::filter(const Container & container, Filter filter)
 	return out;
 };
 
-template<class Container, typename Map>
-Container Containers::map(const Container & container, Map func)
+template<class ContainerT, typename MapFunc>
+ContainerT Containers::map(const ContainerT & container, MapFunc func)
 {
-	Container out;
+	ContainerT out;
 
 	// Apply function and insert in new container
 	for (const auto elem : container)
 		out += func(elem);
 
 	return out;
+}
+
+template<typename IterT, typename T>
+IterT Containers::partition(const IterT & begin, const IterT & end, const T & pivot)
+{
+	IterT i = begin, j = begin;
+	IterT prev = begin;
+	for (; i != end; ++i)
+	{
+		if (*i <= pivot)
+		{
+			prev = j;
+			j++;
+
+			// Swap elements
+			swap(*i, *prev);
+		}
+	}
+
+	return prev;
+}
+
+template<typename IterT>
+void Containers::sort(const IterT & begin, const IterT & end)
+{
+	if (LIKELY(begin != end))
+	{
+		auto pivot = begin; ++pivot;
+		if (pivot != end)
+		{
+			// Partition using second element as pivot
+			auto pivot = partition(begin, end, *begin);
+
+			// Swap pivot and begin
+			swap(*begin, *pivot);
+
+			// Next, recursive call on left and right branch
+			sort(begin, pivot);
+			sort(++pivot, end);
+		}
+	}
 }
 
 #endif

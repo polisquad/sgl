@@ -25,62 +25,9 @@ namespace Test
 	/// @}
 }
 
-class PrimeWorker : public Runnable
-{
-public:
-	Array<uint32> * primes;
-	uint32 max, min;
-	uint32 idx, count;
-
-protected:
-	static CriticalSection arrayAccess;
-
-public:
-	PrimeWorker(Array<uint32> * _primes, uint32 _max = 100000, uint32 _idx = 1, uint32 _count = 1) : primes(_primes), max(_max), min(0), idx(_idx), count(_count) {}
-
-	virtual FORCE_INLINE uint32 run() override
-	{
-		for (uint32 n = idx; n < max; n += count)
-		{
-			if (isPrime(n))
-			{
-				ScopeLock _(&arrayAccess);
-				primes->push(n);
-			}
-		}
-
-		return EXIT_SUCCESS;
-	}
-
-private:
-	FORCE_INLINE bool isPrime(uint32 n)
-	{
-		for (uint32 i = 2; i <= n / 2; ++i)
-			if (n % i == 0) return false;
-
-		return true;
-	}
-};
-
-CriticalSection PrimeWorker::arrayAccess;
-
 int main()
 {
 	Memory::createGMalloc();
-	Array<RunnableThread*> threads;
-	Array<uint32> primes(2);
-	const uint64 k = 1024 * 128;
-	const uint8 num_threads = 17;
-
-	double start = omp_get_wtime();
-	for (uint32 i = 0; i < num_threads; ++i)
-		threads.push(RunnableThread::create(new PrimeWorker(&primes, k, i, num_threads), "PrimeWorker", 0));
-	for (uint32 i = 0; i < num_threads; ++i)
-		delete threads[i];
-	printf("elapsed: %f\n", omp_get_wtime() - start);
-
-	//for (const auto n : primes) printf("%u\n", n);
-
 	//return Test::array();
 }
 

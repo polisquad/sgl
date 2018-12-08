@@ -40,6 +40,7 @@ typedef struct UnixPlatformTypes : public GenericPlatformTypes
 	#define FORCE_INLINE			__attribute__((always_inline)) inline
 #endif
 #define FORCE_NOINLINE				__attribute__((noinline))
+#define RESTRICT					__restrict
 #define FUNCTION_CHECK_RETURN_END	__attribute__((warn_unused_return))
 #define GCC_PACK(n)					__attribute__((packed,aligned(n)))
 #define GCC_ALIGN(n)				__attribute__((aligned(n)))
