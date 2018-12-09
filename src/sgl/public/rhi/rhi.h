@@ -10,4 +10,7 @@ class RHI
 
 };
 
+/// RHI resource types
+#include "rhi_resources.h"
+
 #endif

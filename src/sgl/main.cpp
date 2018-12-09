@@ -11,6 +11,7 @@
 #include "templates/ref_count.h"
 
 Malloc * gMalloc = nullptr;
+Malloc * gMallocBinned = nullptr;
 
 namespace Test
 {
@@ -20,6 +21,7 @@ namespace Test
 	FORCE_INLINE int32 array();
 	FORCE_INLINE int32 queue();
 	FORCE_INLINE int32 map();
+	FORCE_INLINE int32 list();
 	/// @}
 }
 
@@ -28,10 +30,14 @@ namespace Test
 int main()
 {
 	Memory::createGMalloc();
-	static EngineLoop gEngineLoop;
-	gEngineLoop.preInit();
+	gMallocBinned = new MallocBinned();
 
-	//return Test::array();
+	/* return
+		Test::memory() &
+		Test::array() &
+		Test::list() &
+		Test::queue() &
+		Test::map(); */
 }
 
 int32 Test::memory()
@@ -54,7 +60,7 @@ int32 Test::memory()
 
 	start = clock();
 	for (uint64 i = 0; i < 1024 * 512; ++i)
-		buffer = lMalloc->malloc(1024), *reinterpret_cast<int64*>(buffer) = i;
+		buffer = gMallocBinned->malloc(1024), *reinterpret_cast<int64*>(buffer) = i;
 	printf("malloc binned    | %ld ticks\n", clock() - start);
 
 	start = clock();
@@ -73,12 +79,11 @@ int32 Test::array()
 {
 	void * out;
 	auto start = clock();
-	MallocBinned * lMalloc = new MallocBinned;
 
 	printf("------------------------------\n");
 
 	Array<uint64> aAnsi(2);
-	Array<uint64> aBinned(2, lMalloc);
+	Array<uint64> aBinned(2, gMallocBinned);
 	std::vector<uint64>::iterator it;
 
 	start = clock();
@@ -152,10 +157,9 @@ int32 Test::queue()
 	void * buffer;
 
 	start = clock();
-	MallocBinned * lMalloc = new MallocBinned;
 
 	Queue<uint64> qAnsi;
-	Queue<uint64> qBinned(lMalloc);
+	Queue<uint64> qBinned(gMallocBinned);
 
 	printf("------------------------------\n");
 
@@ -188,7 +192,7 @@ int32 Test::queue()
 int32 Test::map()
 {
 	auto start = clock();
-	Map<uint64, uint64> map(new MallocBinned);
+	Map<uint64, uint64> map;
 	std::map<uint64, uint64> stdmap;
 
 	printf("------------------------------\n");
@@ -212,6 +216,41 @@ int32 Test::map()
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		stdmap[i] *= 2;
 	printf("std::map::[]    | %ld ticks\n", clock() - start);
+
+	printf("------------------------------\n");
+
+	return 0;
+}
+
+int32 Test::list()
+{
+	auto start = clock();
+	void * buffer;
+
+	start = clock();
+
+	Queue<uint64> llAnsi;
+	Queue<uint64> llBinned(gMallocBinned);
+
+	printf("------------------------------\n");
+
+	start = clock();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		llAnsi.push(i);
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		llAnsi.pop();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		llAnsi.push(i);
+	printf("llAnsi           | %ld ticks\n", clock() - start);
+
+	start = clock();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		llBinned.push(i);
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		llBinned.pop();
+	for (uint64 i = 0; i < 1024 * 128; ++i)
+		llBinned.push(i);
+	printf("llBinned         | %ld ticks\n", clock() - start);
 
 	printf("------------------------------\n");
 

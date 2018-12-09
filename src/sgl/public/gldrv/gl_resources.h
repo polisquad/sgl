@@ -6,13 +6,11 @@
 /// Forward declarations
 struct GLContext;
 
-
-
 /**
  * @class GLViewport gldrv/gl_resources.h
  * @brief OpenGL implementation of RHI viewport
  */
-class GLViewport : public Viewport
+class GLViewport : public RHIViewport
 {
 private:
 	/// @brief Context that owns this viewport

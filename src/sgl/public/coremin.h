@@ -29,6 +29,7 @@
 #include "templates/unsigned.h"
 #include "containers/array.h"
 #include "containers/binary_tree.h"
+#include "containers/linked_list.h"
 #include "containers/queue.h"
 #include "containers/map.h"
 #include "containers/string.h"
