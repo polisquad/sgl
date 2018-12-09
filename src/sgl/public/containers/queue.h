@@ -100,8 +100,12 @@ T Queue<T>::pop()
 
 		// Decrement counter
 		--counter;
+
+		// Dealloc node
+		const T data = node->data;
+		allocator->free(node);
 		
-		return node->data;
+		return data;
 	}
 }
 

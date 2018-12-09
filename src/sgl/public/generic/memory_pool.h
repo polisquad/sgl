@@ -26,6 +26,8 @@
  */
 struct MemoryPool final
 {
+	friend class MallocBinned;
+
 protected:
 	/// @brief Index list structure
 	typedef struct Index
@@ -74,7 +76,8 @@ public:
 	 */
 	FORCE_INLINE MemoryPool(sizet _blockSize, sizet _numBlocks, void * _buffer, uint32 alignment = 0x1000);
 
-	/// Reset indices list
+	/// @brief Reset indices list
+	/// 
 	/// This wipes out all memory
 	inline void resetIndices();
 

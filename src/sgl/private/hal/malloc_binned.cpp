@@ -9,7 +9,8 @@ MallocBinned::MallocBinned()
 	const sizet bufferSize
 		= BINNED_NUM_BUCKETS * sizeof(BucketPool) * 2
 		+ BINNED_NUM_BUCKETS * sizeof(MemoryPool)
-		+ BINNED_NUM_BUCKETS * (BINNED_POOL_SIZE + BINNED_POOL_ALIGNMENT);
+		+ 2 * (BINNED_POOL_SIZE / BINNED_BLOCK_MIN_SIZE) * sizeof(MemoryPool::Index)
+		+ BINNED_NUM_BUCKETS * (BINNED_POOL_ALIGNMENT + BINNED_POOL_SIZE);
 	sizet buffer = reinterpret_cast<sizet>(gMalloc->malloc(bufferSize));
 
 	// Init all buckets with a pool
@@ -25,7 +26,7 @@ MallocBinned::MallocBinned()
 		const sizet numBlocks = BINNED_POOL_SIZE / blockSize;
 
 		// Sanity check
-		assert(blockSize * numBlocks == BINNED_POOL_SIZE);
+		ASSERT(blockSize * numBlocks == BINNED_POOL_SIZE, "Error in binned malloc creation");
 
 		// Create pool
 		new (memoryPool) MemoryPool(blockSize, numBlocks, poolBuffer, BINNED_POOL_ALIGNMENT);
@@ -36,7 +37,7 @@ MallocBinned::MallocBinned()
 		bucketHeader->next = bucketFooter->next = nullptr;
 
 		// Advance buffer
-		buffer += BINNED_POOL_SIZE + BINNED_POOL_ALIGNMENT;
+		buffer += (BINNED_POOL_SIZE / blockSize) * sizeof(MemoryPool::Index) + BINNED_POOL_SIZE + BINNED_POOL_ALIGNMENT;
 	}
 }
 
@@ -172,7 +173,11 @@ void * MallocBinned::realloc(void * original, uintP n, uint32 alignment)
 
 void MallocBinned::free(void * original)
 {
+#if SGL_BUILD_DEBUG
 	ASSERT(original != nullptr, "Cannot free nullptr");
+#else
+	if (UNLIKELY(original == nullptr)) return;
+#endif
 
 	// Check last used pool
 	if (UNLIKELY(lastUsed && lastUsed->hasBlock(original)))

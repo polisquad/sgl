@@ -90,7 +90,8 @@ public:
 	 * @class Iterator
 	 * @brief BinaryTree iterator
 	 */
-	class Iterator
+	template<typename _T = T>
+	class BinaryTreeIterator
 	{
 		friend BinaryTree;
 
@@ -108,17 +109,19 @@ public:
 
 		/// @brief Iterator methods
 		/// @{
-		FORCE_INLINE Iterator & operator++() { node = tree->find_internal(key, node); return *this; }
-		FORCE_INLINE bool operator==(const Iterator & iter) const { return node == iter.node; } // Checking node should be sufficient
-		FORCE_INLINE bool operator!=(const Iterator & iter) const { return node != iter.node; }
-		FORCE_INLINE T & operator*() const { return node->data; }
-		FORCE_INLINE T * operator->() const { return &node->data; }
+		FORCE_INLINE BinaryTreeIterator<_T> & operator++() { node = tree->find_internal(key, node); return *this; }
+
+		FORCE_INLINE bool operator==(const BinaryTreeIterator<_T> & iter) const { return node == iter.node; } // Checking node should be sufficient
+		FORCE_INLINE bool operator!=(const BinaryTreeIterator<_T> & iter) const { return node != iter.node; }
+
+		FORCE_INLINE _T & operator*() const { return node->data; }
+		FORCE_INLINE _T * operator->() const { return &node->data; }
 		/// @}
 
 	private:
 		/// @brief Private default-constructors
 		/// @{
-		FORCE_INLINE Iterator(BinaryTree * _tree, const T & _key, Node * start = nullptr) :
+		FORCE_INLINE BinaryTreeIterator(BinaryTree * _tree, const T & _key, Node * start = nullptr) :
 			tree(_tree),
 			key(_key)
 		{
@@ -126,57 +129,14 @@ public:
 			node = tree->find_internal(key, start);
 		}
 
-		/// Never searches, is null and that's it
-		FORCE_INLINE Iterator(BinaryTree * _tree, Node * start = nullptr) :
-			tree(_tree) {}
+		/// @brief Default-iterator, private, just null everything
+		FORCE_INLINE BinaryTreeIterator() :
+			tree(nullptr),
+			node(nullptr) {}
 		/// @}
 	};
-
-	/**
-	 * @class ConstIterator
-	 * @brief BinaryTree const iterator
-	 */
-	class ConstIterator
-	{
-		friend BinaryTree;
-
-	protected:
-		/// @brief Iterated tree
-		BinaryTree * tree;
-
-		/// @brief Used key
-		T key;
-
-		/// @brief Current node
-		Node * node;
-
-	public:
-
-		/// @brief Iterator methods
-		/// @{
-		FORCE_INLINE Iterator & operator++() { node = tree.find_internal(key, node); return *this; }
-		FORCE_INLINE bool operator==(const Iterator & iter) const { return node == iter.node; }
-		FORCE_INLINE bool operator!=(const Iterator & iter) const { return node != iter.node; }
-		FORCE_INLINE const T & operator*() const { return node->data; }
-		FORCE_INLINE const T & operator->() const { return node->data; }
-		/// @}
-
-	private:
-		/// @brief Private default-constructors
-		/// @{
-		FORCE_INLINE ConstIterator(BinaryTree * _tree, const T & _key, Node * start = nullptr) :
-			tree(_tree),
-			key(_key)
-		{
-			// First search
-			node = tree->find_internal(key, start);
-		}
-
-		/// Never searches, is null and that's it
-		FORCE_INLINE ConstIterator(BinaryTree * _tree, Node * start = nullptr) :
-			tree(_tree) {}
-		/// @}
-	};
+	typedef BinaryTreeIterator<      T> Iterator;
+	typedef BinaryTreeIterator<const T> ConstIterator;
 
 protected:
 	/// @brief Root node
@@ -202,10 +162,10 @@ public:
 	/// @brief Iterators
 	/// @{
 	FORCE_INLINE Iterator find(const T & key)	{ return Iterator(this, key, root); }
-	FORCE_INLINE Iterator end()					{ return Iterator(this, nullptr); }
+	FORCE_INLINE Iterator end()					{ return Iterator(); }
 	
 	FORCE_INLINE ConstIterator find(const T & key) const	{ return ConstIterator(this, key, root); }
-	FORCE_INLINE ConstIterator end() const					{ return ConstIterator(this, nullptr); }
+	FORCE_INLINE ConstIterator end() const					{ return ConstIterator(); }
 	/// @}
 
 	/**
