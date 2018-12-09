@@ -33,14 +33,14 @@ public:
 	/**
 	 * @brief Default-constructor
 	 */
-	inline Mat4();
+	FORCE_INLINE Mat4();
 
 	/**
 	 * @brief Data-constructor
 	 * 
 	 * @param [in] data data to copy
 	 */
-	inline Mat4(const typename Mat4<T>::MT & data);
+	FORCE_INLINE Mat4(const typename Mat4<T>::MT & data);
 	
 	/**
 	 * @brief Elements-constructor
@@ -59,7 +59,7 @@ public:
 	 * 
 	 * @param [in] buffer buffer of elements
 	 */
-	inline Mat4(const T * buffer);
+	FORCE_INLINE Mat4(const T * buffer);
 
 	/**
 	 * @brief Get a (modifiable) reference
@@ -69,7 +69,7 @@ public:
 	 * 
 	 * @return reference to the element
 	 */
-	inline T & operator()(uint8 i, uint8 j);
+	FORCE_INLINE T & operator()(uint8 i, uint8 j);
 
 	/**
 	 * @brief Get a (modifiable) reference
@@ -79,7 +79,7 @@ public:
 	 * 
 	 * @return i-th element reference
 	 */
-	inline T & operator[](uint8 i);
+	FORCE_INLINE T & operator[](uint8 i);
 
 	/**
 	 * @brief Row and column accessors
@@ -89,8 +89,8 @@ public:
 	 * @return Vec4 representing row[column]
 	 * @{
 	 */
-	inline Vec4<T> getRow(uint8 i) const;
-	inline Vec4<T> getCol(uint8 i) const;
+	FORCE_INLINE Vec4<T> getRow(uint8 i) const;
+	FORCE_INLINE Vec4<T> getCol(uint8 i) const;
 	/** @} */
 
 	/**
@@ -173,8 +173,8 @@ public:
 	 * 
 	 * @{
 	 */
-	inline Mat4<T> operator!() const;
-	inline Mat4<T> getInverse() const;
+	Mat4<T> operator!() const;
+	Mat4<T> getInverse() const;
 	/** @} */
 	
 	/**
@@ -182,7 +182,7 @@ public:
 	 * 
 	 * @return self
 	 */
-	inline Mat4<T> & invert();
+	Mat4<T> & invert();
 
 	/**
 	 * @brief Matrix-matrix multiplication
@@ -191,7 +191,7 @@ public:
 	 * 
 	 * @return multiplied matrix
 	 */
-	inline Mat4<T> operator*(const Mat4<T> & m) const;
+	Mat4<T> operator*(const Mat4<T> & m) const;
 
 	/**
 	 * @brief Matrix-vector multiplication
@@ -235,7 +235,7 @@ public:
 };
 
 template<typename T>
-Mat4<T>::Mat4(const typename Mat4<T>::MT & data) { memcpy(this->data, data, sizeof(typename Mat4<T>::MT)); }
+Mat4<T>::Mat4(const typename Mat4<T>::MT & _data) { memcpy(data, _data, sizeof(data)); }
 
 template<typename T>
 T & Mat4<T>::operator()(uint8 i, uint8 j)
@@ -1071,11 +1071,9 @@ void Mat4<float32>::print(FILE * stream)
 // Type definitions                            //
 /////////////////////////////////////////////////
 
-/**
- * @brief Type definitions for common vector types
- * @{
- */
+
+/// @brief Type definitions for common vector types
 typedef Mat4<float32> mat4;
-/** @} */
+/// @}
 
 #endif

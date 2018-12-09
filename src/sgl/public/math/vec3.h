@@ -1,6 +1,7 @@
 #ifndef SGL_VEC3_H
 #define SGL_VEC3_H
 
+#include "core_types.h"
 #include "vec2.h"
 
 /**
@@ -51,7 +52,7 @@ public:
 	/**
 	 * @brief Zero-constructor
 	 */
-	inline Vec3();
+	FORCE_INLINE Vec3();
 
 	/**
 	 * @brief Data-constructor
@@ -59,28 +60,28 @@ public:
 	 * @param [in] data simd-like data structure
 	 */
 	template<typename _T = T, typename = std::enable_if_t<std::is_array<typename Vec2<_T>::VT>::value>>
-	inline Vec3(const typename Vec3::VT data);
+	FORCE_INLINE Vec3(const typename Vec3::VT data);
 	
 	/**
 	 * @brief Vec-constructor
 	 * 
 	 * @param [in] vec plain c array
 	 */
-	inline Vec3(const T * __vec);
+	FORCE_INLINE Vec3(const T * buffer);
 
 	/**
 	 * @brief Coordinates-constructor
 	 * 
 	 * @param [in] x,y,z coordinates values
 	 */
-	inline Vec3(const T x, const T y, const T z);
+	FORCE_INLINE Vec3(const T x, const T y, const T z);
 
 	/**
 	 * @brief Scalar-constructor
 	 * 
 	 * @param [in] s scalar value
 	 */
-	inline Vec3(const T s);
+	FORCE_INLINE Vec3(const T s);
 
 	/**
 	 * @brief Vec2-constructor
@@ -88,7 +89,7 @@ public:
 	 * @param [in]	v2	Vec2 vector
 	 * @param [in]	z	missing component
 	 */
-	inline Vec3(const Vec2<T> & v2, const T z = T());
+	FORCE_INLINE Vec3(const Vec2<T> & v2, const T z = T());
 
 	/**
 	 * @brief Return read-only element of the simd vector
@@ -97,35 +98,35 @@ public:
 	 * 
 	 * @return read-only copy
 	 */
-	inline T & operator[](uint8 i);
+	FORCE_INLINE T & operator[](uint8 i);
 
 	/**
 	 * @brief Return squared size of vector
 	 * 
 	 * @return squared size
 	 */
-	inline float32 getSquaredSize() const;
+	FORCE_INLINE float32 getSquaredSize() const;
 
 	/**
 	 * @brief Return size of vector
 	 * 
 	 * @return size (L^2-norm)
 	 */
-	inline float32 getSize() const;
+	FORCE_INLINE float32 getSize() const;
 
 	/**
 	 * @brief Get normalized copy of vector
 	 * 
 	 * @return normalized vector (copy)
 	 */
-	inline Vec3<T> getNormal() const;
+	FORCE_INLINE Vec3<T> getNormal() const;
 
 	/**
 	 * @brief Normalize vector in place
 	 * 
 	 * @return self
 	 */
-	inline Vec3<T> & normalize();
+	FORCE_INLINE Vec3<T> & normalize();
 
 	/**
 	 * @brief Compare two vectors
@@ -135,12 +136,12 @@ public:
 	 * @return Comparison result
 	 * @{
 	 */
-	inline bool operator==(const Vec3<T> & v) const;
-	inline bool operator!=(const Vec3<T> & v) const;
-	inline bool operator<(const Vec3<T> & v) const;
-	inline bool operator<=(const Vec3<T> & v) const;
-	inline bool operator>(const Vec3<T> & v) const;
-	inline bool operator>=(const Vec3<T> & v) const;
+	FORCE_INLINE bool operator==(const Vec3<T> & v) const;
+	FORCE_INLINE bool operator!=(const Vec3<T> & v) const;
+	FORCE_INLINE bool operator<(const Vec3<T> & v) const;
+	FORCE_INLINE bool operator<=(const Vec3<T> & v) const;
+	FORCE_INLINE bool operator>(const Vec3<T> & v) const;
+	FORCE_INLINE bool operator>=(const Vec3<T> & v) const;
 	/** @} */
 
 	/**
@@ -148,7 +149,7 @@ public:
 	 * 
 	 * @return inverted vectors
 	 */
-	inline Vec3<T> operator-() const;
+	FORCE_INLINE Vec3<T> operator-() const;
 
 	/**
 	 * @brief Vector-vector component-wise operations
@@ -158,10 +159,10 @@ public:
 	 * @return result of operation
 	 * @{
 	 */
-	inline Vec3<T> operator+(const Vec3<T> & v) const;
-	inline Vec3<T> operator-(const Vec3<T> & v) const;
-	inline Vec3<T> operator*(const Vec3<T> & v) const;
-	inline Vec3<T> operator/(const Vec3<T> & v) const;
+	FORCE_INLINE Vec3<T> operator+(const Vec3<T> & v) const;
+	FORCE_INLINE Vec3<T> operator-(const Vec3<T> & v) const;
+	FORCE_INLINE Vec3<T> operator*(const Vec3<T> & v) const;
+	FORCE_INLINE Vec3<T> operator/(const Vec3<T> & v) const;
 	/** @} */
 
 	/**
@@ -172,10 +173,10 @@ public:
 	 * @return result of operation
 	 * @{
 	 */
-	inline Vec3<T> & operator+=(const Vec3<T> & v);
-	inline Vec3<T> & operator-=(const Vec3<T> & v);
-	inline Vec3<T> & operator*=(const Vec3<T> & v);
-	inline Vec3<T> & operator/=(const Vec3<T> & v);
+	FORCE_INLINE Vec3<T> & operator+=(const Vec3<T> & v);
+	FORCE_INLINE Vec3<T> & operator-=(const Vec3<T> & v);
+	FORCE_INLINE Vec3<T> & operator*=(const Vec3<T> & v);
+	FORCE_INLINE Vec3<T> & operator/=(const Vec3<T> & v);
 	/** @} */
 
 	/**
@@ -186,10 +187,15 @@ public:
 	 * @return result of operation
 	 * @{
 	 */
-	inline Vec3<T> operator+(const T s) const;
-	inline Vec3<T> operator-(const T s) const;
-	inline Vec3<T> operator*(const T s) const;
-	inline Vec3<T> operator/(const T s) const;
+	FORCE_INLINE Vec3<T> operator+(const T s) const;
+	FORCE_INLINE Vec3<T> operator-(const T s) const;
+	FORCE_INLINE Vec3<T> operator*(const T s) const;
+	FORCE_INLINE Vec3<T> operator/(const T s) const;
+
+	FORCE_INLINE friend Vec3<T> operator+(const T s, const Vec3<T> & v) { return v + s; }
+	FORCE_INLINE friend Vec3<T> operator-(const T s, const Vec3<T> & v) { return -v + s; }
+	FORCE_INLINE friend Vec3<T> operator*(const T s, const Vec3<T> & v) { return v * s; }
+	FORCE_INLINE friend Vec3<T> operator/(const T s, const Vec3<T> & v) { return Vec3<T>(s) / v; }
 	/** @} */
 
 	/**
@@ -200,10 +206,10 @@ public:
 	 * @return result of operation
 	 * @{
 	 */
-	inline Vec3<T> & operator+=(const T s);
-	inline Vec3<T> & operator-=(const T s);
-	inline Vec3<T> & operator*=(const T s);
-	inline Vec3<T> & operator/=(const T s);
+	FORCE_INLINE Vec3<T> & operator+=(const T s);
+	FORCE_INLINE Vec3<T> & operator-=(const T s);
+	FORCE_INLINE Vec3<T> & operator*=(const T s);
+	FORCE_INLINE Vec3<T> & operator/=(const T s);
 	/** @} */
 
 	/**
@@ -213,7 +219,7 @@ public:
 	 * 
 	 * @return dot product
 	 */
-	inline T operator&(const Vec3<T> & v) const;
+	FORCE_INLINE T operator&(const Vec3<T> & v) const;
 
 	/**
 	 * @brief Vector-vector cross product
@@ -222,7 +228,7 @@ public:
 	 * 
 	 * @return cross product
 	 */
-	inline Vec3<T> operator^(const Vec3<T> & v) const;
+	FORCE_INLINE Vec3<T> operator^(const Vec3<T> & v) const;
 
 	/**
 	 * @brief Linear interpolate with other vector
@@ -232,12 +238,12 @@ public:
 	 * 
 	 * @return self
 	 */
-	inline Vec3<T> & lerp(const Vec3<T> & v, float32 alpha);
+	FORCE_INLINE Vec3<T> & lerp(const Vec3<T> & v, float32 alpha);
 
 	/**
 	 * @copydoc SIMD<T>::print()
 	 */
-	inline void print(FILE * stream = stdout) const;
+	FORCE_INLINE void print(FILE * stream = stdout) const;
 
 	/**
 	 * @brief Component type conversion operator
@@ -245,14 +251,14 @@ public:
 	 * @return converted vector
 	 */
 	template<typename T2>
-	inline operator Vec3<T2>() const;
+	FORCE_INLINE operator Vec3<T2>() const;
 
 	/**
 	 * @brief Vec2 conversion
 	 * 
 	 * @return converted vector
 	 */
-	inline explicit operator Vec2<T>() const;
+	FORCE_INLINE explicit operator Vec2<T>() const;
 };
 
 //////////////////
@@ -267,7 +273,7 @@ template<typename, typename>
 Vec3<T>::Vec3(const typename Vec3<T>::VT data) : data(data) {}
 
 template<typename T>
-Vec3<T>::Vec3(const T * __vec) { memcpy(this->__vec, __vec, 4 * sizeof(T)); }
+Vec3<T>::Vec3(const T * buffer) { memcpy(__vec, buffer, sizeof(__vec)); }
 
 template<typename T>
 Vec3<T>::Vec3(const T x, const T y, const T z) : x(x), y(y), z(z) {}
@@ -446,42 +452,6 @@ Vec3<T> Vec3<T>::operator/(const T s) const
 	return Vec3<T>(x / s, y / s, z / s);
 }
 
-/**
- * @brief Symmetric version of vector-scalar operations
- * 
- * @param [in]	v	vector
- * @param [in]	s	scalar
- * 
- * @return result of operation
- * @{
- */
-template<typename T>
-inline Vec3<T> operator+(const T s, const Vec3<T> & v)
-{
-	// Commutative
-	return v + s;
-}
-
-template<typename T>
-inline Vec3<T> operator-(const T s, const Vec3<T> & v)
-{
-	return Vec3<T>(s) - v;
-}
-
-template<typename T>
-inline Vec3<T> operator*(const T s, const Vec3<T> & v)
-{
-	// Commutative
-	return v * s;
-}
-
-template<typename T>
-inline Vec3<T> operator/(const T s, const Vec3<T> & v)
-{
-	return Vec3<T>(s) / v;
-}
-/** @} */
-
 ///////////////////////////////////////
 // Vector-scalar compound operations //
 ///////////////////////////////////////
@@ -559,6 +529,10 @@ Vec3<T>::operator Vec2<T>() const
 /////////////////////////////////////////////////
 
 #if PLATFORM_ENABLE_SIMD
+
+template<>
+Vec3<float32>::Vec3(const float32 buffer[4]) { _mm_load_ps(buffer); }
+
 template<>
 Vec3<float32>::Vec3(const float32 x, const float32 y, const float32 z) : data(_mm_set_ps(x, y, z, 0.f)) {}
 
@@ -776,19 +750,29 @@ void Vec3<float32>::print(FILE * stream) const
 template<>
 void Vec3<int32>::print(FILE * stream) const
 {
-	printf("v3(%d, %d, %d)\n", x, y, z);
+	printf("iv3(%d, %d, %d)\n", x, y, z);
+}
+
+//////////////////////////////////////////////////
+// Unsigned-Int-32 specialization               //
+//////////////////////////////////////////////////
+
+template<>
+void Vec3<uint32>::print(FILE * stream) const
+{
+	printf("uv3(%u, %u, %u)\n", x, y, z);
 }
 
 /////////////////////////////////////////////////
 // Type definitions                            //
 /////////////////////////////////////////////////
 
-/**
- * @brief Type definitions for common vector types
- * @{
- */
+/// @brief Type definitions for common vector types
 typedef Vec3<float32>	vec3;
-typedef Vec3<int32>		point3;
-/** @} */
+typedef Vec3<int32>		ivec3;
+typedef Vec3<uint32>	uvec3;
+
+typedef uvec3 point3;
+/// @}
 
 #endif
