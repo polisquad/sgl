@@ -9,6 +9,7 @@
 #include "hal/thread_safe_counter.h"
 #include "rhi/rhi_resources.h"
 #include "templates/ref_count.h"
+#include "math/vec3.h"
 
 Malloc * gMalloc = nullptr;
 Malloc * gMallocBinned = nullptr;
@@ -31,6 +32,10 @@ int main()
 {
 	Memory::createGMalloc();
 	gMallocBinned = new MallocBinned();
+
+	dim2 size;
+	point2 grid;
+	vec2 pos;
 
 	/* return
 		Test::memory() &

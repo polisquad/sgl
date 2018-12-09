@@ -29,7 +29,7 @@ bool UnixAppMisc::initSDL()
 		// Init SDL context
 		if (SDL_Init(SDL_INIT_EVERYTHING | SDL_INIT_NOPARACHUTE) != 0)
 		{
-			/** @todo hanlde error */
+			/** @todo Handle error */
 			return false;
 		}
 

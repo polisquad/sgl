@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Project setup ---------------------------------
-project(sgl)
+project(sgl
+
+	C
+	CXX
+)
 
 ## Platform setup
 include(CMakePlatform.cmake)

@@ -2,6 +2,7 @@
 #include "gldrv/gldrv.h"
 #include "hal/critical_section.h"
 #include "app/unix/unix_app_misc.h"
+#include "math/math.h"
 
 #include "SDL.h"
 
@@ -211,16 +212,6 @@ GLDevice * createDefaultGLDevice()
 	return new GLDevice;
 }
 
-/// @todo I'm waiting to bring in math.h
-template<typename T>
-struct Vec2
-{
-	T x,y;
-
-	Vec2() = default;
-	Vec2(T _x, T _y) : x(_x), y(_y) {}
-};
-
 /// @brief Transfers data to on-screen framebuffer (0)
 bool blitToViewport(GLDevice * device, const GLViewport & viewport, const Vec2<uint32> & backbufferSize)
 {
@@ -279,7 +270,7 @@ bool blitToViewport(GLDevice * device, const GLViewport & viewport, const Vec2<u
 			}
 			else if (targetAspectRatio < windowAspectRatio)
 			{
-				/// @todo this is wrong
+				/// @todo This is wrong
 				const float32 scaledH = width * targetAspectRatio;
 				const float32 scaledY = (float32(height) - scaledH) / 2.f;
 
@@ -311,14 +302,14 @@ bool blitToViewport(GLDevice * device, const GLViewport & viewport, const Vec2<u
 FORCE_INLINE void flushIfNeeded() { glFinish(); }
 
 /// @brief Get current window backbuffer size
-Vec2<uint32> getBackbufferSize()
+dim2 getBackbufferSize()
 {
 	auto window = SDL_GL_GetCurrentWindow();
 
 	int width = 0, height = 0;
 	if (window) SDL_GL_GetDrawableSize(window, &width, &height);
 
-	return Vec2<uint32>(width, height);
+	return dim2(width, height);
 }
 
 /// @brief Initializes OpenGL using SDL

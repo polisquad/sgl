@@ -3,6 +3,7 @@
 
 #include "core_types.h"
 #include "rhi_resource.h"
+#include "math/math.h"
 
 /**
  * @brief List of pixel formats
@@ -36,20 +37,17 @@ public:
 
 	/// @brief Cast to subclasses, avoids dynamic_cast calls
 	/// @{
-	virtual FORCE_INLINE class RHITexture2D * getTexture2D() { return nullptr; }
-	virtual FORCE_INLINE class RHITexture3D * getTexture3D() { return nullptr; }
-	virtual FORCE_INLINE class RHITexture2DArray * getTexture2DArray() { return nullptr; }
-	virtual FORCE_INLINE class RHITextureCube * getTextureCube() { return nullptr; }
+	virtual FORCE_INLINE class RHITexture2D * getTexture2D()			{ return nullptr; }
+	virtual FORCE_INLINE class RHITexture3D * getTexture3D()			{ return nullptr; }
+	virtual FORCE_INLINE class RHITexture2DArray * getTexture2DArray()	{ return nullptr; }
+	virtual FORCE_INLINE class RHITextureCube * getTextureCube()		{ return nullptr; }
 	/// @}
 	
 	/// @brief Returns number of mip-maps
 	uint32 FORCE_INLINE getNumMips() const { return numMips; }
 
 	/// @brief Returns pixel format of the texture
-	/// @todo Create enum
 	PixelFormat FORCE_INLINE getPixelFormat() const { return pixelFormat; }
-
-	/// @brief 
 };
 
 /**
@@ -60,8 +58,7 @@ class RHITexture2D : public RHITexture
 {
 protected:
 	/// @brief Texture size
-	/// @todo Vec2<uint32>
-	uint32 size;
+	dim2 size;
 
 public:
 	/// @Initialization-constructor
@@ -73,9 +70,9 @@ public:
 
 	/// @brief Returns size of the texture
 	/// @{
-	FORCE_INLINE uint32 getWidth() const { return size; }
-	FORCE_INLINE uint32 getHeight() const { return size; }
-	FORCE_INLINE uint32 getSize() const { return size; }
+	FORCE_INLINE uint32 getWidth() const { return size.x; }
+	FORCE_INLINE uint32 getHeight() const { return size.y; }
+	FORCE_INLINE dim2 getSize() const { return size; }
 	/// @}
 };
 
