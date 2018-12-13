@@ -5,10 +5,12 @@
 #include "generic/memory_pool.h"
 #include "coremin.h"
 #include "gldrv/unix/gl_unix.h"
-#include "engine/engine_loop.h"
+#include "core/engine_loop.h"
 #include "hal/thread_safe_counter.h"
 #include "rhi/rhi_resources.h"
 #include "templates/ref_count.h"
+#include "hal/threading.h"
+#include "hal/runnable.h"
 #include "math/vec3.h"
 
 Malloc * gMalloc = nullptr;
@@ -26,16 +28,10 @@ namespace Test
 	/// @}
 }
 
-#include <SDL.h>
-
 int main()
 {
 	Memory::createGMalloc();
 	gMallocBinned = new MallocBinned();
-
-	dim2 size;
-	point2 grid;
-	vec2 pos;
 
 	/* return
 		Test::memory() &

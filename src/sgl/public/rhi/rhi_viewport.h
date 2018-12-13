@@ -1,7 +1,9 @@
 #ifndef SGL_RHI_VIEWPORT_H
 #define SGL_RHI_VIEWPORT_H
 
+#include "core_types.h"
 #include "rhi_resource.h"
+#include "math/vec2.h"
 
 class RHIViewport : public RHIResource
 {

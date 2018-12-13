@@ -3,15 +3,8 @@
 
 #include "core_types.h"
 #include "rhi_resource.h"
-#include "math/math.h"
-
-/**
- * @brief List of pixel formats
- */
-enum PixelFormat
-{
-	PF_Unkown = 0
-};
+#include "rhi_types.h"
+#include "math/vec2.h"
 
 /**
  * @class RHITexture rhi/rhi_textures.h

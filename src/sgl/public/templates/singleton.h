@@ -13,7 +13,6 @@ template<class T>
 class Singleton
 {
 public:
-	
 	/// @brief Default-constructor
 	FORCE_INLINE Singleton() = default;
 

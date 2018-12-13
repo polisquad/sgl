@@ -241,7 +241,7 @@ public:
 /////////////////////////////////////////////////
 
 template<typename T>
-Vec2<T>::Vec2() {}
+Vec2<T>::Vec2() : x(), y() {}
 
 template<typename T>
 Vec2<T>::Vec2(const VT data) : data(data) {}
@@ -300,13 +300,37 @@ bool Vec2<T>::operator==(const Vec2<T> & v) const
 	 * @brief IEEE comparison should be
 	 * faster than SIMD comparison
 	 */
-	return x == v.x && y == v.y;
+	return x == v.x & y == v.y;
 }
 
 template<typename T>
 bool Vec2<T>::operator!=(const Vec2<T> & v) const
 {
-	return x != v.x || y != v.y;
+	return x != v.x | y != v.y;
+}
+
+template<typename T>
+bool Vec2<T>::operator<(const Vec2<T> & v) const
+{
+	return x < v.x & y < v.y;
+}
+
+template<typename T>
+bool Vec2<T>::operator<=(const Vec2<T> & v) const
+{
+	return x <= v.x & y <= v.y;
+}
+
+template<typename T>
+bool Vec2<T>::operator>(const Vec2<T> & v) const
+{
+	return x > v.x & y > v.y;
+}
+
+template<typename T>
+bool Vec2<T>::operator>=(const Vec2<T> & v) const
+{
+	return x >= v.x & y >= v.y;
 }
 
 template<typename T>

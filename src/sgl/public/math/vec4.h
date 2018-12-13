@@ -263,7 +263,7 @@ public:
 //////////////////
 
 template<typename T>
-Vec4<T>::Vec4() {}
+Vec4<T>::Vec4() : x(), y(), z(), w() {}
 
 template<typename T>
 Vec4<T>::Vec4(const VT _data) : data(_data) {}

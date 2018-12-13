@@ -47,4 +47,6 @@ public:
 	virtual void * getNativeWindow() const override;
 };
 
+#include "gl_buffers.h"
+
 #endif

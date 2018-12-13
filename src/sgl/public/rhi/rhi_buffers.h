@@ -3,6 +3,50 @@
 
 #include "core_types.h"
 #include "rhi_resource.h"
+#include "rhi_types.h"
+#include "containers/array.h"
+
+/**
+ * @class RHIUniformBufferLayout rhi/rhi_buffers.h
+ * @brief Layout of a uniform buffer (@ref https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object)
+ */
+struct RHIUniformBufferLayout
+{
+public:
+	/// @brief Size of the buffer
+	uint32 bufferSize;
+
+	/// @brief Offset of each resource in the buffer (in bytes)
+	Array<uint32> resourceOffsets;
+
+	/// @brief The type of each resource in the buffer
+	Array<UniformBufferBaseType> resourceTypes;
+
+public:
+	/// @brief Default-constructor
+	RHIUniformBufferLayout() = default;
+};
+
+/**
+ * @class RHIUniformBuffer rhi/rhi_buffers.h
+ * @brief Uniform buffer handler
+ */
+class RHIUniformBuffer : public RHIResource
+{
+protected:
+	/// @brief Uniform buffer layout
+	RHIUniformBufferLayout * layout;
+
+public:
+	/// @brief Initialization-constructor
+	RHIUniformBuffer(RHIUniformBufferLayout * _layout) : layout(_layout) {}
+
+	/// @brief Get buffer size
+	FORCE_INLINE uint32 getSize() const { return layout->bufferSize; }
+
+	/// @brief Get layout ref
+	FORCE_INLINE RHIUniformBufferLayout & getLayout() { return *layout; }
+};
 
 /**
  * @class RHIVertexBuffer rhi/rhi_buffers.h

@@ -24,42 +24,42 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	inline Box();
+	FORCE_INLINE Box();
 
 	/**
 	 * @brief Corner-constructor
 	 * 
 	 * @param [in] min,max min and max vertices
 	 */
-	inline Box(const Vec3<T> & min, const Vec3<T> & max);
+	FORCE_INLINE Box(const Vec3<T> & min, const Vec3<T> & max);
 
 	/**
 	 * @brief Get box size
 	 * 
 	 * @return size
 	 */
-	inline Vec3<T> getSize() const;
+	FORCE_INLINE Vec3<T> getSize() const;
 
 	/**
 	 * @brief Get box center
 	 * 
 	 * @return center
 	 */
-	inline Vec3<T> getCenter() const;
+	FORCE_INLINE Vec3<T> getCenter() const;
 
 	/**
 	 * @brief Get box extent
 	 * 
 	 * @return extent
 	 */
-	inline Vec3<T> getExtent() const;
+	FORCE_INLINE Vec3<T> getExtent() const;
 
 	/**
 	 * @brief Get box volume
 	 * 
 	 * @return volume
 	 */
-	inline T getVolume() const;
+	FORCE_INLINE T getVolume() const;
 
 	/**
 	 * @brief Comparison operators
@@ -69,8 +69,8 @@ public:
 	 * @return @c true if box are equal (same min and max), false otherwise
 	 * @{
 	 */
-	inline bool operator==(const Box<T> & b) const;
-	inline bool operator!=(const Box<T> & b) const;
+	FORCE_INLINE bool operator==(const Box<T> & b) const;
+	FORCE_INLINE bool operator!=(const Box<T> & b) const;
 	/** @} */
 
 	/**
@@ -80,9 +80,9 @@ public:
 	 * @{
 	 */
 	/** @return extended box */
-	inline Box<T> operator+(const Vec3<T> & v) const;
+	FORCE_INLINE Box<T> operator+(const Vec3<T> & v) const;
 	/** @return self */
-	inline Box<T> & operator+=(const Vec3<T> & v);
+	FORCE_INLINE Box<T> & operator+=(const Vec3<T> & v);
 	/** @} */
 
 	/**
@@ -92,9 +92,9 @@ public:
 	 * @{
 	 */
 	/** @return exteded box */
-	inline Box<T> operator+(const Box<T> & b) const;
+	FORCE_INLINE Box<T> operator+(const Box<T> & b) const;
 	/** @return self */
-	inline Box<T> & operator+=(const Box<T> & b);
+	FORCE_INLINE Box<T> & operator+=(const Box<T> & b);
 	/** @} */
 
 	/**
@@ -105,8 +105,8 @@ public:
 	 * @return @c true if inside[contains], @c false otherwise
 	 * @{
 	 */
-	inline bool inside(const Box<T> & b) const;
-	inline bool contains(const Box<T> & b) const;
+	FORCE_INLINE bool inside(const Box<T> & b) const;
+	FORCE_INLINE bool contains(const Box<T> & b) const;
 	/** @} */
 
 	/**
@@ -116,7 +116,7 @@ public:
 	 * 
 	 * @return @c true if point is inside, @c false otherwise
 	 */
-	inline bool contains(const Vec3<T> & v) const;
+	FORCE_INLINE bool contains(const Vec3<T> & v) const;
 	
 	/**
 	 * @brief Check if two boxes overlaps
@@ -125,7 +125,7 @@ public:
 	 * 
 	 * @return @c true if overlap, @c false otherwise
 	 */
-	inline bool intersect(const Box<T> & b) const;
+	FORCE_INLINE bool intersect(const Box<T> & b) const;
 	
 	/**
 	 * @brief Returns the overlap between two boxes
@@ -141,7 +141,7 @@ public:
 	 * 
 	 * @param [in] stream output stream
 	 */
-	inline void print(FILE * stream = stdout) const;
+	FORCE_INLINE void print(FILE * stream = stdout) const;
 };
 
 template<typename T>
@@ -261,5 +261,12 @@ void Box<float32>::print(FILE * stream) const
 {
 	fprintf(stream, "min(%.3f, %.3f, %.3f) : max(%.3f, %.3f, %.3f)\n", min.x, min.y, min.z, max.x, max.y, max.z);
 }
+
+/// @brief Common type definitions
+/// @{
+typedef Box<float32>	box;
+typedef Box<int32>		ibox;
+typedef Box<uint32>		ubox;
+/// @}
 
 #endif

@@ -6,7 +6,7 @@
 #include "app/app_misc.h"
 
 /**
- * @class EngineLoop engine/engine_loop.h
+ * @class EngineLoop core/engine_loop.h
  * @brief This is the actual application interface
  * 
  * The class exposes methods that covers the application

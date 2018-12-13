@@ -21,6 +21,7 @@
 	expansion(PFNGLENABLEPROC, glEnable) \
 	expansion(PFNGLDISABLEPROC, glDisable) \
 	expansion(PFNGLGENBUFFERSPROC, glGenBuffers) \
+	expansion(PFNGLDELETEBUFFERSPROC, glDeleteBuffers) \
 	expansion(PFNGLBINDBUFFERPROC, glBindBuffer) \
 	expansion(PFNGLBUFFERDATAPROC, glBufferData) \
 	expansion(PFNGLBUFFERSUBDATAPROC, glBufferSubData) \

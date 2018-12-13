@@ -269,7 +269,7 @@ public:
 //////////////////////////////////////////////////
 
 template<typename T>
-Vec3<T>::Vec3() {}
+Vec3<T>::Vec3() : x(), y(), z() {}
 
 template<typename T>
 Vec3<T>::Vec3(const VT data) : data(data) {}
@@ -776,6 +776,8 @@ typedef Vec3<uint32>	uvec3;
 
 typedef ivec3 point3;
 typedef uvec3 dim3;
+
+typedef Vec3<ubyte> Color;
 /// @}
 
 #endif

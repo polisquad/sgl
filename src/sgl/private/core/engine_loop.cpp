@@ -1,4 +1,4 @@
-#include "engine/engine_loop.h"
+#include "core/engine_loop.h"
 #include "gldrv/gldrv.h"
 
 int32 EngineLoop::preInit()
