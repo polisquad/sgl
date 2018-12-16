@@ -42,10 +42,6 @@ public:
 	 * @return @c true if event was triggered, @c false if timed out
 	 */
 	virtual bool wait(uint32 waitTime = 0xffffffff) = 0;
-
-	/**
-	 * 
-	 */
 };
 
 #endif
