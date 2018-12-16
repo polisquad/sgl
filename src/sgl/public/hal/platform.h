@@ -80,7 +80,9 @@
 	#define GCC_ALIGN(n) alignas(n)
 #endif
 
-/// Miscs
+/// Assertions
+
+#include <cassert>
 
 #ifndef ASSERT
 	#define ASSERT(cond, text) assert(cond && text)

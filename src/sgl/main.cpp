@@ -8,6 +8,8 @@
 #include "hal/runnable_pthread.h"
 #include "hal/runnable.h"
 #include "hal/threading.h"
+#include "hal/event_pthread.h"
+#include "async/future.h"
 
 // Just using it to measure threading performance
 #include <omp.h>
@@ -25,9 +27,49 @@ namespace Test
 	/// @}
 }
 
+class CalcSomething : public Runnable
+{
+protected:
+	uint32 workerId;
+
+public:
+	CalcSomething(uint32 _workerId) : workerId(_workerId) {}
+
+	virtual uint32 run() override
+	{
+		static PThreadEvent futureState;
+		futureState.create();
+		if (workerId == 0)
+		{
+			printf("I'm going to sleep ...\n");
+			sleep(2.f);
+			printf("deploying\n");
+			futureState.trigger(true);
+		}
+		else
+		{
+			printf("I'm waiting ...\n");
+			if (futureState.wait(10000))
+				//futureState.trigger(),
+				printf("Here we go, I'm number %u\n", workerId);
+			else
+				printf("I'm tired of waiting you moron\n");
+		}
+	}
+};
+
 int main()
 {
 	Memory::createGMalloc();
+	srand(clock());
+
+	Array<RunnableThread*> threads;
+	for (uint8 k = 0; k < 8; ++k)
+		threads.push(RunnableThread::create(new CalcSomething(k), "MyThread"));
+
+	for (uint8 k = 0; k < 8; ++k)
+		delete threads[k];
+
 	//return Test::array();
 }
 
