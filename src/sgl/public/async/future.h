@@ -7,6 +7,7 @@
 #include "hal/platform_process.h"
 #include "templates/atomic.h"
 #include "templates/function.h"
+#include "templates/reference.h"
 #include "templates/shared_ptr.h"
 
 /**
@@ -25,7 +26,7 @@ public:
 	FORCE_INLINE GenericFutureState(Function<void()> && _callback) :
 		completionEvent(PlatformProcess::getEvent()),
 		bComplete(false),
-		callback(_callback) {}
+		callback(::move(_callback)) {}
 
 
 	/// @brief Destructor
@@ -47,7 +48,7 @@ public:
 		{
 			ScopeLock _(&mutex);
 			if (!isComplete()) // Check again, maybe it changed
-				callback = _callback;
+				callback = ::move(_callback);
 		}
 
 		// If it's already completed, run it
@@ -61,7 +62,7 @@ public:
 	 * 
 	 * @return @c false if timed out, @c true otherwise (result available)
 	 */
-	FORCE_INLINE bool wait(uint32 waitTime = 0xffffffff) const { return completionEvent->wait(waitTime); }
+	FORCE_INLINE bool wait(uint32 waitTime = ((uint32)-1)) const { return completionEvent->wait(waitTime); }
 
 protected:
 	/// @brief Mark as complete and signal waiting threads
@@ -146,13 +147,13 @@ public:
 	FORCE_INLINE bool isReady() const { return state & state->isComplete(); }
 
 	/// @brief Waits for the result to be ready
-	FORCE_INLINE void wait(uint32 waitTime = ((uint32)-1)) const { while (!wait(waitTime)); }
+	FORCE_INLINE void wait(uint32 waitTime = ((uint32)-1)) const { return state && state->wait(waitTime); }
 
 protected:
 	/// @brief Default-cosntructor, internal use only
 	FORCE_INLINE BasePromise() : state(std::make_shared<FutureState<T>>()) {}
 
-	/// @brief State-constructor
+	/// @brief State-constructor, internal use only
 	FORCE_INLINE BasePromise(const StateRef & _state) : state(_state) {}
 };
 
