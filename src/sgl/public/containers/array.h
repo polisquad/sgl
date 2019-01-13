@@ -43,7 +43,7 @@ public:
 		/// @brief Array-constructor
 		/// @{
 		View(T * _buffer, uint64 _count) : buffer(_buffer), count(_count) {}
-		View(T * begin, T * end) : buffer(begin), count((reinterpret_cast<uint64>(end) - reinterpret_cast<uint64>(begin)) / sizeof(T)) {};
+		View(Iterator begin, Iterator end) : buffer(begin), count((reinterpret_cast<uint64>(end) - reinterpret_cast<uint64>(begin)) / sizeof(T)) {};
 		/// @}
 		
 		/// @brief Get elements count
@@ -103,7 +103,6 @@ public:
 	}
 
 	/// @brief Copy-constructor
-	/// @{
 	FORCE_INLINE Array(const Array<T> & arr) :
 		allocator(arr.allocator),
 		buffer(nullptr),
@@ -114,6 +113,8 @@ public:
 		buffer = reinterpret_cast<T*>(allocator->malloc(size * sizeof(T)));
 		PlatformMemory::memcpy(buffer, arr.buffer, size * sizeof(T));
 	}
+
+	/// @brief Move-constructor
 	FORCE_INLINE Array(Array<T> && arr) :
 		allocator(arr.allocator),
 		buffer(arr.buffer), // Steal memory
@@ -123,7 +124,6 @@ public:
 		// Take back memory from rvalue
 		arr.buffer = nullptr;
 	}
-	/// @}
 
 	/// @brief Destructor, destructs objects and deallocates buffer
 	FORCE_INLINE ~Array()
@@ -137,8 +137,7 @@ public:
 		}
 	}
 
-	/// @brief Assignment operator
-	/// @{
+	/// @brief Copy-assignment
 	FORCE_INLINE Array<T> & operator=(const Array<T> & arr)
 	{
 		// Deep copy
@@ -149,6 +148,8 @@ public:
 		reset(arr.size);
 		PlatformMemory::memcpy(buffer, arr.buffer, size * sizeof(T));
 	}
+
+	/// @brief Move-assignment
 	FORCE_INLINE Array<T> & operator=(Array<T> && arr)
 	{
 		allocator	= arr.allocator;
@@ -161,7 +162,6 @@ public:
 		// Take it back
 		arr.buffer = nullptr;
 	}
-	/// @}
 
 	/// @brief Get elements count
 	FORCE_INLINE uint64 getCount() const { return count; }
@@ -481,36 +481,28 @@ public:
 	 * @return sliced copy
 	 * @{
 	 */
-	Array<T> slice(uint64 start, uint64 end = 0)
+	Array<T> slice(uint64 start, uint64 end = 0);
+	FORCE_INLINE Array<T> slice(Iterator begin, Iterator end)
 	{
-		// Allocate buffer
-		const uint64 _count = end - start;
-		sizet _size = 2;
-		while (_size < _count) _size *= 2;
-		T * _buffer = reinterpret_cast<T*>(allocator->malloc(_size * sizeof(T)));
+		const uint64 _start	= reinterpret_cast<uint64>(begin) - reinterpret_cast<uint64>(buffer);
+		const uint64 _end	= reinterpret_cast<uint64>(end) - reinterpret_cast<uint64>(buffer);
 
-		// Construct objects
-		for (uint64 i = 0; i < _count; ++i)
-			new (_buffer + i) T(buffer[start + i]);
-		
-		return Array<T>(_buffer, _size, _count, allocator);
+		return slice(_start, _end);
 	}
+	/// @}
 
 	/// This version uses memcpy instead of
 	/// copy constructing each object
-	Array<T> sliceUnsafe(uint64 start, uint64 end = 0)
+	/// @{
+	Array<T> sliceUnsafe(uint64 start, uint64 end = 0);
+	Array<T> sliceUnsafe(Iterator begin, Iterator end)
 	{
-		// Allocate buffer
-		const uint64 _count = end - start;
-		sizet _size = 2;
-		while (_size < _count) _size *= 2;
-		T * _buffer = reinterpret_cast<T*>(allocator->malloc(_size * sizeof(T)));
+		const uint64 _start	= reinterpret_cast<uint64>(begin) - reinterpret_cast<uint64>(buffer);
+		const uint64 _end	= reinterpret_cast<uint64>(end) - reinterpret_cast<uint64>(buffer);
 
-		// Copy buffer
-		PlatformMemory::memcpy(_buffer, buffer + start, _count * sizeof(T));
-		
-		return Array<T>(_buffer, _size, _count, allocator);
+		return sliceUnsafe(_start, _end);
 	}
+	/// @}
 
 protected:
 	/**
@@ -706,6 +698,41 @@ uint64 Array<T>::filter(Filter filter)
 	// Update count
 	count = j;
 	return removed;
+}
+
+template<typename T>
+Array<T> Array<T>::slice(uint64 start, uint64 end)
+{
+	end = end > 0 ? end : count;
+
+	// Allocate buffer
+	const uint64 _count = end - start;
+	sizet _size = 2;
+	while (_size < _count) _size *= 2;
+	T * _buffer = reinterpret_cast<T*>(allocator->malloc(_size * sizeof(T)));
+
+	// Construct objects
+	for (uint64 i = 0; i < _count; ++i)
+		new (_buffer + i) T(buffer[start + i]);
+	
+	return Array<T>(_buffer, _size, _count, allocator);
+}
+
+template<typename T>
+Array<T> Array<T>::sliceUnsafe(uint64 start, uint64 end)
+{
+	end = end > 0 ? end : count;
+
+	// Allocate buffer
+	const uint64 _count = end - start;
+	sizet _size = 2;
+	while (_size < _count) _size *= 2;
+	T * _buffer = reinterpret_cast<T*>(allocator->malloc(_size * sizeof(T)));
+
+	// Copy buffer
+	PlatformMemory::memcpy(_buffer, buffer + start, _count * sizeof(T));
+	
+	return Array<T>(_buffer, _size, _count, allocator);
 }
 
 #endif

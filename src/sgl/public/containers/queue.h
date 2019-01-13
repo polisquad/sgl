@@ -36,11 +36,15 @@ protected:
 	Node * tail;
 
 	/// @brief Number of clients in queue
-	uint64 counter;
+	uint64 numClients;
 
 public:
 	/// @brief Default-construct(or
-	FORCE_INLINE Queue(Malloc * _allocator = gMalloc);
+	FORCE_INLINE Queue(Malloc * _allocator = gMalloc) :
+		allocator(_allocator),
+		head(nullptr),
+		tail(nullptr),
+		numClients(0ULL) {}
 	
 	/**
 	 * @brief Push element to the back of the queue
@@ -52,21 +56,18 @@ public:
 	/**
 	 * @brief Pop element from the front
 	 * 
-	 * @return head of the queue,
-	 * or @c nullptr
+	 * @param [out] _data data contained in the head
+	 * 
+	 * @return true if queue not empty
 	 */
-	T pop();
+	bool pop(T & _data);
 
 	/// @brief Get number of clients in queue
-	FORCE_INLINE uint64 getNumClients() { return counter; };
+	/// @{
+	FORCE_INLINE uint64 getCount() { return numClients; }
+	FORCE_INLINE uint64 getNumClients() { return numClients; };
+	/// @}
 };
-
-template<typename T>
-Queue<T>::Queue(Malloc * _allocator) :
-	allocator(_allocator),
-	head(nullptr),
-	tail(nullptr),
-	counter(0ULL) {}
 
 template<typename T>
 void Queue<T>::push(const T & elem)
@@ -76,9 +77,7 @@ void Queue<T>::push(const T & elem)
 
 	// Push to back
 	if (UNLIKELY(tail == nullptr))
-	{
 		head = tail = node;
-	}
 	else
 	{
 		tail->next = node;
@@ -86,11 +85,11 @@ void Queue<T>::push(const T & elem)
 	}
 
 	// Increment counter
-	++counter;
+	++numClients;
 }
 
 template<typename T>
-T Queue<T>::pop()
+bool Queue<T>::pop(T & _data)
 {
 	if (LIKELY(head != nullptr))
 	{
@@ -99,10 +98,13 @@ T Queue<T>::pop()
 		head = head->next;
 
 		// Decrement counter
-		--counter;
+		--numClients;
 		
-		return node->data;
+		_data = node->data;
+		return true;
 	}
+
+	return false;
 }
 
 #endif

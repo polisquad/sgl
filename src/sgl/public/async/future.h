@@ -63,6 +63,16 @@ public:
 	 * @return @c false if timed out, @c true otherwise (result available)
 	 */
 	FORCE_INLINE bool wait(uint32 waitTime = ((uint32)-1)) const { return completionEvent->wait(waitTime); }
+	
+	/// @brief Reset state, can be waited again
+	FORCE_INLINE void reset()
+	{
+		{
+			ScopeLock _(&mutex);
+			bComplete = false;
+		}
+		completionEvent->reset();
+	}
 
 protected:
 	/// @brief Mark as complete and signal waiting threads
@@ -172,10 +182,31 @@ public:
 	Promise() = default;
 
 	/// @brief Returns future result (waits for the result to be available)
-	FORCE_INLINE T get() const { return this->state->getResult(); }
+	FORCE_INLINE const T & get() const { return this->state->getResult(); }
 
 	/// @brief Sets future result (and signal waiting threads)
 	FORCE_INLINE void set(const T & result) { this->state->setResult(result); }
+
+	/// @brief Reset state
+	FORCE_INLINE void reset() { this->state->reset(); }
+};
+
+/// @brief Void promise specialization
+template<>
+class Promise<void> : BasePromise<int32>
+{
+public:
+	/// @brief Inherit constructors
+	using BasePromise<int32>::BasePromise;
+
+	/// @brief Default-constructor
+	Promise() = default;
+
+	/// @brief Returns future result
+	FORCE_INLINE void get() const { this->state->wait(); }
+
+	/// @brief Mark complete
+	FORCE_INLINE void set() { this->state->setResult(0); }
 };
 
 #endif

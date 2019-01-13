@@ -164,7 +164,10 @@ int32 Test::queue()
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		qAnsi.push(i);
 	for (uint64 i = 0; i < 1024 * 128; ++i)
-		qAnsi.pop();
+	{
+		uint64 client;
+		qAnsi.pop(client);
+	}
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		qAnsi.push(i);
 	printf("QAnsi           | %ld ticks\n", clock() - start);
@@ -173,7 +176,10 @@ int32 Test::queue()
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		qBinned.push(i);
 	for (uint64 i = 0; i < 1024 * 128; ++i)
-		qBinned.pop();
+	{
+		uint64 client;
+		qBinned.pop(client);
+	}
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		qBinned.push(i);
 	printf("QBinned         | %ld ticks\n", clock() - start);

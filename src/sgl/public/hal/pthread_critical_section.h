@@ -5,7 +5,7 @@
 #include <pthread.h>
 
 #if !PLATFORM_USE_PTHREADS
-	#error "Trying to include pthreads in a paltform that does not support them"
+	#error "Trying to include pthreads in a platform that does not support them"
 #endif
 
 /**

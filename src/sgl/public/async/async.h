@@ -33,7 +33,11 @@ protected:
 
 public:
 	/// @brief Default-constructor
-	FORCE_INLINE AsyncRunnable(Function<RetT()> && _function, const Promise<RetT> & _result, const Promise<RunnableThread*> & _threadPromise) :
+	FORCE_INLINE AsyncRunnable(
+		Function<RetT()> && _function,
+		Promise<RetT> && _result,
+		Promise<RunnableThread*> && _threadPromise
+	) :
 		function(_function),
 		result(_result),
 		threadPromise(_threadPromise) {}
@@ -64,7 +68,11 @@ public:
  * @return result promise
  */
 template<typename RetT>
-Promise<RetT> async(AsyncExecutionMethod executionMethod, Function<RetT()> && function, Function<void()> && onComplete = Function<void()>())
+Promise<RetT> async(
+	AsyncExecutionMethod executionMethod,
+	Function<RetT()> && function,
+	Function<void()> && onComplete = Function<void()>()
+)
 {
 	Promise<RetT> result;
 
@@ -76,7 +84,7 @@ Promise<RetT> async(AsyncExecutionMethod executionMethod, Function<RetT()> && fu
 			/// Here we'll find the runnable thread created for
 			/// this task
 			Promise<RunnableThread*> threadPromise;
-			AsyncRunnable<RetT> * runnable = new AsyncRunnable<RetT>(::move(function), result, threadPromise);
+			AsyncRunnable<RetT> * runnable = new AsyncRunnable<RetT>(::move(function), ::move(result), ::move(threadPromise));
 
 			// Create runnable thread and run the async runnable
 			RunnableThread * thread = RunnableThread::create(runnable, "AsyncRunnable");
