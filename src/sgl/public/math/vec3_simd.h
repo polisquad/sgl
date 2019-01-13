@@ -1,23 +1,25 @@
 #pragma once
 
-#include "core_types.h"
-#include "hal/platform_math.h"
-#include "math_fwd.h"
-#include "templates/is_void.h"
-#include "templates/simd.h"
+#include "vec3.h"
 
 /**
- * A 3-component vector
- * 
- * If possible uses vector intrinsics to
- * boost performance
+ * Vector intrinsics specialization
  */
-template<typename T, bool = !IsVoid<typename Simd::Vector<T, 4>::Type>::value>
-struct Vec3
+template<typename T>
+struct GCC_PACK(16) Vec3<T, true>
 {
 public:
+	/// Vector operations class
+	using VecOps = Simd::Vector<T, 4>;
+
+	/// Intrinsic type
+	using VecT = typename VecOps::Type;
+
 	union
 	{
+		/// Intrinsic vector
+		VecT data;
+
 		/// Data buffer
 		T buffer[3];
 
@@ -32,13 +34,16 @@ public:
 
 public:
 	/// Default constructor, zero-initialize
-	FORCE_INLINE Vec3() : x(0), y(0), z(0) {}
+	FORCE_INLINE Vec3() : data(VecOps::load(T(0))) {}
+
+	/// Intrinsic constructor
+	FORCE_INLINE Vec3(VecT _data) : data(_data) {}
 
 	/// Components constructor
 	FORCE_INLINE Vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
 
 	/// Scalar constructor
-	FORCE_INLINE Vec3(T s) : x(s), y(s), z(s) {}
+	FORCE_INLINE Vec3(T s) : data(VecOps::load(s)) {}
 
 	/// Buffer-access operator
 	/// @{
@@ -61,8 +66,7 @@ public:
 	/// Returns normal vector
 	FORCE_INLINE Vec3<T> getNormal() const
 	{
-		const T size = PlatformMath::sqrt(x * x + y * y + z * z);
-		return Vec3<T>(x / size, y / size, z / size);
+		return Vec3<T>(VecOps::div(data, VecOps::load(PlatformMath::sqrt(x * x + y * y + z * z))));
 	}
 
 	/// Normalizes in place
@@ -95,7 +99,7 @@ public:
 	/// Use @ref isNearlyZero() for floating points
 	FORCE_INLINE bool operator==(const Vec3<T> & v) const
 	{
-		return x == v.x & y == v.y & z == v.z;
+		return x < v.x == y < v.y == z < v.z;
 	}
 	FORCE_INLINE bool operator!=(const Vec3<T> & v) const
 	{
@@ -201,19 +205,19 @@ public:
 	 */
 	FORCE_INLINE Vec3<T> operator+(const Vec3<T> & v) const
 	{
-		return Vec3<T>(x + v.x, y + v.y, z + v.z);
+		return Vec3<T>(VecOps::add(data, v.data));
 	}
 	FORCE_INLINE Vec3<T> operator-(const Vec3<T> & v) const
 	{
-		return Vec3<T>(x - v.x, y - v.y, z - v.z);
+		return Vec3<T>(VecOps::sub(data, v.data));
 	}
 	FORCE_INLINE Vec3<T> operator*(const Vec3<T> & v) const
 	{
-		return Vec3<T>(x * v.x, y * v.y, z * v.z);
+		return Vec3<T>(VecOps::mul(data, v.data));
 	}
 	FORCE_INLINE Vec3<T> operator/(const Vec3<T> & v) const
 	{
-		return Vec3<T>(x / v.x, y / v.y, z / v.z);
+		return Vec3<T>(VecOps::div(data, v.data));
 	}
 	/// @}
 
@@ -226,19 +230,19 @@ public:
 	 */
 	FORCE_INLINE Vec3<T> operator+(T s) const
 	{
-		return Vec3<T>(x + s, y + s, z + s);
+		return Vec3<T>(VecOps::add(data, VecOps::load(s)));
 	}
 	FORCE_INLINE Vec3<T> operator-(T s) const
 	{
-		return Vec3<T>(x - s, y - s, z - s);
+		return Vec3<T>(VecOps::sub(data, VecOps::load(s)));
 	}
 	FORCE_INLINE Vec3<T> operator*(T s) const
 	{
-		return Vec3<T>(x * s, y * s, z * s);
+		return Vec3<T>(VecOps::mul(data, VecOps::load(s)));
 	}
 	FORCE_INLINE Vec3<T> operator/(T s) const
 	{
-		return Vec3<T>(x / s, y / s, z / s);
+		return Vec3<T>(VecOps::div(data, VecOps::load(s)));
 	}
 	/// @}
 	
@@ -275,69 +279,20 @@ public:
 	void print(FILE * out = stdout) const;
 };
 
-#if PLATFORM_ENABLE_SIMD
-	#include "vec3_simd.h"
-#endif
-
 template<>
-FORCE_INLINE bool Vec3<float32, false>::isNearlyZero() const
+FORCE_INLINE bool Vec3<float32, true>::isNearlyZero() const
 {
-	return PlatformMath::abs(x) <= FLT_EPSILON
-		& PlatformMath::abs(y) <= FLT_EPSILON
-		& PlatformMath::abs(z) <= FLT_EPSILON;
+	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(data, VecOps::load(-0.f)), VecOps::load(-FLT_EPSILON)) >= 0xe;
 }
 
 template<>
-FORCE_INLINE bool Vec3<float32, false>::isEqual(const Vec3<float32> & v) const
+FORCE_INLINE bool Vec3<float32, true>::isEqual(const Vec3<float32> & v) const
 {
-	return PlatformMath::abs(x - v.x) <= FLT_EPSILON
-		& PlatformMath::abs(y - v.y) <= FLT_EPSILON
-		& PlatformMath::abs(z - v.z) <= FLT_EPSILON;
+	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecOps::load(-0.f)), VecOps::load(-FLT_EPSILON)) >= 0xe;
 }
 
 template<>
-FORCE_INLINE void Vec3<float32, false>::print(FILE * out) const
+FORCE_INLINE void Vec3<float32, true>::print(FILE * out) const
 {
 	fprintf(out, "v3f(%.3f, %.3f, %.3f)\n", x, y, z);
 }
-
-template<>
-FORCE_INLINE void Vec3<int32, false>::print(FILE * out) const
-{
-	fprintf(out, "v3i(%d, %d, %d)\n", x, y, z);
-}
-
-template<>
-FORCE_INLINE void Vec3<uint32, false>::print(FILE * out) const
-{
-	fprintf(out, "v3u(%u, %u, %u)\n", x, y, z);
-}
-
-/**
- * Scalar-vector operations
- * 
- * @param [in] s,v scalar and vector operands
- * @return new vector
- * @{
- */
-template<typename T>
-FORCE_INLINE Vec3<T> operator+(T s, const Vec3<T> & v)
-{
-	return v + s;
-}
-template<typename T>
-FORCE_INLINE Vec3<T> operator-(T s, const Vec3<T> & v)
-{
-	return Vec3<T>(s) - v;
-}
-template<typename T>
-FORCE_INLINE Vec3<T> operator*(T s, const Vec3<T> & v)
-{
-	return v * s;
-}
-template<typename T>
-FORCE_INLINE Vec3<T> operator/(T s, const Vec3<T> & v)
-{
-	return Vec3<T>(s) / v;
-}
-/// @}
