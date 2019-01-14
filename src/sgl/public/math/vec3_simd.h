@@ -34,16 +34,28 @@ public:
 
 public:
 	/// Default constructor, zero-initialize
-	FORCE_INLINE Vec3() : data(VecOps::load(T(0))) {}
+	CONSTEXPR FORCE_INLINE Vec3() : buffer{T(0), T(0), T(0)} {}
 
 	/// Intrinsic constructor
-	FORCE_INLINE Vec3(VecT _data) : data(_data) {}
+	CONSTEXPR FORCE_INLINE Vec3(VecT _data) : data(_data) {}
 
 	/// Components constructor
-	FORCE_INLINE Vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
+	CONSTEXPR FORCE_INLINE Vec3(T _x, T _y, T _z) : buffer{_x, _y, _z} {}
 
 	/// Scalar constructor
-	FORCE_INLINE Vec3(T s) : data(VecOps::load(s)) {}
+	CONSTEXPR FORCE_INLINE Vec3(T s) : buffer{s, s, s} {}
+
+	/// Convert non-intrinsics vector
+	CONSTEXPR FORCE_INLINE Vec3(const Vec3<T, false> & v) : buffer{v.x, v.y, v.z} {}
+
+	/// Convert @ref Vec2
+	CONSTEXPR FORCE_INLINE Vec3(const Vec2<T> & v, T z = T(0)) : buffer{v.x, v.y, z} {}
+
+	/// Convert @ref Vec4
+	/// @{
+	CONSTEXPR FORCE_INLINE Vec3(const Vec4<T, true> & v) : data(v.data) {}
+	CONSTEXPR FORCE_INLINE Vec3(const Vec4<T, false> & v) : buffer{v.x, v.y, v.z} {}
+	/// @}
 
 	/// Buffer-access operator
 	/// @{
@@ -269,10 +281,10 @@ public:
 	}
 
 	/// Convert to another underlying type
-	template<typename U>
-	FORCE_INLINE operator Vec3<U>() const
+	template<typename U, bool bHasVectorIntrinsics>
+	FORCE_INLINE operator Vec3<U, bHasVectorIntrinsics>() const
 	{
-		return Vec3<U>(U(x), U(y), U(z));
+		return Vec3<U, bHasVectorIntrinsics>(U(x), U(y), U(z));
 	}
 
 	/// Print vector to stdout or to specified file
@@ -282,13 +294,13 @@ public:
 template<>
 FORCE_INLINE bool Vec3<float32, true>::isNearlyZero() const
 {
-	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(data, VecOps::load(-0.f)), VecOps::load(-FLT_EPSILON)) >= 0xe;
+	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(data, VecT{-0.f, -0.f, -0.f, -0.f}), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) >= 0xe;
 }
 
 template<>
 FORCE_INLINE bool Vec3<float32, true>::isEqual(const Vec3<float32> & v) const
 {
-	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecOps::load(-0.f)), VecOps::load(-FLT_EPSILON)) >= 0xe;
+	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecT{-0.f, -0.f, -0.f, -0.f}), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) >= 0xe;
 }
 
 template<>

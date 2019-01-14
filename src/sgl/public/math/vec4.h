@@ -32,17 +32,17 @@ public:
 
 public:
 	/// Default constructor, zero-initialize
-	FORCE_INLINE Vec4() : buffer{T(0), T(0), T(0), T(0)} {}
+	CONSTEXPR FORCE_INLINE Vec4() : buffer{T(0), T(0), T(0), T(0)} {}
 
 	/// Components constructor
-	FORCE_INLINE Vec4(T _x, T _y, T _z, T _w) : buffer{_x, _y, _z, _w} {}
+	CONSTEXPR FORCE_INLINE Vec4(T _x, T _y, T _z, T _w) : buffer{_x, _y, _z, _w} {}
 
 	/// Scalar constructor
-	FORCE_INLINE Vec4(T s) : buffer{s, s, s, s} {}
+	CONSTEXPR FORCE_INLINE Vec4(T s) : buffer{s, s, s, s} {}
 
 	/// Extend vec3
-	template<bool bHasVectorType>
-	FORCE_INLINE Vec4(const Vec3<T, bHasVectorType> & v, float32 w = 0.f) : buffer{v.x, v.y, v.z, w} {}
+	template<bool bHasVectorIntrinsics>
+	CONSTEXPR FORCE_INLINE Vec4(const Vec3<T, bHasVectorIntrinsics> & v, float32 w = 0.f) : buffer{v.x, v.y, v.z, w} {}
 
 	/// Buffer-access operator
 	/// @{
@@ -132,7 +132,7 @@ public:
 	//////////////////////////////////////////////////
 	
 	/// Invert vector direction
-	FORCE_INLINE Vec4<T> & operator-()
+	CONSTEXPR FORCE_INLINE Vec4<T> & operator-()
 	{
 		x = -x, y = -y, z = -z, w = -w;
 		return *this;
@@ -203,19 +203,19 @@ public:
 	 * @return new vector
 	 * @{
 	 */
-	FORCE_INLINE Vec4<T> operator+(const Vec4<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec4<T> operator+(const Vec4<T> & v) const
 	{
 		return Vec4<T>(x + v.x, y + v.y, z + v.z, w + v.w);
 	}
-	FORCE_INLINE Vec4<T> operator-(const Vec4<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec4<T> operator-(const Vec4<T> & v) const
 	{
 		return Vec4<T>(x - v.x, y - v.y, z - v.z, w - v.w);
 	}
-	FORCE_INLINE Vec4<T> operator*(const Vec4<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec4<T> operator*(const Vec4<T> & v) const
 	{
 		return Vec4<T>(x * v.x, y * v.y, z * v.z, w * v.w);
 	}
-	FORCE_INLINE Vec4<T> operator/(const Vec4<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec4<T> operator/(const Vec4<T> & v) const
 	{
 		return Vec4<T>(x / v.x, y / v.y, z / v.z, w / v.w);
 	}
@@ -228,19 +228,19 @@ public:
 	 * @return new vector
 	 * @{
 	 */
-	FORCE_INLINE Vec4<T> operator+(T s) const
+	CONSTEXPR FORCE_INLINE Vec4<T> operator+(T s) const
 	{
 		return Vec4<T>(x + s, y + s, z + s, w + s);
 	}
-	FORCE_INLINE Vec4<T> operator-(T s) const
+	CONSTEXPR FORCE_INLINE Vec4<T> operator-(T s) const
 	{
 		return Vec4<T>(x - s, y - s, z - s, w - s);
 	}
-	FORCE_INLINE Vec4<T> operator*(T s) const
+	CONSTEXPR FORCE_INLINE Vec4<T> operator*(T s) const
 	{
 		return Vec4<T>(x * s, y * s, z * s, w * s);
 	}
-	FORCE_INLINE Vec4<T> operator/(T s) const
+	CONSTEXPR FORCE_INLINE Vec4<T> operator/(T s) const
 	{
 		return Vec4<T>(x / s, y / s, z / s, w / s);
 	}
@@ -252,16 +252,16 @@ public:
 	 * @param [in] v vector operand
 	 * @return dot product as T
 	 */
-	FORCE_INLINE Vec4<T> operator&(const Vec4<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec4<T> operator&(const Vec4<T> & v) const
 	{
 		return x * v.x + y * v.y + z * v.z + w * v.w;
 	}
 
 	/// Convert to another underlying type
-	template<typename U>
-	FORCE_INLINE operator Vec4<U>() const
+	template<typename U, bool bHasVectorIntrinsics>
+	FORCE_INLINE operator Vec4<U, bHasVectorIntrinsics>() const
 	{
-		return Vec4<U>(U(x), U(y), U(z), U(w));
+		return Vec4<U, bHasVectorIntrinsics>(U(x), U(y), U(z), U(w));
 	}
 
 	/// Print vector to stdout or to specified file

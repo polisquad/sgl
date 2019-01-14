@@ -34,20 +34,23 @@ public:
 
 public:
 	/// Default constructor, zero-initialize
-	FORCE_INLINE Vec4() : buffer{T(0), T(0), T(0), T(0)} {}
+	CONSTEXPR FORCE_INLINE Vec4() : buffer{T(0), T(0), T(0), T(0)} {}
 
 	/// Intrinsic constructor
-	FORCE_INLINE Vec4(VecT _data) : data(_data) {}
+	CONSTEXPR FORCE_INLINE Vec4(VecT _data) : data(_data) {}
 
 	/// Components constructor
-	FORCE_INLINE Vec4(T _x, T _y, T _z, T _w) : buffer{_x, _y, _z, _w} {}
+	CONSTEXPR FORCE_INLINE Vec4(T _x, T _y, T _z, T _w) : buffer{_x, _y, _z, _w} {}
 
 	/// Scalar constructor
-	FORCE_INLINE Vec4(T s) : buffer{s, s, s, s} {}
+	CONSTEXPR FORCE_INLINE Vec4(T s) : buffer{s, s, s, s} {}
 
-	/// Extend @ref Vec3
-	template<bool bHasVectorType>
-	FORCE_INLINE Vec4(const Vec3<T, bHasVectorType> & v, float w = 0.f) : buffer{v.x, v.y, v.z, w} {}
+	/// Convert non-intrinsic vector
+	CONSTEXPR FORCE_INLINE Vec4(const Vec3<T, false> & v) : buffer{v.x, v.y, v.z, v.w} {}
+
+	/// Convert @ref Vec3
+	template<bool bHasVectorIntrinsics>
+	CONSTEXPR FORCE_INLINE Vec4(const Vec3<T, bHasVectorIntrinsics> & v, float w = 0.f) : buffer{v.x, v.y, v.z, w} {}
 
 	/// Buffer-access operator
 	/// @{
@@ -262,10 +265,10 @@ public:
 	}
 
 	/// Convert to another underlying type
-	template<typename U>
-	FORCE_INLINE operator Vec4<U>() const
+	template<typename U, bool bHasVectorIntrinsics>
+	FORCE_INLINE operator Vec4<U, bHasVectorIntrinsics>() const
 	{
-		return Vec4<U>(U(x), U(y), U(z), U(w));
+		return Vec4<U, bHasVectorIntrinsics>(U(x), U(y), U(z), U(w));
 	}
 
 	/// Print vector to stdout or to specified file

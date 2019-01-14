@@ -1,7 +1,8 @@
 # Build and temp files --------------------------
 /build/
 /temp/
-temp*
+temp
+temp.*
 
 # Binaries --------------------------------------
 /bin/

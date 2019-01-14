@@ -32,13 +32,20 @@ public:
 
 public:
 	/// Default constructor, zero-initialize
-	FORCE_INLINE Vec3() : x(0), y(0), z(0) {}
+	CONSTEXPR FORCE_INLINE Vec3() : buffer{T(0), T(0), T(0)} {}
 
 	/// Components constructor
-	FORCE_INLINE Vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
+	CONSTEXPR FORCE_INLINE Vec3(T _x, T _y, T _z) : buffer{_x, _y, _z} {}
 
 	/// Scalar constructor
-	FORCE_INLINE Vec3(T s) : x(s), y(s), z(s) {}
+	CONSTEXPR FORCE_INLINE Vec3(T s) : buffer{s, s, s} {}
+
+	/// Convert @ref vec2
+	CONSTEXPR FORCE_INLINE Vec3(const Vec2<T> & v, T z = T(0)) : buffer{v.x, v.y, z} {}
+
+	/// Convert @ref Vec4
+	template<bool bHasVectorIntrinsics>
+	CONSTEXPR FORCE_INLINE Vec3(const Vec4<T, bHasVectorIntrinsics> & v) : buffer{v.x, v.y, v.z} {}
 
 	/// Buffer-access operator
 	/// @{
@@ -164,7 +171,7 @@ public:
 	/// @}
 
 	/**
-	 * Vector-scalar compounf assignment
+	 * Vector-scalar compound assignments
 	 * 
 	 * @param [in] s scalar value
 	 * @return self
@@ -199,19 +206,19 @@ public:
 	 * @return new vector
 	 * @{
 	 */
-	FORCE_INLINE Vec3<T> operator+(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T> operator+(const Vec3<T> & v) const
 	{
 		return Vec3<T>(x + v.x, y + v.y, z + v.z);
 	}
-	FORCE_INLINE Vec3<T> operator-(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T> operator-(const Vec3<T> & v) const
 	{
 		return Vec3<T>(x - v.x, y - v.y, z - v.z);
 	}
-	FORCE_INLINE Vec3<T> operator*(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T> operator*(const Vec3<T> & v) const
 	{
 		return Vec3<T>(x * v.x, y * v.y, z * v.z);
 	}
-	FORCE_INLINE Vec3<T> operator/(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T> operator/(const Vec3<T> & v) const
 	{
 		return Vec3<T>(x / v.x, y / v.y, z / v.z);
 	}
@@ -224,19 +231,19 @@ public:
 	 * @return new vector
 	 * @{
 	 */
-	FORCE_INLINE Vec3<T> operator+(T s) const
+	CONSTEXPR FORCE_INLINE Vec3<T> operator+(T s) const
 	{
 		return Vec3<T>(x + s, y + s, z + s);
 	}
-	FORCE_INLINE Vec3<T> operator-(T s) const
+	CONSTEXPR FORCE_INLINE Vec3<T> operator-(T s) const
 	{
 		return Vec3<T>(x - s, y - s, z - s);
 	}
-	FORCE_INLINE Vec3<T> operator*(T s) const
+	CONSTEXPR FORCE_INLINE Vec3<T> operator*(T s) const
 	{
 		return Vec3<T>(x * s, y * s, z * s);
 	}
-	FORCE_INLINE Vec3<T> operator/(T s) const
+	CONSTEXPR FORCE_INLINE Vec3<T> operator/(T s) const
 	{
 		return Vec3<T>(x / s, y / s, z / s);
 	}
@@ -248,7 +255,7 @@ public:
 	 * @param [in] v vector operand
 	 * @return dot product as T
 	 */
-	FORCE_INLINE Vec3<T> operator&(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T> operator&(const Vec3<T> & v) const
 	{
 		return x * v.x + y * v.y + z * v.z;
 	}
@@ -259,16 +266,16 @@ public:
 	 * @param [in] v vector operand
 	 * @return vector orthogonal to the (v1 x v2) plane
 	 */
-	FORCE_INLINE Vec3<T> operator^(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T> operator^(const Vec3<T> & v) const
 	{
 		return Vec3<T>(y * v.z - z * v.y, x * v.z - z * v.x, x * v.y - y * v.x);
 	}
 
 	/// Convert to another underlying type
-	template<typename U>
-	FORCE_INLINE operator Vec3<U>() const
+	template<typename U, bool bHasVectorIntrinsics>
+	FORCE_INLINE operator Vec3<U, bHasVectorIntrinsics>() const
 	{
-		return Vec3<U>(U(x), U(y), U(z));
+		return Vec3<U, bHasVectorIntrinsics>(U(x), U(y), U(z));
 	}
 
 	/// Print vector to stdout or to specified file
