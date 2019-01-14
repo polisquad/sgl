@@ -10,7 +10,7 @@
  * A 4x4 templated matrix
  * with support for vector intrinsics
  */
-template<typename T, bool = !(IsVoid<typename Simd::Vector<T, 4>::Type>::value | IsVoid<typename Simd::Vector<T, 8>::Type>::value)>
+template<typename T, bool = hasVectorIntrinsics(T, 4) & hasVectorIntrinsics(T, 8)>
 struct Mat4
 {
 public:

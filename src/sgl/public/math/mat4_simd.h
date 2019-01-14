@@ -113,33 +113,48 @@ public:
 		return *this;
 	}
 
-	/// Matrix-matrix dot product (multiplication)
-	Mat4<T> operator*(const Mat4<T> & m)
+protected:
+	/// Transposed dot product
+	/// Second matrix is transposed w.r.t to the original matrix
+	Mat4<T> multiplyTransposed(const Mat4<T> & m)
 	{
-		// Transpose matrix for column access
-		// ~6 latency
-		const Mat4<T> mt = m.getTranspose();
+		/// With loop unrolling is slightly more efficient
+		/// I'll leave this here commented in case
+		/// I'll need it
+		/* for (uint8 i = 0; i < 4; ++i)
+		{
+			VecT
+				r0 = VecOps::mul(vec[0], m.vec[0]),
+				r1 = VecOps::mul(vec[0], m.vec[1]),
+				r2 = VecOps::mul(vec[0], m.vec[2]),
+				r3 = VecOps::mul(vec[0], m.vec[3]);
+			
+			r0 = VecOps::hadd(r0, r1),
+			r2 = VecOps::hadd(r2, r3);
+
+			VecOps::hadd(r0, r2);
+		} */
 
 		VecT
-			a0 = VecOps::mul(vec[0], mt.vec[0]),
-			a1 = VecOps::mul(vec[0], mt.vec[1]),
-			a2 = VecOps::mul(vec[0], mt.vec[2]),
-			a3 = VecOps::mul(vec[0], mt.vec[3]),
+			a0 = VecOps::mul(vec[0], m.vec[0]),
+			a1 = VecOps::mul(vec[0], m.vec[1]),
+			a2 = VecOps::mul(vec[0], m.vec[2]),
+			a3 = VecOps::mul(vec[0], m.vec[3]),
 
-			b0 = VecOps::mul(vec[1], mt.vec[0]),
-			b1 = VecOps::mul(vec[1], mt.vec[1]),
-			b2 = VecOps::mul(vec[1], mt.vec[2]),
-			b3 = VecOps::mul(vec[1], mt.vec[3]),
+			b0 = VecOps::mul(vec[1], m.vec[0]),
+			b1 = VecOps::mul(vec[1], m.vec[1]),
+			b2 = VecOps::mul(vec[1], m.vec[2]),
+			b3 = VecOps::mul(vec[1], m.vec[3]),
 
-			c0 = VecOps::mul(vec[2], mt.vec[0]),
-			c1 = VecOps::mul(vec[2], mt.vec[1]),
-			c2 = VecOps::mul(vec[2], mt.vec[2]),
-			c3 = VecOps::mul(vec[2], mt.vec[3]),
+			c0 = VecOps::mul(vec[2], m.vec[0]),
+			c1 = VecOps::mul(vec[2], m.vec[1]),
+			c2 = VecOps::mul(vec[2], m.vec[2]),
+			c3 = VecOps::mul(vec[2], m.vec[3]),
 
-			d0 = VecOps::mul(vec[3], mt.vec[0]),
-			d1 = VecOps::mul(vec[3], mt.vec[1]),
-			d2 = VecOps::mul(vec[3], mt.vec[2]),
-			d3 = VecOps::mul(vec[3], mt.vec[3]);
+			d0 = VecOps::mul(vec[3], m.vec[0]),
+			d1 = VecOps::mul(vec[3], m.vec[1]),
+			d2 = VecOps::mul(vec[3], m.vec[2]),
+			d3 = VecOps::mul(vec[3], m.vec[3]);
 		
 		a0 = VecOps::hadd(a0, a1),
 		a2 = VecOps::hadd(a2, a3),
@@ -161,70 +176,19 @@ public:
 		);
 	}
 
+public:
+	/// Matrix-matrix dot product (multiplication)
+	Mat4<T> operator*(const Mat4<T> & m)
+	{
+		// Transpose matrix for column access
+		return multiplyTransposed(m.getTranspose());
+	}
+
 	/// Dot product compound assignment
 	Mat4<T> & operator*=(const Mat4<T> & m)
 	{
 		// Transpose matrix for column access
-		// ~6 latency
-		const Mat4<T> mt = m.getTranspose();
-
-		/// With loop unrolling is slightly more efficient
-		/// I'll leave this here commented in case
-		/// I'll need it
-		/* for (uint8 i = 0; i < 4; ++i)
-		{
-			VecT
-				r0 = VecOps::mul(vec[0], mt.vec[0]),
-				r1 = VecOps::mul(vec[0], mt.vec[1]),
-				r2 = VecOps::mul(vec[0], mt.vec[2]),
-				r3 = VecOps::mul(vec[0], mt.vec[3]);
-			
-			r0 = VecOps::hadd(r0, r1),
-			r2 = VecOps::hadd(r2, r3);
-
-			vec[i] = VecOps::hadd(r0, r2);
-		}
-
-		return *this; */
-
-		VecT
-			a0 = VecOps::mul(vec[0], mt.vec[0]),
-			a1 = VecOps::mul(vec[0], mt.vec[1]),
-			a2 = VecOps::mul(vec[0], mt.vec[2]),
-			a3 = VecOps::mul(vec[0], mt.vec[3]),
-
-			b0 = VecOps::mul(vec[1], mt.vec[0]),
-			b1 = VecOps::mul(vec[1], mt.vec[1]),
-			b2 = VecOps::mul(vec[1], mt.vec[2]),
-			b3 = VecOps::mul(vec[1], mt.vec[3]),
-
-			c0 = VecOps::mul(vec[2], mt.vec[0]),
-			c1 = VecOps::mul(vec[2], mt.vec[1]),
-			c2 = VecOps::mul(vec[2], mt.vec[2]),
-			c3 = VecOps::mul(vec[2], mt.vec[3]),
-
-			d0 = VecOps::mul(vec[3], mt.vec[0]),
-			d1 = VecOps::mul(vec[3], mt.vec[1]),
-			d2 = VecOps::mul(vec[3], mt.vec[2]),
-			d3 = VecOps::mul(vec[3], mt.vec[3]);
-		
-		a0 = VecOps::hadd(a0, a1),
-		a2 = VecOps::hadd(a2, a3),
-
-		b0 = VecOps::hadd(b0, b1),
-		b2 = VecOps::hadd(b2, b3),
-
-		c0 = VecOps::hadd(c0, c1),
-		c2 = VecOps::hadd(c2, c3),
-
-		d0 = VecOps::hadd(d0, d1),
-		d2 = VecOps::hadd(d2, d3);
-
-		vec[0] = VecOps::hadd(a0, a2),
-		vec[1] = VecOps::hadd(b0, b2),
-		vec[2] = VecOps::hadd(c0, c2),
-		vec[3] = VecOps::hadd(d0, d2);
-		return *this;
+		*this = multiplyTransposed(m,getTranspose());
 	}
 
 	/**
@@ -441,7 +405,7 @@ public:
 	//////////////////////////////////////////////////
 	
 	/// Create a diag matrix from single scalar value
-	static FORCE_INLINE Mat4<T> eye(T s)
+	static CONSTEXPR FORCE_INLINE Mat4<T> eye(T s)
 	{
 		return Mat4<float32, true>(
 			s, T(0), T(0), T(0),
@@ -453,7 +417,7 @@ public:
 
 	/// Create a diag matrix with specified diagonal
 	/// @{
-									static FORCE_INLINE Mat4<T> diag(T a, T b, T c, T d)
+									static CONSTEXPR FORCE_INLINE Mat4<T> diag(T a, T b, T c, T d)
 									{
 										return Mat4<T>(
 											a, T(0), T(0), T(0),
@@ -462,7 +426,7 @@ public:
 											T(0), T(0), T(0), d
 										);
 									}
-	template<bool bHasVectorIntrinsics>	static FORCE_INLINE Mat4<T> diag(const Vec4<T, bHasVectorIntrinsics> & v) { return diag(v.x, v.y, v.z, v.w); }
+	template<bool bHVI>	static CONSTEXPR FORCE_INLINE Mat4<T> diag(const Vec4<T, bHVI> & v) { return diag(v.x, v.y, v.z, v.w); }
 	/// @}
 
 	/// Create a transform matrix with scaling
@@ -476,12 +440,12 @@ public:
 											T(0), T(0), T(0), T(1)
 										);
 									}
-	template<bool bHasVectorIntrinsics>	static FORCE_INLINE Mat4<T> scaling(const Vec3<T, bHasVectorIntrinsics> & v) { return scaling(v.x, v.y, v.z); }
+	template<bool bHVI>	static CONSTEXPR FORCE_INLINE Mat4<T> scaling(const Vec3<T, bHVI> & v) { return scaling(v.x, v.y, v.z); }
 	/// @}
 
 	/// Create a transform matrix with translation
 	/// @{
-									static FORCE_INLINE Mat4<T> translation(T x, T y, T z)
+									static CONSTEXPR FORCE_INLINE Mat4<T> translation(T x, T y, T z)
 									{
 										return Mat4<T>(
 											 T(1),  T(0),  T(0), x,
@@ -490,27 +454,77 @@ public:
 											 T(0),  T(0),  T(0),  T(1)
 										);
 									}
-	template<bool bHasVectorIntrinsics>	static FORCE_INLINE Mat4<T> translation(const Vec3<T, bHasVectorIntrinsics> & v) { return translation(v.x, v.y, v.z); }
+	template<bool bHVI>	static CONSTEXPR FORCE_INLINE Mat4<T> translation(const Vec3<T, bHVI> & v) { return translation(v.x, v.y, v.z); }
 	/// @}
 
 	/// Create a transform matrix with rotation
 	/// @{
-	template<bool bHasVectorIntrinsics>	static FORCE_INLINE Mat4<T> rotation(T angle, const Vec3<T, bHasVectorIntrinsics> & axis);
+	template<bool bHVI>
+	static FORCE_INLINE Mat4<T> rotation(const Quat<T, bHVI> & q)
+	{
+		/// @ref http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
+		return Mat4<T>(
+			q.w, q.z, -q.y, q.x,
+			-q.z, q.w, q.x, q.y,
+			q.y, -q.x, q.w, q.z,
+			-q.x, -q.y, -q.z, q.w
+		).multiplyTransposed(Mat4<T>(
+			q.w, -q.z, q.y, q.x,
+			q.z, q.w, -q.x, q.y,
+			-q.y, q.x, q.w, q.z,
+			-q.x, -q.y, -q.z, q.w
+		));
+	}
+	template<bool bHVI>	static FORCE_INLINE Mat4<T> rotation(T angle, const Vec3<T, bHVI> & axis) { return rotation(Quat<T, bHVI>(angle, axis)); }
 	/// @}
 
 	/// Create a complete transform matrix
-	static FORCE_INLINE Mat4<T> transform(const Vec3<T> & v,/** Quat<T> rotation, */const Vec3<T> & s/*  = Vec3<T>::unit */)
+	static FORCE_INLINE Mat4<T> transform(const Vec3<T> & t, const Quat<T> & r, const Vec3<T> & s = Vec3<T>::unit)
 	{
 		/// @todo Matrix multiplication is slow, there's a better (more complicated) way
-		return translation(v) * scaling(s);
+		return translation(t) * rotation(r) * scaling(s);
 	}
 
 	/// Create a projection matrix
-	static FORCE_INLINE Mat4<T> projection();
+	/// @{
+	/**
+	 * @param [in] r,l,t,b,f,n extent of projection box
+	 * @return projection matrix
+	 */
+	static CONSTEXPR FORCE_INLINE Mat4<T> projection(T r, T l, T t, T b, T f, T n)
+	{
+		/// @see http://www.songho.ca/opengl/gl_projectionmatrix.html
+		return Mat4<T>(
+			(T(2) * n) / (r - l), T(0), (r + l) / (r - l), T(0),
+			T(0), (T(2) * n) / (t - b), (t + b) / (t - b), T(0),
+			T(0), T(0), (n + f) / (n - f), (T(2) * n * f) / (n - f),
+			T(0), T(0), T(-1), T(0)
+		);
+	}
+	/**
+	 * @param [in] fov camera field of view
+	 * @param [in] near,far distance of near and far planes
+	 * @return projection matrix
+	 */
+	static CONSTEXPR FORCE_INLINE Mat4<T> projection(T fov/* = PlatformMath::PI */, T n = T(1), T f = T(1000))
+	{
+		// Default aspect ratio
+		T aspect = T(16) / T(9);
+		fov = T(1) / PlatformMath::tan(fov);
+		/// @todo Get framebuffer size if possible
+		
+		return Mat4<T>(
+			fov, T(0), T(0), T(0),
+			T(0), fov * aspect, T(0), T(0),
+			T(0), T(0), (n + f) / (n - f), (T(2) * n * f) / (n - f),
+			T(0), T(0), T(-1), T(0)
+		);
+	}
+	/// @}
 };
 
 template<>
-void Mat4<float32, true>::print(FILE * out) const
+FORCE_INLINE void Mat4<float32, true>::print(FILE * out) const
 {
 	fprintf(out, "m4f (%.3f, %.3f, %.3f, %.3f)\n", array[0x0], array[0x1], array[0x2], array[0x3]);
 	fprintf(out, "    (%.3f, %.3f, %.3f, %.3f)\n", array[0x4], array[0x5], array[0x6], array[0x3]);

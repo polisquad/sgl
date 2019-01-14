@@ -12,7 +12,7 @@
  * If possible uses vector intrinsics to
  * boost performance
  */
-template<typename T, bool = !IsVoid<typename Simd::Vector<T, 4>::Type>::value>
+template<typename T, bool = hasVectorIntrinsics(T, 4)>
 struct Vec4
 {
 public:
@@ -329,24 +329,24 @@ FORCE_INLINE void Vec4<uint32, false>::print(FILE * out) const
  * @return new vector
  * @{
  */
-template<typename T>
-FORCE_INLINE Vec4<T, false> operator+(T s, const Vec4<T, false> & v)
+template<typename T, bool bHVI>
+FORCE_INLINE Vec4<T, bHVI> operator+(T s, const Vec4<T, bHVI> & v)
 {
 	return v + s;
 }
-template<typename T>
-FORCE_INLINE Vec4<T, false> operator-(T s, const Vec4<T, false> & v)
+template<typename T, bool bHVI>
+FORCE_INLINE Vec4<T, bHVI> operator-(T s, const Vec4<T, bHVI> & v)
 {
-	return Vec4<T, false>(s) - v;
+	return Vec4<T, bHVI>(s) - v;
 }
-template<typename T>
-FORCE_INLINE Vec4<T, false> operator*(T s, const Vec4<T, false> & v)
+template<typename T, bool bHVI>
+FORCE_INLINE Vec4<T, bHVI> operator*(T s, const Vec4<T, bHVI> & v)
 {
 	return v * s;
 }
-template<typename T>
-FORCE_INLINE Vec4<T, false> operator/(T s, const Vec4<T, false> & v)
+template<typename T, bool bHVI>
+FORCE_INLINE Vec4<T, bHVI> operator/(T s, const Vec4<T, bHVI> & v)
 {
-	return Vec4<T, false>(s) / v;
+	return Vec4<T, bHVI>(s) / v;
 }
 /// @}

@@ -2,8 +2,10 @@
 
 int main()
 {
-	Vec3<float32, false> v(1.f, 0.f, 0.f);
-	Quat<float32, false> q(M_PI / 2.f, Vec3<float32, false>(0.f, 1.f, 0.f));
+	vec3 location(1.f), scale(1.f);
+	quat rotation(M_PI_4, vec3::up);
+
+	for (uint64 i = 0; i < 100000; ++i) mat4::projection(M_PI);
 
 	return 0;
 }

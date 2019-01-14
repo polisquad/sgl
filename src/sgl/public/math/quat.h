@@ -8,7 +8,7 @@
 /**
  * A 4-components vector that used to describe a rotation
  */
-template<typename T, bool = /* !IsVoid<typename Simd::Vector<T, 4>::Type>::value */false>
+template<typename T, bool = hasVectorIntrinsics(T, 4)>
 struct Quat : public Vec4<T, false>
 {
 public:
@@ -24,7 +24,28 @@ public:
 	/// Angle and axis constructor
 	template<bool bHVI>
 	CONSTEXPR FORCE_INLINE Quat(T angle, const Vec3<T, bHVI> & axis) :
-		Vec4<T, bHVI>(axis.getNormal() * PlatformMath::sin(angle / 2.f), PlatformMath::cos(angle / 2.f)) {}
+		Vec4<T, false>(axis.getNormal() * PlatformMath::sin(angle / 2.f), PlatformMath::cos(angle / 2.f)) {}
+
+	/// Returns angle and axis
+	template<bool bHVI>
+	FORCE_INLINE void getAngleAndAxis(T & angle, Vec3<T, bHVI> & axis) const
+	{
+		angle = PlatformMath::acos(this->w);
+		axis = this->xyz / PlatformMath::sin(angle);
+		angle *= 2.f;
+	}
+
+	/// Returns angle of rotation
+	FORCE_INLINE T getAngle() const
+	{
+		return PlatformMath::acos(this->w) * 2.f;
+	}
+
+	/// Returns axis of rotation
+	FORCE_INLINE Vec3<T, false> getAxis() const
+	{
+		return this->xyz / PlatformMath::sqrt(1 - this->w * this->w);
+	}
 
 	/// Override normalization methods to return quaternion
 	/// @{
@@ -46,7 +67,7 @@ public:
 	/// Get inverse quaternion
 	FORCE_INLINE Quat<T, false> operator!() const
 	{
-		return Quat<T, false>(-this->x, -this->y, -this->z, -this->w);
+		return Quat<T, false>(this->x, this->y, this->z, -this->w);
 	}
 
 	/**
@@ -88,10 +109,36 @@ public:
 		return v + (this->w * t) + (q ^ t);
 	}
 	template<bool bHVI>
-	FORCE_INLINE Vec4<T, bHVI> operator*(const Vec4<T, bHVI> & v) const { return Vec4<T, bHVI>(operator*(Vec3<T, bHVI>(v)), v.w); }
+	CONSTEXPR FORCE_INLINE Vec4<T, bHVI> operator*(const Vec4<T, bHVI> & v) const { return Vec4<T, bHVI>(operator*(Vec3<T, bHVI>(v)), v.w); }
 	/// @}
+
+	/// Direction vectors
+	/// @{
+	FORCE_INLINE Vec3<T, false> right() const		{ return operator*(Vec3<T, false>::right); };
+	FORCE_INLINE Vec3<T, false> left() const		{ return operator*(Vec3<T, false>::left); };
+	FORCE_INLINE Vec3<T, false> up() const			{ return operator*(Vec3<T, false>::up); };
+	FORCE_INLINE Vec3<T, false> down() const		{ return operator*(Vec3<T, false>::down); };
+	FORCE_INLINE Vec3<T, false> forward() const		{ return operator*(Vec3<T, false>::forward); };
+	FORCE_INLINE Vec3<T, false> backward() const	{ return operator*(Vec3<T, false>::backward); };
+	/// @}
+
+	/// Override print method
+	/// @see Vec4<T, false>::print()
+	FORCE_INLINE void print(FILE * out = stdout) const;
 };
 
 #if PLATFORM_ENABLE_SIMD
 	#include "quat_simd.h"
 #endif
+
+template<>
+FORCE_INLINE void Quat<float32, false>::print(FILE * out) const
+{
+	float32 angle;
+	Vec3<float32, false> axis;
+	getAngleAndAxis(angle, axis);
+
+#define _DEG(x) x * 180.f / M_PI
+	fprintf(out, "qf(%.1f deg @ <%.2f, %.2f, %.2f>)\n", _DEG(angle), axis.x, axis.y, axis.z);
+#undef _DEG
+}

@@ -3,6 +3,9 @@
 #include "core_types.h"
 #include "hal/platform_math.h"
 
+/// Returns true if <T, N> has a vector intrinsics type
+#define hasVectorIntrinsics(T, N) !IsVoid<typename Simd::Vector<T, N>::Type>::value
+
 namespace Simd
 {
 	/**
@@ -83,6 +86,19 @@ namespace Simd
 		 */
 		template<int32 Op = CMP_EQ>
 		static FORCE_INLINE int32 cmp(Type v1, Type v2) { return _mm_movemask_ps(_mm_cmp_ps(v1, v2, Op)); }
+
+		/**
+		 * Shuffles (permutes) elements of two vectors
+		 * 
+		 * @param [in] v vector to shuffle
+		 * @param [in] a-h permutation source indices
+		 * @return new vector
+		 */
+		template<uint8 a, uint8 b, uint8 c, uint8 d>
+		static FORCE_INLINE Type shuffle(Type v)
+		{
+			return _mm_permute_ps(v, _MM_SHUFFLE(d, c, b, a));
+		}
 	};
 
 	/**
@@ -139,7 +155,6 @@ namespace Simd
 		 */
 		static FORCE_INLINE Type shuffle(Type v, uint32 a, uint32 b, uint32 c, uint32 d, uint32 e, uint32 f, uint32 g, uint32 h)
 		{
-			/// @todo Invert here or should the caller invert it?
 			return _mm256_permutevar8x32_ps(v, _mm256_set_epi32(h, g, f, e, d, c, b, a));
 		}
 	};

@@ -9,6 +9,19 @@ template<typename T>
 struct GCC_ALIGN(16) Vec3<T, true>
 {
 public:
+	/// Constant vectors
+	/// @{
+	static const Vec3<T, true> zero;
+	static const Vec3<T, true> unit;
+	static const Vec3<T, true> right;
+	static const Vec3<T, true> left;
+	static const Vec3<T, true> up;
+	static const Vec3<T, true> down;
+	static const Vec3<T, true> forward;
+	static const Vec3<T, true> backward;
+	/// @}
+
+public:
 	/// Vector operations class
 	using VecOps = Simd::Vector<T, 4>;
 
@@ -298,6 +311,29 @@ public:
 	/// Print vector to stdout or to specified file
 	void print(FILE * out = stdout) const;
 };
+
+/// Vector-scalar operations optimized for float
+template<>
+FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator+(float32 s) const
+{
+	return Vec3<float32, true>(VecOps::add(data, VecT{s, s, s, s}));
+}
+template<>
+FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator-(float32 s) const
+{
+	return Vec3<float32, true>(VecOps::sub(data, VecT{s, s, s, s}));
+}
+template<>
+FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator*(float32 s) const
+{
+	return Vec3<float32, true>(VecOps::mul(data, VecT{s, s, s, s}));
+}
+template<>
+FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator/(float32 s) const
+{
+	return Vec3<float32, true>(VecOps::div(data, VecT{s, s, s, s}));
+}
+/// @}
 
 template<>
 FORCE_INLINE bool Vec3<float32, true>::isNearlyZero() const

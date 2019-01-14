@@ -274,8 +274,7 @@ public:
 	 */
 	FORCE_INLINE Vec4<T> operator&(const Vec4<T> & v) const
 	{
-		const Vec4<T> mul(operator*(v));
-		return mul.x + mul.y + mul.z + mul.w;
+		return x * v.x + y * v.y + z * v.z + w * v.w;
 	}
 
 	/// Convert to another underlying type

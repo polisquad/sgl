@@ -233,9 +233,9 @@ public:
 
 	/// Cross product
 	/// @return @ref Vec3 orthogonal to the xy plane
-	CONSTEXPR FORCE_INLINE Vec3<T, !IsVoid<typename Simd::Vector<T, 4>::Type>::value> operator^(const Vec2<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T, hasVectorIntrinsics(T, 4)> operator^(const Vec2<T> & v) const
 	{
-		return Vec3<T, !IsVoid<typename Simd::Vector<T, 4>::Type>::value>(T(0), T(0), x * v.y - y * v.x);
+		return Vec3<T, hasVectorIntrinsics(T, 4)>(T(0), T(0), x * v.y - y * v.x);
 	}
 
 	/// Cross product
