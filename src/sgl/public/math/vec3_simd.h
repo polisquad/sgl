@@ -6,7 +6,7 @@
  * Vector intrinsics specialization
  */
 template<typename T>
-struct GCC_PACK(16) Vec3<T, true>
+struct GCC_ALIGN(16) Vec3<T, true>
 {
 public:
 	/// Vector operations class
@@ -28,6 +28,14 @@ public:
 			/// Vector components
 			/// @{
 			T x, y, z;
+			/// @}
+		};
+
+		struct
+		{
+			/// Color components
+			/// @{
+			T r, g, b;
 			/// @}
 		};
 	};

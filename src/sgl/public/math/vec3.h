@@ -28,6 +28,14 @@ public:
 			T x, y, z;
 			/// @}
 		};
+
+		struct
+		{
+			/// Color components
+			/// @{
+			T r, g, b;
+			/// @}
+		};
 	};
 
 public:
@@ -66,14 +74,14 @@ public:
 	}
 
 	/// Returns normal vector
-	FORCE_INLINE Vec3<T> getNormal() const
+	FORCE_INLINE Vec3<T, false> getNormal() const
 	{
 		const T size = PlatformMath::sqrt(x * x + y * y + z * z);
-		return Vec3<T>(x / size, y / size, z / size);
+		return Vec3<T, false>(x / size, y / size, z / size);
 	}
 
 	/// Normalizes in place
-	FORCE_INLINE Vec3<T> & normalize()
+	FORCE_INLINE Vec3<T, false> & normalize()
 	{
 		const T size = PlatformMath::sqrt(x * x + y * y + z * z);
 		x /= size, y /= size, z /= size;
@@ -90,7 +98,7 @@ public:
 
 	/// Returns true if vectors are almost equal
 	/// @see isNearlyZero()
-	FORCE_INLINE bool isEqual(const Vec3<T> & v) const;
+	FORCE_INLINE bool isEqual(const Vec3<T, false> & v) const;
 
 	/**
 	 * Vector-vector comparison operators
@@ -100,31 +108,31 @@ public:
 	 * @{
 	 */
 	/// Use @ref isNearlyZero() for floating points
-	FORCE_INLINE bool operator==(const Vec3<T> & v) const
+	FORCE_INLINE bool operator==(const Vec3<T, false> & v) const
 	{
 		return x == v.x & y == v.y & z == v.z;
 	}
-	FORCE_INLINE bool operator!=(const Vec3<T> & v) const
+	FORCE_INLINE bool operator!=(const Vec3<T, false> & v) const
 	{
 		return x != v.x | y != v.y | z != v.z;
 	}
 	/// Strictly less, all components must be less
-	FORCE_INLINE bool operator<(const Vec3<T> & v) const
+	FORCE_INLINE bool operator<(const Vec3<T, false> & v) const
 	{
 		return x < v.x & y < v.y & z < v.z;
 	}
 	/// Strictly greater, all components must be greater
-	FORCE_INLINE bool operator>(const Vec3<T> & v) const
+	FORCE_INLINE bool operator>(const Vec3<T, false> & v) const
 	{
 		return x > v.x & y > v.y & z > v.z;
 	}
 	/// Weakly less
-	FORCE_INLINE bool operator<=(const Vec3<T> & v) const
+	FORCE_INLINE bool operator<=(const Vec3<T, false> & v) const
 	{
 		return x <= v.x & y <= v.y & z <= v.z;
 	}
 	/// Weakly greater
-	FORCE_INLINE bool operator>=(const Vec3<T> & v) const
+	FORCE_INLINE bool operator>=(const Vec3<T, false> & v) const
 	{
 		return x >= v.x & y >= v.y & z >= v.z;
 	}
@@ -135,7 +143,7 @@ public:
 	//////////////////////////////////////////////////
 	
 	/// Invert vector direction
-	FORCE_INLINE Vec3<T> & operator-()
+	FORCE_INLINE Vec3<T, false> & operator-()
 	{
 		x = -x, y = -y, z = -z;
 		return *this;
@@ -148,22 +156,22 @@ public:
 	 * @return self
 	 * @{
 	 */
-	FORCE_INLINE Vec3<T> & operator+=(const Vec3<T> & v)
+	FORCE_INLINE Vec3<T, false> & operator+=(const Vec3<T, false> & v)
 	{
 		x += v.x, y += v.y, z += v.z;
 		return *this;
 	}
-	FORCE_INLINE Vec3<T> & operator-=(const Vec3<T> & v)
+	FORCE_INLINE Vec3<T, false> & operator-=(const Vec3<T, false> & v)
 	{
 		x -= v.x, y -= v.y, z -= v.z;
 		return *this;
 	}
-	FORCE_INLINE Vec3<T> & operator*=(const Vec3<T> & v)
+	FORCE_INLINE Vec3<T, false> & operator*=(const Vec3<T, false> & v)
 	{
 		x *= v.x, y *= v.y, z *= v.z;
 		return *this;
 	}
-	FORCE_INLINE Vec3<T> & operator/=(const Vec3<T> & v)
+	FORCE_INLINE Vec3<T, false> & operator/=(const Vec3<T, false> & v)
 	{
 		x /= v.x, y /= v.y, z /= v.z;
 		return *this;
@@ -177,22 +185,22 @@ public:
 	 * @return self
 	 * @{
 	 */
-	FORCE_INLINE Vec3<T> & operator+=(T s)
+	FORCE_INLINE Vec3<T, false> & operator+=(T s)
 	{
 		x += s, y += s, z += s;
 		return *this;
 	}
-	FORCE_INLINE Vec3<T> & operator-=(T s)
+	FORCE_INLINE Vec3<T, false> & operator-=(T s)
 	{
 		x -= s, y -= s, z -= s;
 		return *this;
 	}
-	FORCE_INLINE Vec3<T> & operator*=(T s)
+	FORCE_INLINE Vec3<T, false> & operator*=(T s)
 	{
 		x *= s, y *= s, z *= s;
 		return *this;
 	}
-	FORCE_INLINE Vec3<T> & operator/=(T s)
+	FORCE_INLINE Vec3<T, false> & operator/=(T s)
 	{
 		x /= s, y /= s, z /= s;
 		return *this;
@@ -206,21 +214,21 @@ public:
 	 * @return new vector
 	 * @{
 	 */
-	CONSTEXPR FORCE_INLINE Vec3<T> operator+(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T, false> operator+(const Vec3<T, false> & v) const
 	{
-		return Vec3<T>(x + v.x, y + v.y, z + v.z);
+		return Vec3<T, false>(x + v.x, y + v.y, z + v.z);
 	}
-	CONSTEXPR FORCE_INLINE Vec3<T> operator-(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T, false> operator-(const Vec3<T, false> & v) const
 	{
-		return Vec3<T>(x - v.x, y - v.y, z - v.z);
+		return Vec3<T, false>(x - v.x, y - v.y, z - v.z);
 	}
-	CONSTEXPR FORCE_INLINE Vec3<T> operator*(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T, false> operator*(const Vec3<T, false> & v) const
 	{
-		return Vec3<T>(x * v.x, y * v.y, z * v.z);
+		return Vec3<T, false>(x * v.x, y * v.y, z * v.z);
 	}
-	CONSTEXPR FORCE_INLINE Vec3<T> operator/(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T, false> operator/(const Vec3<T, false> & v) const
 	{
-		return Vec3<T>(x / v.x, y / v.y, z / v.z);
+		return Vec3<T, false>(x / v.x, y / v.y, z / v.z);
 	}
 	/// @}
 
@@ -231,21 +239,21 @@ public:
 	 * @return new vector
 	 * @{
 	 */
-	CONSTEXPR FORCE_INLINE Vec3<T> operator+(T s) const
+	CONSTEXPR FORCE_INLINE Vec3<T, false> operator+(T s) const
 	{
-		return Vec3<T>(x + s, y + s, z + s);
+		return Vec3<T, false>(x + s, y + s, z + s);
 	}
-	CONSTEXPR FORCE_INLINE Vec3<T> operator-(T s) const
+	CONSTEXPR FORCE_INLINE Vec3<T, false> operator-(T s) const
 	{
-		return Vec3<T>(x - s, y - s, z - s);
+		return Vec3<T, false>(x - s, y - s, z - s);
 	}
-	CONSTEXPR FORCE_INLINE Vec3<T> operator*(T s) const
+	CONSTEXPR FORCE_INLINE Vec3<T, false> operator*(T s) const
 	{
-		return Vec3<T>(x * s, y * s, z * s);
+		return Vec3<T, false>(x * s, y * s, z * s);
 	}
-	CONSTEXPR FORCE_INLINE Vec3<T> operator/(T s) const
+	CONSTEXPR FORCE_INLINE Vec3<T, false> operator/(T s) const
 	{
-		return Vec3<T>(x / s, y / s, z / s);
+		return Vec3<T, false>(x / s, y / s, z / s);
 	}
 	/// @}
 	
@@ -255,7 +263,7 @@ public:
 	 * @param [in] v vector operand
 	 * @return dot product as T
 	 */
-	CONSTEXPR FORCE_INLINE Vec3<T> operator&(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T, false> operator&(const Vec3<T, false> & v) const
 	{
 		return x * v.x + y * v.y + z * v.z;
 	}
@@ -266,9 +274,9 @@ public:
 	 * @param [in] v vector operand
 	 * @return vector orthogonal to the (v1 x v2) plane
 	 */
-	CONSTEXPR FORCE_INLINE Vec3<T> operator^(const Vec3<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec3<T, false> operator^(const Vec3<T, false> & v) const
 	{
-		return Vec3<T>(y * v.z - z * v.y, x * v.z - z * v.x, x * v.y - y * v.x);
+		return Vec3<T, false>(y * v.z - z * v.y, x * v.z - z * v.x, x * v.y - y * v.x);
 	}
 
 	/// Convert to another underlying type
@@ -295,7 +303,7 @@ FORCE_INLINE bool Vec3<float32, false>::isNearlyZero() const
 }
 
 template<>
-FORCE_INLINE bool Vec3<float32, false>::isEqual(const Vec3<float32> & v) const
+FORCE_INLINE bool Vec3<float32, false>::isEqual(const Vec3<float32, false> & v) const
 {
 	return PlatformMath::abs(x - v.x) <= FLT_EPSILON
 		& PlatformMath::abs(y - v.y) <= FLT_EPSILON
@@ -328,23 +336,23 @@ FORCE_INLINE void Vec3<uint32, false>::print(FILE * out) const
  * @{
  */
 template<typename T>
-FORCE_INLINE Vec3<T> operator+(T s, const Vec3<T> & v)
+FORCE_INLINE Vec3<T, false> operator+(T s, const Vec3<T, false> & v)
 {
 	return v + s;
 }
 template<typename T>
-FORCE_INLINE Vec3<T> operator-(T s, const Vec3<T> & v)
+FORCE_INLINE Vec3<T, false> operator-(T s, const Vec3<T, false> & v)
 {
-	return Vec3<T>(s) - v;
+	return Vec3<T, false>(s) - v;
 }
 template<typename T>
-FORCE_INLINE Vec3<T> operator*(T s, const Vec3<T> & v)
+FORCE_INLINE Vec3<T, false> operator*(T s, const Vec3<T, false> & v)
 {
 	return v * s;
 }
 template<typename T>
-FORCE_INLINE Vec3<T> operator/(T s, const Vec3<T> & v)
+FORCE_INLINE Vec3<T, false> operator/(T s, const Vec3<T, false> & v)
 {
-	return Vec3<T>(s) / v;
+	return Vec3<T, false>(s) / v;
 }
 /// @}

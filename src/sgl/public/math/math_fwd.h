@@ -8,13 +8,13 @@
 // Forward declarations
 //////////////////////////////////////////////////
 
-template<typename>																struct Vec2;
+template<typename>			struct Vec2;
 template<typename, bool>	struct Vec3;
 template<typename, bool>	struct Vec4;
-template<typename>																struct Quat;
+template<typename, bool>	struct Quat;
 template<typename, bool>	struct Mat3;
 template<typename, bool>	struct Mat4;
-template<typename>																struct Box;
+template<typename>			struct Box;
 
 //////////////////////////////////////////////////
 // Typedefs for common types

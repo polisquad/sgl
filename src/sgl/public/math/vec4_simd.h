@@ -6,7 +6,7 @@
  * Vector intrinsics specialization
  */
 template<typename T>
-struct GCC_PACK(16) Vec4<T, true>
+struct GCC_ALIGN(16) Vec4<T, true>
 {
 public:
 	/// Vector operations class
@@ -30,6 +30,20 @@ public:
 			T x, y, z, w;
 			/// @}
 		};
+
+		struct
+		{
+			/// Color components
+			/// @{
+			T r, g, b, a;
+			/// @}
+		};
+
+		struct
+		{
+			/// Quick access to the xyz @ref Vec3
+			Vec3<T, true> xyz;
+		};
 	};
 
 public:
@@ -46,7 +60,7 @@ public:
 	CONSTEXPR FORCE_INLINE Vec4(T s) : buffer{s, s, s, s} {}
 
 	/// Convert non-intrinsic vector
-	CONSTEXPR FORCE_INLINE Vec4(const Vec3<T, false> & v) : buffer{v.x, v.y, v.z, v.w} {}
+	CONSTEXPR FORCE_INLINE Vec4(const Vec4<T, false> & v) : buffer{v.x, v.y, v.z, v.w} {}
 
 	/// Convert @ref Vec3
 	template<bool bHasVectorIntrinsics>

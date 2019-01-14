@@ -2,10 +2,8 @@
 
 int main()
 {
-	Simd::Vector<float32, 8>::Type v;
-	float32 s;
-	//for (uint64 i = 0; i < 10000000; ++i) v = Simd::Vector<float32, 8>::Type{s, s, s, s, s, s, s, s};
-	for (uint64 i = 0; i < 10000000; ++i) v = Simd::Vector<float32, 8>::load(s);
+	Vec3<float32, false> v(1.f, 0.f, 0.f);
+	Quat<float32, false> q(M_PI / 2.f, Vec3<float32, false>(0.f, 1.f, 0.f));
 
 	return 0;
 }

@@ -28,6 +28,20 @@ public:
 			T x, y, z, w;
 			/// @}
 		};
+
+		struct
+		{
+			/// Color components
+			/// @{
+			T r, g, b, a;
+			/// @}
+		};
+
+		struct
+		{
+			/// Quick access to the xyz @ref Vec3
+			Vec3<T, false> xyz;
+		};
 	};
 
 public:
@@ -63,14 +77,14 @@ public:
 	}
 
 	/// Returns normal vector
-	FORCE_INLINE Vec4<T> getNormal() const
+	FORCE_INLINE Vec4<T, false> getNormal() const
 	{
 		const T size = PlatformMath::sqrt(x * x + y * y + z * z + w * w);
-		return Vec4<T>(x / size, y / size, z / size, w / size);
+		return Vec4<T, false>(x / size, y / size, z / size, w / size);
 	}
 
 	/// Normalizes in place
-	FORCE_INLINE Vec4<T> & normalize()
+	FORCE_INLINE Vec4<T, false> & normalize()
 	{
 		const T size = PlatformMath::sqrt(x * x + y * y + z * z + w * w);
 		x /= size, y /= size, z /= size, w /= size;
@@ -87,7 +101,7 @@ public:
 
 	/// Returns true if vectors are almost equal
 	/// @see isNearlyZero()
-	FORCE_INLINE bool isEqual(const Vec4<T> & v) const;
+	FORCE_INLINE bool isEqual(const Vec4<T, false> & v) const;
 
 	/**
 	 * Vector-vector comparison operators
@@ -97,31 +111,31 @@ public:
 	 * @{
 	 */
 	/// Use @ref isNearlyZero() for floating points
-	FORCE_INLINE bool operator==(const Vec4<T> & v) const
+	FORCE_INLINE bool operator==(const Vec4<T, false> & v) const
 	{
 		return x == v.x & y == v.y & z == v.z & z == v.w;
 	}
-	FORCE_INLINE bool operator!=(const Vec4<T> & v) const
+	FORCE_INLINE bool operator!=(const Vec4<T, false> & v) const
 	{
 		return x != v.x | y != v.y | z != v.z | z != v.w;
 	}
 	/// Strictly less, all components must be less
-	FORCE_INLINE bool operator<(const Vec4<T> & v) const
+	FORCE_INLINE bool operator<(const Vec4<T, false> & v) const
 	{
 		return x < v.x & y < v.y & z < v.z & z < v.w;
 	}
 	/// Strictly greater, all components must be greater
-	FORCE_INLINE bool operator>(const Vec4<T> & v) const
+	FORCE_INLINE bool operator>(const Vec4<T, false> & v) const
 	{
 		return x > v.x & y > v.y & z > v.z & z > v.w;
 	}
 	/// Weakly less
-	FORCE_INLINE bool operator<=(const Vec4<T> & v) const
+	FORCE_INLINE bool operator<=(const Vec4<T, false> & v) const
 	{
 		return x <= v.x & y <= v.y & z <= v.z & z <= v.w;
 	}
 	/// Weakly greater
-	FORCE_INLINE bool operator>=(const Vec4<T> & v) const
+	FORCE_INLINE bool operator>=(const Vec4<T, false> & v) const
 	{
 		return x >= v.x & y >= v.y & z >= v.z & z >= v.w;
 	}
@@ -132,7 +146,7 @@ public:
 	//////////////////////////////////////////////////
 	
 	/// Invert vector direction
-	CONSTEXPR FORCE_INLINE Vec4<T> & operator-()
+	CONSTEXPR FORCE_INLINE Vec4<T, false> & operator-()
 	{
 		x = -x, y = -y, z = -z, w = -w;
 		return *this;
@@ -145,22 +159,22 @@ public:
 	 * @return self
 	 * @{
 	 */
-	FORCE_INLINE Vec4<T> & operator+=(const Vec4<T> & v)
+	FORCE_INLINE Vec4<T, false> & operator+=(const Vec4<T, false> & v)
 	{
 		x += v.x, y += v.y, z += v.z, w += v.w;
 		return *this;
 	}
-	FORCE_INLINE Vec4<T> & operator-=(const Vec4<T> & v)
+	FORCE_INLINE Vec4<T, false> & operator-=(const Vec4<T, false> & v)
 	{
 		x -= v.x, y -= v.y, z -= v.z, w -= v.w;
 		return *this;
 	}
-	FORCE_INLINE Vec4<T> & operator*=(const Vec4<T> & v)
+	FORCE_INLINE Vec4<T, false> & operator*=(const Vec4<T, false> & v)
 	{
 		x *= v.x, y *= v.y, z *= v.z, w *= v.w;
 		return *this;
 	}
-	FORCE_INLINE Vec4<T> & operator/=(const Vec4<T> & v)
+	FORCE_INLINE Vec4<T, false> & operator/=(const Vec4<T, false> & v)
 	{
 		x /= v.x, y /= v.y, z /= v.z, w /= v.w;
 		return *this;
@@ -174,22 +188,22 @@ public:
 	 * @return self
 	 * @{
 	 */
-	FORCE_INLINE Vec4<T> & operator+=(T s)
+	FORCE_INLINE Vec4<T, false> & operator+=(T s)
 	{
 		x += s, y += s, z += s, w += s;
 		return *this;
 	}
-	FORCE_INLINE Vec4<T> & operator-=(T s)
+	FORCE_INLINE Vec4<T, false> & operator-=(T s)
 	{
 		x -= s, y -= s, z -= s, w -= s;
 		return *this;
 	}
-	FORCE_INLINE Vec4<T> & operator*=(T s)
+	FORCE_INLINE Vec4<T, false> & operator*=(T s)
 	{
 		x *= s, y *= s, z *= s, w *= s;
 		return *this;
 	}
-	FORCE_INLINE Vec4<T> & operator/=(T s)
+	FORCE_INLINE Vec4<T, false> & operator/=(T s)
 	{
 		x /= s, y /= s, z /= s, w /= s;
 		return *this;
@@ -203,21 +217,21 @@ public:
 	 * @return new vector
 	 * @{
 	 */
-	CONSTEXPR FORCE_INLINE Vec4<T> operator+(const Vec4<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec4<T, false> operator+(const Vec4<T, false> & v) const
 	{
-		return Vec4<T>(x + v.x, y + v.y, z + v.z, w + v.w);
+		return Vec4<T, false>(x + v.x, y + v.y, z + v.z, w + v.w);
 	}
-	CONSTEXPR FORCE_INLINE Vec4<T> operator-(const Vec4<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec4<T, false> operator-(const Vec4<T, false> & v) const
 	{
-		return Vec4<T>(x - v.x, y - v.y, z - v.z, w - v.w);
+		return Vec4<T, false>(x - v.x, y - v.y, z - v.z, w - v.w);
 	}
-	CONSTEXPR FORCE_INLINE Vec4<T> operator*(const Vec4<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec4<T, false> operator*(const Vec4<T, false> & v) const
 	{
-		return Vec4<T>(x * v.x, y * v.y, z * v.z, w * v.w);
+		return Vec4<T, false>(x * v.x, y * v.y, z * v.z, w * v.w);
 	}
-	CONSTEXPR FORCE_INLINE Vec4<T> operator/(const Vec4<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec4<T, false> operator/(const Vec4<T, false> & v) const
 	{
-		return Vec4<T>(x / v.x, y / v.y, z / v.z, w / v.w);
+		return Vec4<T, false>(x / v.x, y / v.y, z / v.z, w / v.w);
 	}
 	/// @}
 
@@ -228,21 +242,21 @@ public:
 	 * @return new vector
 	 * @{
 	 */
-	CONSTEXPR FORCE_INLINE Vec4<T> operator+(T s) const
+	CONSTEXPR FORCE_INLINE Vec4<T, false> operator+(T s) const
 	{
-		return Vec4<T>(x + s, y + s, z + s, w + s);
+		return Vec4<T, false>(x + s, y + s, z + s, w + s);
 	}
-	CONSTEXPR FORCE_INLINE Vec4<T> operator-(T s) const
+	CONSTEXPR FORCE_INLINE Vec4<T, false> operator-(T s) const
 	{
-		return Vec4<T>(x - s, y - s, z - s, w - s);
+		return Vec4<T, false>(x - s, y - s, z - s, w - s);
 	}
-	CONSTEXPR FORCE_INLINE Vec4<T> operator*(T s) const
+	CONSTEXPR FORCE_INLINE Vec4<T, false> operator*(T s) const
 	{
-		return Vec4<T>(x * s, y * s, z * s, w * s);
+		return Vec4<T, false>(x * s, y * s, z * s, w * s);
 	}
-	CONSTEXPR FORCE_INLINE Vec4<T> operator/(T s) const
+	CONSTEXPR FORCE_INLINE Vec4<T, false> operator/(T s) const
 	{
-		return Vec4<T>(x / s, y / s, z / s, w / s);
+		return Vec4<T, false>(x / s, y / s, z / s, w / s);
 	}
 	/// @}
 	
@@ -252,7 +266,7 @@ public:
 	 * @param [in] v vector operand
 	 * @return dot product as T
 	 */
-	CONSTEXPR FORCE_INLINE Vec4<T> operator&(const Vec4<T> & v) const
+	CONSTEXPR FORCE_INLINE Vec4<T, false> operator&(const Vec4<T, false> & v) const
 	{
 		return x * v.x + y * v.y + z * v.z + w * v.w;
 	}
@@ -282,7 +296,7 @@ FORCE_INLINE bool Vec4<float32, false>::isNearlyZero() const
 }
 
 template<>
-FORCE_INLINE bool Vec4<float32, false>::isEqual(const Vec4<float32> & v) const
+FORCE_INLINE bool Vec4<float32, false>::isEqual(const Vec4<float32, false> & v) const
 {
 	return PlatformMath::abs(x - v.x) <= FLT_EPSILON
 		& PlatformMath::abs(y - v.y) <= FLT_EPSILON
@@ -316,23 +330,23 @@ FORCE_INLINE void Vec4<uint32, false>::print(FILE * out) const
  * @{
  */
 template<typename T>
-FORCE_INLINE Vec4<T> operator+(T s, const Vec4<T> & v)
+FORCE_INLINE Vec4<T, false> operator+(T s, const Vec4<T, false> & v)
 {
 	return v + s;
 }
 template<typename T>
-FORCE_INLINE Vec4<T> operator-(T s, const Vec4<T> & v)
+FORCE_INLINE Vec4<T, false> operator-(T s, const Vec4<T, false> & v)
 {
-	return Vec4<T>(s) - v;
+	return Vec4<T, false>(s) - v;
 }
 template<typename T>
-FORCE_INLINE Vec4<T> operator*(T s, const Vec4<T> & v)
+FORCE_INLINE Vec4<T, false> operator*(T s, const Vec4<T, false> & v)
 {
 	return v * s;
 }
 template<typename T>
-FORCE_INLINE Vec4<T> operator/(T s, const Vec4<T> & v)
+FORCE_INLINE Vec4<T, false> operator/(T s, const Vec4<T, false> & v)
 {
-	return Vec4<T>(s) / v;
+	return Vec4<T, false>(s) / v;
 }
 /// @}
