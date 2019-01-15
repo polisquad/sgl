@@ -1,5 +1,4 @@
-#ifndef SGL_ATOMIC_H
-#define SGL_ATOMIC_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/platform_atomics.h"
@@ -150,4 +149,3 @@ private:
 	/// @}
 };
 
-#endif

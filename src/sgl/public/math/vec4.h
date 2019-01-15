@@ -16,8 +16,6 @@ template<typename T = float32, bool = hasVectorIntrinsics(T, 4)>
 struct Vec4
 {
 public:
-	typedef typename SIMD<T>::VT VT;
-
 	union
 	{
 		/// Data buffer

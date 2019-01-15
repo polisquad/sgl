@@ -1,5 +1,4 @@
-#ifndef SGL_PLATFORM_ATOMICS_H
-#define SGL_PLATFORM_ATOMICS_H
+#pragma once
 
 #include "core_types.h"
 
@@ -21,4 +20,3 @@ enum class AtomicOrder
 	Sequential	// Sequentially consistent, stronger	
 };
 
-#endif

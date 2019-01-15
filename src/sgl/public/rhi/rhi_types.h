@@ -1,5 +1,4 @@
-#ifndef SGL_RHI_TYPES_H
-#define SGL_RHI_TYPES_H
+#pragma once
 
 /// @brief List of pixel formats
 enum PixelFormat
@@ -31,4 +30,3 @@ enum UniformBufferBaseType
 	UniformBufferBaseTypeNum
 };
 
-#endif

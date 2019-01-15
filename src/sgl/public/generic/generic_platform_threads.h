@@ -1,5 +1,4 @@
-#ifndef SGL_GENERIC_PLATFORM_THREADS_H
-#define SGL_GENERIC_PLATFORM_THREADS_H
+#pragma once
 
 #include "core_types.h"
 
@@ -13,4 +12,3 @@ struct GenericPlatformTLS
 	static FORCE_INLINE bool isValidSlot(uint32 slotIdx) { return slotIdx != 0xffffffff; }
 };
 
-#endif

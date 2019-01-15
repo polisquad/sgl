@@ -1,5 +1,4 @@
-#ifndef SGL_IS_TRIVIALLY_COPYABLE_H
-#define SGL_IS_TRIVIALLY_COPYABLE_H
+#pragma once
 
 #include "core_types.h"
 #include <type_traits>
@@ -15,4 +14,3 @@ using IsTriviallyCopyable = std::is_trivially_copyable<T>;
 
 #define IsTriviallyCopyableV(T) IsTriviallyCopyable<T>::value
 
-#endif

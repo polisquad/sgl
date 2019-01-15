@@ -1,5 +1,4 @@
-#ifndef SGL_UNIX_APP_MISC_H
-#define SGL_UNIX_APP_MISC_H
+#pragma once
 
 #include "../generic/generic_app_misc.h"
 
@@ -21,4 +20,3 @@ struct UnixAppMisc : public GenericAppMisc
 
 typedef UnixAppMisc AppMisc;
 
-#endif

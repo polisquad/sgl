@@ -1,5 +1,4 @@
-#ifndef SGL_REF_COUNT_H
-#define SGL_REF_COUNT_H
+#pragma once
 
 #include "core_types.h"
 
@@ -81,4 +80,3 @@ protected:
 	RefT * ref;
 };
 
-#endif

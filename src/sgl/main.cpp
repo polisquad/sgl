@@ -13,6 +13,7 @@
 #include "hal/event_pthread.h"
 #include "async/future.h"
 #include "async/async.h"
+#include "math/math.h"
 
 // Just using it to measure threading performance
 #include <omp.h>
@@ -35,6 +36,9 @@ namespace Test
 int main()
 {
 	Memory::createGMalloc();
+
+	mat4 t = mat4::translation(1.f, 2.f, 3.f);
+	for (uint64 i = 0; i < 1000000; ++i) t.getInverseTransform();
 
 	//return Test::array();
 }
@@ -231,6 +235,7 @@ int32 Test::list()
 {
 	auto start = clock();
 	void * buffer;
+	uint64 bin;
 
 	start = clock();
 
@@ -243,7 +248,7 @@ int32 Test::list()
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		llAnsi.push(i);
 	for (uint64 i = 0; i < 1024 * 128; ++i)
-		llAnsi.pop();
+		llAnsi.pop(bin);
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		llAnsi.push(i);
 	printf("llAnsi           | %ld ticks\n", clock() - start);
@@ -252,7 +257,7 @@ int32 Test::list()
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		llBinned.push(i);
 	for (uint64 i = 0; i < 1024 * 128; ++i)
-		llBinned.pop();
+		llBinned.pop(bin);
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		llBinned.push(i);
 	printf("llBinned         | %ld ticks\n", clock() - start);

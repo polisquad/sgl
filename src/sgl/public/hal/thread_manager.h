@@ -1,5 +1,4 @@
-#ifndef THREAD_MANAGE_H
-#define THREAD_MANAGE_H
+#pragma once
 
 #include "core_types.h"
 #include "templates/singleton.h"
@@ -48,4 +47,3 @@ public:
 	/// @}
 };
 
-#endif

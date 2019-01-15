@@ -1,5 +1,4 @@
-#ifndef SGL_UNIX_PLATFORM_THREADS_H
-#define SGL_UNIX_PLATFORM_THREADS_H
+#pragma once
 
 #include "unix_system_includes.h"
 #include "generic/generic_platform_threads.h"
@@ -65,4 +64,3 @@ struct UnixPlatformTLS : public GenericPlatformTLS
 
 typedef UnixPlatformTLS PlatformTLS;
 
-#endif

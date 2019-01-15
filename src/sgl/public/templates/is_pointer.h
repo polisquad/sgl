@@ -1,5 +1,4 @@
-#ifndef SGL_IS_POINTER_H
-#define SGL_IS_POINTER_H
+#pragma once
 
 #include "core_types.h"
 #include <type_traits>
@@ -14,4 +13,3 @@ using IsPointer = std::is_pointer<T>;
 /// @brief Quick value of @ref IsPointer
 #define IsPointerV(expr) IsPointer<expr>::value
 
-#endif

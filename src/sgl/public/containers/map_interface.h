@@ -1,5 +1,4 @@
-#ifndef SGL_MAP_INTERFACE_H
-#define SGL_MAP_INTERFACE_H
+#pragma once
 
 #include "pair.h"
 
@@ -43,4 +42,3 @@ public:
 	static FORCE_INLINE PairT makePair(const KeyT & key, const ValT & val) { return PairT(key, val); }
 };
 
-#endif

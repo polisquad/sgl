@@ -1,5 +1,4 @@
-#ifndef SGL_CORE_FWD_H
-#define SGL_CORE_FWD_H
+#pragma once
 
 #include "core_types.h"
 
@@ -23,4 +22,3 @@ template<typename> class Queue;
 class String;
 /// @}
 
-#endif

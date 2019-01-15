@@ -1,5 +1,4 @@
-#ifndef SGL_MALLOC_ANSI_H
-#define SGL_MALLOC_ANSI_H
+#pragma once
 
 #include "platform_memory.h"
 
@@ -23,4 +22,3 @@ public:
 	virtual bool getAllocSize(void * original, sizet & n) override;
 };
 
-#endif

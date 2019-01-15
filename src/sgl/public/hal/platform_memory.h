@@ -1,5 +1,4 @@
-#ifndef SGL_PLATFORM_MEMORY_H
-#define SGL_PLATFORM_MEMORY_H
+#pragma once
 
 #include "core_types.h"
 #include "generic/generic_platform_memory.h"
@@ -42,4 +41,3 @@ struct Memory
 	static void createGMalloc();
 };
 
-#endif

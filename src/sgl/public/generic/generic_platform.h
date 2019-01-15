@@ -1,5 +1,4 @@
-#ifndef SGL_GENERIC_PLATFORM_H
-#define SGL_GENERIC_PLATFORM_H
+#pragma once
 
 /// Templates to select a type based on pointer size
 /// @{
@@ -70,4 +69,3 @@ struct GenericPlatformTypes
 	/// @}
 };
 
-#endif

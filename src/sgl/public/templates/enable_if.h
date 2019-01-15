@@ -1,5 +1,4 @@
-#ifndef SGL_ENABLE_IF_H
-#define SGL_ENABLE_IF_H
+#pragma once
 
 #include "core_types.h"
 #include <type_traits>
@@ -18,4 +17,3 @@ using EnableIf = std::enable_if<V, T>;
 template<bool V, typename T = void>
 using EnableIfT = std::enable_if_t<V, T>;
 
-#endif

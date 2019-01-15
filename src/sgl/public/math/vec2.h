@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core_types.h"
+#include "math/math_fwd.h"
 #include "hal/platform_math.h"
 #include "templates/is_void.h"
 #include "templates/simd.h"

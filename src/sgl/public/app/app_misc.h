@@ -1,5 +1,4 @@
-#ifndef SGL_APP_MISC_H
-#define SGL_APP_MISC_H
+#pragma once
 
 #include "generic/generic_app_misc.h"
 
@@ -11,6 +10,4 @@
 	#include "unix/unix_app_misc.h"
 #else
 	#error Unkown platform
-#endif
-
 #endif

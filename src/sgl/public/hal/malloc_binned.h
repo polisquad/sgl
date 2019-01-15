@@ -1,5 +1,4 @@
-#ifndef SGL_MALLOC_BINNED_H
-#define SGL_MALLOC_BINNED_H
+#pragma once
 
 #include "platform_memory.h"
 #include "platform_math.h"
@@ -98,4 +97,3 @@ protected:
 	}
 };
 
-#endif

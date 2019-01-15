@@ -1,5 +1,4 @@
-#ifndef SGL_IS_INTEGRAL_H
-#define SGL_IS_INTEGRAL_H
+#pragma once
 
 #include "core_types.h"
 #include <type_traits>
@@ -14,4 +13,3 @@ using IsIntegral = std::is_integral<T>;
 /// @brief Quick value of @ref IsIntegral
 #define IsIntegralV(expr) IsIntegral<expr>::value
 
-#endif

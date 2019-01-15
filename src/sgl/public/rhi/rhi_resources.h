@@ -1,5 +1,4 @@
-#ifndef SGL_RHI_RESOURCES_H
-#define SGL_RHI_RESOURCES_H
+#pragma once
 
 #include "rhi_resource.h"
 #include "rhi_textures.h"
@@ -14,4 +13,3 @@ typedef RefCountPtr<RHITexture> RHITextureRef;
 typedef RefCountPtr<RHITexture2D> RHITexture2DRef;
 typedef RefCountPtr<RHIViewport> RHIViewportRef;
 
-#endif

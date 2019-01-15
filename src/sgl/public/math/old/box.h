@@ -1,5 +1,4 @@
-#ifndef SGL_BOX_H
-#define SGL_BOX_H
+#pragma once
 
 #include "vec3.h"
 
@@ -269,4 +268,3 @@ typedef Box<int32>		ibox;
 typedef Box<uint32>		ubox;
 /// @}
 
-#endif

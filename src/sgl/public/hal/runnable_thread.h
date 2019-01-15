@@ -1,5 +1,4 @@
-#ifndef SGL_RUNNABLE_THREAD
-#define SGL_RUNNABLE_THREAD
+#pragma once
 
 #include "core_types.h"
 #include "containers/array.h"
@@ -72,4 +71,3 @@ protected:
 	virtual bool create_internal(Runnable * _runnable, const ansichar * _name, uint32 stackSize = 0) = 0;
 };
 
-#endif

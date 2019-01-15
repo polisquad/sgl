@@ -1,5 +1,4 @@
-#ifndef SGL_RHI_BUFFERS_H
-#define SGL_RHI_BUFFERS_H
+#pragma once
 
 #include "core_types.h"
 #include "rhi_resource.h"
@@ -105,4 +104,3 @@ public:
 	FORCE_INLINE uint32 getUsage() const { return usage; }
 };
 
-#endif

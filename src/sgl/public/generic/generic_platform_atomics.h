@@ -1,5 +1,4 @@
-#ifndef SGL_GENERIC_PLATFORM_ATOMICS_H
-#define SGL_GENERIC_PLATFORM_ATOMICS_H
+#pragma once
 
 #include "core_types.h"
 
@@ -9,4 +8,3 @@
  */
 struct GenericPlatformAtomics {};
 
-#endif

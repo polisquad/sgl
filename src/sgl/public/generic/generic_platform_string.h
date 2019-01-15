@@ -1,5 +1,4 @@
-#ifndef SGL_GENERIC_PLATFORM_STRING_H
-#define SGL_GENERIC_PLATFORM_STRING_H
+#pragma once
 
 #include "core_types.h"
 
@@ -96,4 +95,3 @@ struct GenericPlatformString
 	}
 };
 
-#endif

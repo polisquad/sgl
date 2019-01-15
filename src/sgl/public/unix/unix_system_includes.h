@@ -1,5 +1,4 @@
-#ifndef SGL_UNIX_SYSTEM_INCLUDES_H
-#define SGL_UNIX_SYSTEM_INCLUDES_H
+#pragma once
 
 #include "core_types.h"
 
@@ -20,6 +19,7 @@
 #include <utime.h>
 #if PLATFORM_ENABLE_SIMD
 #include <immintrin.h>
-#endif // PLATFORM_ENABLE_SIMD
+#endif
+ // PLATFORM_ENABLE_SIMD
 
 #include <cassert>

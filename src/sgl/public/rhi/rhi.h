@@ -1,5 +1,4 @@
-#ifndef SGL_RHI_H
-#define SGL_RHI_H
+#pragma once
 
 /**
  * @class RHI rhi/rhi.h
@@ -13,4 +12,3 @@ class RHI
 /// RHI resource types
 #include "rhi_resources.h"
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef SGL_CONTAINERS_H
-#define SGL_CONTAINERS_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/platform_memory.h"
@@ -186,4 +185,3 @@ void Containers::sort(const IterT & begin, const IterT & end)
 	}
 }
 
-#endif

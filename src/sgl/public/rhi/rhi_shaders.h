@@ -1,5 +1,4 @@
-#ifndef SGL_RHI_SHADER_H
-#define SGL_RHI_SHADER_H
+#pragma once
 
 #include "core_types.h"
 #include "rhi_resource.h"
@@ -20,4 +19,3 @@ class RHIGeometryShader : public RHIShader {};
 class RHIPixelShader : public RHIShader {};
 /// @}
 
-#endif

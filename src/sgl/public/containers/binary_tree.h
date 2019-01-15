@@ -1,5 +1,4 @@
-#ifndef SGL_BINARY_TREE_H
-#define SGL_BINARY_TREE_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/platform_memory.h"
@@ -615,4 +614,3 @@ typename BinaryTree<T>::Node * BinaryTree<T>::binaryInsertUnique(Node * _node)
 	return nullptr;
 }
 
-#endif

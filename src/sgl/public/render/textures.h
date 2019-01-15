@@ -1,5 +1,4 @@
-#ifndef SGL_TEXTURES_H
-#define SGL_TEXTURES_H
+#pragma once
 
 #include "render_resource.h"
 
@@ -43,4 +42,3 @@ public:
 	}
 };
 
-#endif

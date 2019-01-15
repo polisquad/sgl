@@ -1,5 +1,4 @@
-#ifndef SGL_UNSIGNED_H
-#define SGL_UNSIGNED_H
+#pragma once
 
 #include "core_types.h"
 #include "is_integral.h"
@@ -22,4 +21,3 @@ template<> struct Unsigned<int16>	{ typedef uint16 Type; };
 template<> struct Unsigned<int32>	{ typedef uint32 Type; };
 template<> struct Unsigned<int64>	{ typedef uint64 Type; };
 
-#endif

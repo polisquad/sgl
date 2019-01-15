@@ -227,4 +227,4 @@ namespace Simd
 	};
 } // Simd
 
-#endif
+#endif // PLATFORM_ENABLE_SIMD

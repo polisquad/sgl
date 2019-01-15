@@ -1,5 +1,4 @@
-#ifndef SGL_STRING_H
-#define SGL_STRING_H
+#pragma once
 
 #include "containers/array.h"
 #include "hal/platform_string.h"
@@ -322,4 +321,3 @@ public:
 	}
 };
 
-#endif

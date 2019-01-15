@@ -1,5 +1,4 @@
-#ifndef SGL_GLDRV_H
-#define SGL_GLDRV_H
+#pragma once
 
 #include "coremin.h"
 #include "rhi/rhi.h"
@@ -59,4 +58,3 @@ GLDevice * createDefaultGLDevice();
  */
 void initGLContextWithDefaults();
 
-#endif

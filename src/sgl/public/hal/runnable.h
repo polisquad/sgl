@@ -1,5 +1,4 @@
-#ifndef SGL_RUNNABLE_H
-#define SGL_RUNNABLE_H
+#pragma once
 
 #include "core_types.h"
 
@@ -41,4 +40,3 @@ public:
 	virtual FORCE_INLINE void exit() {}
 };
 
-#endif

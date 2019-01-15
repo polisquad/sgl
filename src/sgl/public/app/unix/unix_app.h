@@ -1,5 +1,4 @@
-#ifndef SGL_UNIX_APPLICATION_H
-#define SGL_UNIX_APPLICATION_H
+#pragma once
 
 #include "../generic/generic_app.h"
 
@@ -27,4 +26,3 @@ public:
 /// Global Unix application
 extern UnixApp * unixApp;
 
-#endif

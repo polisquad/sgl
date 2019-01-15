@@ -1,5 +1,4 @@
-#ifndef SGL_UNIX_PLATFORM_STRING_H
-#define SGL_UNIX_PLATFORM_STRING_H
+#pragma once
 
 #include "core_types.h"
 
@@ -12,4 +11,3 @@ struct UnixPlatformString : public GenericPlatformString
 };
 typedef UnixPlatformString PlatformString;
 
-#endif

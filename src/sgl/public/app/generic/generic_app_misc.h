@@ -1,5 +1,4 @@
-#ifndef SGL_GENERIC_APP_MISC_H
-#define SGL_GENERIC_APP_MISC_H
+#pragma once
 
 #include "core_types.h"
 #include "generic_app.h"
@@ -18,4 +17,3 @@ struct GenericAppMisc
 	static GenericApp * createApp();
 };
 
-#endif

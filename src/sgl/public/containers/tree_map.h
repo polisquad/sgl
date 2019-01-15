@@ -1,5 +1,4 @@
-#ifndef SGL_TREE_MAP_H
-#define SGL_TREE_MAP_H
+#pragma once
 
 #include "map_interface.h"
 #include "binary_tree.h"
@@ -71,4 +70,3 @@ public:
 	}
 };
 
-#endif

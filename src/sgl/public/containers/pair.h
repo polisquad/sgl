@@ -1,5 +1,4 @@
-#ifndef SGL_PAIR_H
-#define SGL_PAIR_H
+#pragma once
 
 #include "core_types.h"
 
@@ -79,4 +78,3 @@ public:
 	/// @}
 };
 
-#endif

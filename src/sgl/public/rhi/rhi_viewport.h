@@ -1,5 +1,4 @@
-#ifndef SGL_RHI_VIEWPORT_H
-#define SGL_RHI_VIEWPORT_H
+#pragma once
 
 #include "core_types.h"
 #include "rhi_resource.h"
@@ -21,4 +20,3 @@ public:
 	virtual void tick(float dt) {}
 };
 
-#endif

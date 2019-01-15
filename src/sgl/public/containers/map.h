@@ -1,5 +1,4 @@
-#ifndef SGL_MAP_H
-#define SGL_MAP_H
+#pragma once
 
 #include "map_interface.h"
 #include "templates/is_base_of.h"
@@ -28,4 +27,3 @@ public:
 	using MapT::MapT;
 };
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef SGL_EVENT_PTHREAD_H
-#define SGL_EVENT_PTHREAD_H
+#pragma once
 
 #include "core_types.h"
 #include "event.h"
@@ -134,4 +133,3 @@ void PThreadEvent::trigger(bool broadcast)
 	}
 }
 
-#endif

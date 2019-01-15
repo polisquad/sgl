@@ -1,5 +1,4 @@
-#ifndef SGL_UNIX_CRITICAL_SECTION_H
-#define SGL_UNIX_CRITICAL_SECTION_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/pthread_critical_section.h"
@@ -8,4 +7,3 @@
 typedef PThreadCriticalSection CriticalSection;
 typedef PThreadRWLock RWLock;
 
-#endif

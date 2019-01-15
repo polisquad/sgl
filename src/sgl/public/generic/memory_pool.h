@@ -1,5 +1,4 @@
-#ifndef SGL_MEMORY_POOL_H
-#define SGL_MEMORY_POOL_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/platform_memory.h"
@@ -189,4 +188,3 @@ void MemoryPool::free(void * original)
 	++numFreeBlocks;
 }
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef SGL_RHI_RESOURCE_H
-#define SGL_RHI_RESOURCE_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/thread_safe_counter.h"
@@ -38,4 +37,3 @@ public:
 	FORCE_INLINE uint32 getRefCount() const { return refCount.get(); }
 };
 
-#endif

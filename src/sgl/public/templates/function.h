@@ -1,5 +1,4 @@
-#ifndef SGL_FUNCTION_H
-#define SGL_FUNCTION_H
+#pragma once
 
 #include "core_types.h"
 #include <functional>
@@ -22,4 +21,3 @@ template<typename T> struct IsFunction<Function<T>>	{ enum {value = true}; };
 #define IsFunctionV(T)	IsFunction<T>::value
 /// @}
 
-#endif

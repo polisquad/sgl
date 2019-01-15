@@ -1,5 +1,4 @@
-#ifndef SGL_GENERIC_PLATFORM_PROCESS_H
-#define SGL_GENERIC_PLATFORM_PROCESS_H
+#pragma once
 
 #include "core_types.h"
 
@@ -26,4 +25,3 @@ public:
 	static void releaseEvent(Event * event);
 };
 
-#endif

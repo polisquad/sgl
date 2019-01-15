@@ -1,5 +1,4 @@
-#ifndef SGL_PLATFORM_PROCESS_H
-#define SGL_PLATFORM_PROCESS_H
+#pragma once
 
 #include "core_types.h"
 #include "generic/generic_platform_process.h"
@@ -14,4 +13,3 @@
 	#error "Unkown platform"
 #endif
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef SGL_IS_CONTAINER_H
-#define SGL_IS_CONTAINER_H
+#pragma once
 
 #include "core_types.h"
 #include "core_fwd.h"
@@ -41,4 +40,3 @@ template<typename T> struct ContainerType<Array<T>>	{ typedef T Type; };
 
 #define ContainerTypeT(T) typename ContainerType<T>::Type
 
-#endif

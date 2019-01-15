@@ -1,5 +1,4 @@
-#ifndef SGL_PTHREAD_CRITICAL_SECTION_H
-#define SGL_PTHREAD_CRITICAL_SECTION_H
+#pragma once
 
 #include "core_types.h"
 #include <pthread.h>
@@ -82,4 +81,3 @@ public:
 	FORCE_INLINE void writeUnlock() { pthread_rwlock_unlock(&mutex); }
 };
 
-#endif

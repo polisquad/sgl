@@ -1,5 +1,4 @@
-#ifndef SGL_LINKED_LIST_H
-#define SGL_LINKED_LIST_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/platform_memory.h"
@@ -332,4 +331,3 @@ void LinkedList<T>::remove(uint64 i)
 template<typename T> using Link = typename LinkedList<T>::Link;
 template<typename T> using LinkRef = typename LinkedList<T>::LinkRef;
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef SGL_THREADING_H
-#define SGL_THREADING_H
+#pragma once
 
 /////////////////////////////////////////////////
 // Threading includes                          //
@@ -17,4 +16,3 @@
 #include "hal/runnable_thread.h"
 #include "hal/runnable.h"
 
-#endif

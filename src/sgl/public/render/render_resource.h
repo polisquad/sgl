@@ -1,5 +1,4 @@
-#ifndef SGL_RENDER_RESOURCE
-#define SGL_RENDER_RESOURCE
+#pragma once
 
 #include "core_types.h"
 #include "containers/string.h"
@@ -52,4 +51,3 @@ public:
 	virtual void releaseRHIResource() {}
 };
 
-#endif

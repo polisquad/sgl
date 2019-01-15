@@ -1,5 +1,4 @@
-#ifndef SGL_GENERIC_PLATFORM_MEMORY_H
-#define SGL_GENERIC_PLATFORM_MEMORY_H
+#pragma once
 
 #include "core_types.h"
 #include <string.h>
@@ -123,4 +122,3 @@ public:
 	static class Malloc * baseMalloc();
 };
 
-#endif

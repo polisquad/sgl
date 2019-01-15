@@ -1,5 +1,4 @@
-#ifndef SGL_THREAD_BARRIER_H
-#define SGL_THREAD_BARRIER_H
+#pragma once
 
 #if PLATFORM_WINDOWS
 	#include "windows/windows_platform_thread_barrier.h"
@@ -29,4 +28,3 @@ public:
 	FORCE_INLINE ~ScopeBarrier() { barrier->wait(); }
 };
 
-#endif

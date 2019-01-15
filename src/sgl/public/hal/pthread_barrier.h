@@ -1,5 +1,4 @@
-#ifndef SGL_PTHREAD_BARRIER_H
-#define SGL_PTHREAD_BARRIER_H
+#pragma once
 
 #include "core_types.h"
 #include <pthread.h>
@@ -44,4 +43,3 @@ public:
 	FORCE_INLINE void wait() { pthread_barrier_wait(&barrier); }
 };
 
-#endif

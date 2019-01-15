@@ -1,5 +1,4 @@
-#ifndef SGL_GENERIC_APP_H
-#define SGL_GENERIC_APP_H
+#pragma once
 
 #include "core_types.h"
 #include "containers/string.h"
@@ -25,4 +24,3 @@ public:
 	virtual void shutdown() VOID_FUNC;
 };
 
-#endif

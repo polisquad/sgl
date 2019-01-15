@@ -1,5 +1,4 @@
-#ifndef SGL_THREAD_SAFE_COUNTER_H
-#define SGL_THREAD_SAFE_COUNTER_H
+#pragma once
 
 #include "core_types.h"
 #include "templates/is_integral.h"
@@ -61,4 +60,3 @@ typedef ThreadSafeCounter<uint32> ThreadSafeCounterU32;
 typedef ThreadSafeCounter<uint64> ThreadSafeCounterU64;
 /// @}
 
-#endif

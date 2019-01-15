@@ -1,5 +1,4 @@
-#ifndef SGL_UNIX_PLATFORM_MEMORY_H
-#define SGL_UNIX_PLATFORM_MEMORY_H
+#pragma once
 
 #include "core_types.h"
 
@@ -12,4 +11,3 @@ struct UnixPlatformMemory : public GenericPlatformMemory
 };
 typedef UnixPlatformMemory PlatformMemory;
 
-#endif

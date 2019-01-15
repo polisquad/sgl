@@ -1,5 +1,4 @@
-#ifndef SGL_CRITICAL_SECTION_H
-#define SGL_CRITICAL_SECTION_H
+#pragma once
 
 #include "core_types.h"
 
@@ -40,4 +39,3 @@ public:
 	ScopeLock & operator=(const ScopeLock&) = delete;
 };
 
-#endif

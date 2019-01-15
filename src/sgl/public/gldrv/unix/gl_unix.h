@@ -1,5 +1,4 @@
-#ifndef SGL_GL_UNIX_H
-#define SGL_GL_UNIX_H
+#pragma once
 
 #include "coremin.h"
 
@@ -54,4 +53,3 @@ using namespace GLFuncPointers;
 #undef GL_DECLARE_ENTRYPOINTS
 
 
-#endif

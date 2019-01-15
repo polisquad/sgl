@@ -1,5 +1,4 @@
-#ifndef SGL_QUEUE_H
-#define SGL_QUEUE_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/platform_memory.h"
@@ -103,11 +102,10 @@ bool Queue<T>::pop(T & _data)
 		// Dealloc node
 		_data = node->data;
 		allocator->free(node);
-		
+
 		return true;
 	}
 
 	return false;
 }
 
-#endif

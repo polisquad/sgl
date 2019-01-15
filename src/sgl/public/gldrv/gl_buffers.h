@@ -1,5 +1,4 @@
-#ifndef SGL_GL_BUFFERS_H
-#define SGL_GL_BUFFERS_H
+#pragma once
 
 #include "core_types.h"
 #include "rhi/rhi_buffers.h"
@@ -139,4 +138,3 @@ typedef GLBuffer<RHIVertexBuffer, GL_ARRAY_BUFFER, bindArrayBuffer> GLVertexBuff
 typedef GLBuffer<GLBaseIndexBuffer, GL_ELEMENT_ARRAY_BUFFER, bindElementArrayBuffer> GLIndexBuffer;
 /// @}
 
-#endif

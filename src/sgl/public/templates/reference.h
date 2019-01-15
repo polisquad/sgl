@@ -1,5 +1,4 @@
-#ifndef SGL_REFERENCE_H
-#define SGL_REFERENCE_H
+#pragma once
 
 #include "core_types.h"
 
@@ -22,4 +21,3 @@ FORCE_INLINE CONSTEXPR RemoveReferenceT(T) && move(T && obj)
 	return (RemoveReferenceT(T)&&)obj;
 }
 
-#endif

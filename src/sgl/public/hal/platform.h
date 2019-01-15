@@ -1,5 +1,4 @@
-#ifndef SGL_PLATFORM_H
-#define SGL_PLATFORM_H
+#pragma once
 
 /// Define all other platforms to be 0
 #ifndef PLATFORM_WINDOWS
@@ -135,4 +134,3 @@ typedef PlatformTypes::char16	char16;
 typedef PlatformTypes::char32	char32;
 /// @}
 
-#endif

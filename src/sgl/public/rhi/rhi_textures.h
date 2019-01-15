@@ -1,5 +1,4 @@
-#ifndef SGL_RHI_TEXTURES_H
-#define SGL_RHI_TEXTURES_H
+#pragma once
 
 #include "core_types.h"
 #include "rhi_resource.h"
@@ -63,10 +62,9 @@ public:
 
 	/// @brief Returns size of the texture
 	/// @{
-	FORCE_INLINE uint32 getWidth() const { return size.x; }
-	FORCE_INLINE uint32 getHeight() const { return size.y; }
-	FORCE_INLINE dim2 getSize() const { return size; }
+	FORCE_INLINE uint32	getWidth() const	{ return size.x; }
+	FORCE_INLINE uint32	getHeight() const	{ return size.y; }
+	FORCE_INLINE dim2	getSize() const		{ return size; }
 	/// @}
 };
 
-#endif

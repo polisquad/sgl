@@ -1,5 +1,4 @@
-#ifndef SGL_UNIX_PLATFORM_ATOMICS_H
-#define SGL_UNIX_PLATFORM_ATOMICS_H
+#pragma once
 
 #include "generic/generic_platform_atomics.h"
 #include "templates/enable_if.h"
@@ -48,4 +47,3 @@ typedef struct UnixPlatformAtomics
 	static FORCE_INLINE void storeRelaxed(volatile EnableIfT<IsIntegralV(Int) & IsIntegralV(T), Int> * src, Int val) { __atomic_store((volatile Int*)src, &val, __ATOMIC_RELAXED); }
 } PlatformAtomics;
 
-#endif

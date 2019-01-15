@@ -1,5 +1,4 @@
-#ifndef SGL_ENGINE_LOOP_H
-#define SGL_ENGINE_LOOP_H
+#pragma once
 
 #include "core_types.h"
 #include "templates/singleton.h"
@@ -47,4 +46,3 @@ public:
 	void exit();
 };
 
-#endif

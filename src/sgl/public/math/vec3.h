@@ -306,6 +306,7 @@ public:
 	#include "vec3_simd.h"
 #endif
 
+
 template<>
 FORCE_INLINE bool Vec3<float32, false>::isNearlyZero() const
 {

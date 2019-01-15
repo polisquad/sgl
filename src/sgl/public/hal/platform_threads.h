@@ -1,5 +1,4 @@
-#ifndef SGL_PLATFORM_THREADS_H
-#define SGL_PLATFORM_THREADS_H
+#pragma once
 
 #include "core_types.h"
 #include "generic/generic_platform_threads.h"
@@ -14,4 +13,3 @@
 	#error "Unkown platform"
 #endif
 
-#endif

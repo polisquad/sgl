@@ -1,5 +1,4 @@
-#ifndef SGL_UNIQUE_PTR_H
-#define SGL_UNIQUE_PTR_H
+#pragma once
 
 #include "core_types.h"
 #include <memory>
@@ -12,4 +11,3 @@
 template<typename T>
 using UniquePtr = std::unique_ptr<T>;
 
-#endif

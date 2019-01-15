@@ -1,5 +1,4 @@
-#ifndef SGL_RUNNABLE_PTHREAD_H
-#define SGL_RUNNABLE_PTHREAD_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/platform_memory.h"
@@ -130,4 +129,3 @@ protected:
 
 #endif // PLATFORM_USE_PTHREADS
 
-#endif

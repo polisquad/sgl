@@ -1,5 +1,4 @@
-#ifndef SGL_UNIX_PLATFORM_PROCESS_H
-#define SGL_UNIX_PLATFORM_PROCESS_H
+#pragma once
 
 #include "core_types.h"
 #include "generic/generic_platform_process.h"
@@ -13,4 +12,3 @@ typedef struct UnixPlatformProcess : GenericPlatformProcess
 	
 } PlatformProcess;
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef SGL_RENDER_BUFFERS_H
-#define SGL_RENDER_BUFFERS_H
+#pragma once
 
 #include "core_types.h"
 #include "render_resource.h"
@@ -71,4 +70,3 @@ public:
 	/// @todo
 };
 
-#endif

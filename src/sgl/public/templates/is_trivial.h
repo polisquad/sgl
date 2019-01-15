@@ -1,5 +1,4 @@
-#ifndef SGL_IS_TRIVIAL_H
-#define SGL_IS_TRIVIAL_H
+#pragma once
 
 #include "core_types.h"
 #include <type_traits>
@@ -15,4 +14,3 @@ using IsTrivial = std::is_trivial<T>;
 
 #define IsTrivialV(T) IsTrivial<T>::value
 
-#endif

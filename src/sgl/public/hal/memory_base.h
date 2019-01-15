@@ -1,5 +1,4 @@
-#ifndef MEMORY_BASE_H
-#define MEMORY_BASE_H
+#pragma once
 
 #include "core_types.h"
 
@@ -58,4 +57,3 @@ public:
 	virtual bool getAllocSize(void * original, uintP & n) { return false; }
 };
 
-#endif

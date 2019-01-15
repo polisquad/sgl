@@ -1,5 +1,4 @@
-#ifndef SGL_FUTURE_H
-#define SGL_FUTURE_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/event.h"
@@ -209,4 +208,3 @@ public:
 	FORCE_INLINE void set() { this->state->setResult(0); }
 };
 
-#endif

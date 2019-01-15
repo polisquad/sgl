@@ -1,5 +1,4 @@
-#ifndef SGL_QUAT_H
-#define SGL_QUAT_H
+#pragma once
 
 #include "vec4.h"
 
@@ -272,4 +271,3 @@ void Quat<float32>::print(FILE * stream) const
 typedef Quat<float32> quat;
 /** @} */
 
-#endif

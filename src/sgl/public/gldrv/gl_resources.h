@@ -1,5 +1,4 @@
-#ifndef SGL_GL_RESOURCES_H
-#define SGL_GL_RESOURCES_H
+#pragma once
 
 #include "rhi/rhi_resources.h"
 
@@ -49,4 +48,3 @@ public:
 
 #include "gl_buffers.h"
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef SGL_SINGLETON_H
-#define SGL_SINGLETON_H
+#pragma once
 
 #include "core_types.h"
 
@@ -51,4 +50,3 @@ T * Singleton<T>::getPtr()
 	return &get();
 }
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef SGL_ARRAY_H
-#define SGL_ARRAY_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/platform_stdlib.h"
@@ -735,4 +734,3 @@ Array<T> Array<T>::sliceUnsafe(uint64 start, uint64 end)
 	return Array<T>(_buffer, _size, _count, allocator);
 }
 
-#endif

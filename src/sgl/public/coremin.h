@@ -1,5 +1,4 @@
-#ifndef SGL_COREMIN_H
-#define SGL_COREMIN_H
+#pragma once
 
 /////////////////////////////////////////////////
 // Low level includes                          //
@@ -19,7 +18,7 @@
 // Common headers                              //
 /////////////////////////////////////////////////
 
-#include "templates/is_array.h"
+#include "templates/is_static_array.h"
 #include "templates/is_integral.h"
 #include "templates/is_pointer.h"
 #include "templates/atomic.h"
@@ -39,4 +38,3 @@
 #include "containers/tree_map.h"
 #include "containers/containers.h"
 
-#endif

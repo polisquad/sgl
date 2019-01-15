@@ -1,5 +1,4 @@
-#ifndef SGL_SIGNED_H
-#define SGL_SIGNED_H
+#pragma once
 
 #include "core_types.h"
 #include "is_integral.h"
@@ -22,4 +21,3 @@ template<> struct Signed<uint16>	{ using Type = int16; };
 template<> struct Signed<uint32>	{ using Type = int32; };
 template<> struct Signed<uint64>	{ using Type = int64; };
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef SGL_ASYNC_H
-#define SGL_ASYNC_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/runnable_thread.h"
@@ -98,4 +97,3 @@ Promise<RetT> async(
 	return result;
 }
 
-#endif

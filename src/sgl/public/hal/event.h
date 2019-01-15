@@ -1,5 +1,4 @@
-#ifndef SGL_EVENT_H
-#define SGL_EVENT_H
+#pragma once
 
 #include "core_types.h"
 #include "templates/atomic.h"
@@ -44,4 +43,3 @@ public:
 	virtual bool wait(uint32 waitTime = 0xffffffff) = 0;
 };
 
-#endif

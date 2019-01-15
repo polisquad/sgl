@@ -1,5 +1,4 @@
-#ifndef SGL_BUILD_H
-#define SGL_BUILD_H
+#pragma once
 
 /// Build macros coming from CMake
 /// Set to zero undefined
@@ -14,4 +13,3 @@
 	#define SGL_BUILD_RELEASE 0
 #endif
 
-#endif
