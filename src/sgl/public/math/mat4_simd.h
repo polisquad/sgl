@@ -6,8 +6,15 @@
  * Vector intrinsics specialization
  */
 template<typename T>
-struct Mat4<T, true>
+struct GCC_ALIGN(32) Mat4<T, true>
 {
+public:
+	/// Constants
+	/// @{
+	static const Mat4<T, true> zero;
+	static const Mat4<T, true> unit;
+	/// @}
+
 public:
 	/// Vector intrinsics operation class
 	using VecOps = Simd::Vector<T, 4>;
@@ -84,30 +91,104 @@ public:
 	FORCE_INLINE T & operator()(uint8 i, uint8 j) { return matrix[i][j]; }
 	/// @}
 
+	/**
+	 * Comparison operations
+	 * 
+	 * @param [in] m matrix operand
+	 * @return comparison result
+	 * @{
+	 */
+	FORCE_INLINE bool operator==(const Mat4<T> & m) const
+	{
+		return
+			DVecOps::template cmp<Simd::CMP_EQ>(dvec[0], m.dvec[0]) == 0xff &
+			DVecOps::template cmp<Simd::CMP_EQ>(dvec[1], m.dvec[1]) == 0xff;
+	}
+	FORCE_INLINE bool operator!=(const Mat4<T> & m) const
+	{
+		return
+			DVecOps::template cmp<Simd::CMP_NE>(dvec[0], m.dvec[0]) +
+			DVecOps::template cmp<Simd::CMP_NE>(dvec[1], m.dvec[1]) != 0x0;
+	}
+	/// @}
+
+	/**
+	 * Matrix-scalar vector operations
+	 * 
+	 * @param [in] s scalar value
+	 * @return new matrix
+	 * @{
+	 */
+	FORCE_INLINE Mat4<T> operator+(T s) const
+	{
+		DVecT ss = DVecOps::load(s);
+		return Mat4<T>(
+			DVecOps::add(dvec[0], ss),
+			DVecOps::add(dvec[1], ss)
+		);
+	}
+	FORCE_INLINE Mat4<T> operator-(T s) const
+	{
+		DVecT ss = DVecOps::load(s);
+		return Mat4<T>(
+			DVecOps::sub(dvec[0], ss),
+			DVecOps::sub(dvec[1], ss)
+		);
+	}
+	FORCE_INLINE Mat4<T> operator*(T s) const
+	{
+		DVecT ss = DVecOps::load(s);
+		return Mat4<T>(
+			DVecOps::mul(dvec[0], ss),
+			DVecOps::mul(dvec[1], ss)
+		);
+	}
+	FORCE_INLINE Mat4<T> operator/(T s) const
+	{
+		DVecT ss = DVecOps::load(s);
+		return Mat4<T>(
+			DVecOps::div(dvec[0], ss),
+			DVecOps::div(dvec[1], ss)
+		);
+	}
+	/// @}
+
 	/// Returns transposed matrix
 	FORCE_INLINE Mat4<T> getTranspose() const
 	{
-		DVecT
-			upper = DVecOps::unpacklo(dvec[0], dvec[1]),
-			lower = DVecOps::unpackhi(dvec[0], dvec[1]);
+		VecT
+			a0 = VecOps::unpacklo(vec[0], vec[1]),
+			a1 = VecOps::unpackhi(vec[0], vec[1]),
+			a2 = VecOps::unpacklo(vec[2], vec[3]),
+			a3 = VecOps::unpackhi(vec[2], vec[3]);
+		
+		VecT
+			t0 = VecOps::template shuffle<0, 1, 0, 1>(a0, a2),
+			t1 = VecOps::template shuffle<2, 3, 2, 3>(a0, a2),
+			t2 = VecOps::template shuffle<0, 1, 0, 1>(a1, a3),
+			t3 = VecOps::template shuffle<2, 3, 2, 3>(a1, a3);
 		
 		return Mat4<T>(
-			DVecOps::shuffle(upper, 0, 4, 1, 5, 2, 6, 3, 7),
-			DVecOps::shuffle(lower, 0, 4, 1, 5, 2, 6, 3, 7)
+			VecOps::template shuffle<0, 1, 0, 1>(a0, a2),
+			VecOps::template shuffle<2, 3, 2, 3>(a0, a2),
+			VecOps::template shuffle<0, 1, 0, 1>(a1, a3),
+			VecOps::template shuffle<2, 3, 2, 3>(a1, a3)
 		);
 	}
 
 	/// Transposes matrix in place
 	FORCE_INLINE Mat4<T> & transpose()
 	{
-		// Unpack here, interleave there ...
-		DVecT
-			upper = DVecOps::unpacklo(dvec[0], dvec[1]),
-			lower = DVecOps::unpackhi(dvec[0], dvec[1]);
+		VecT
+			a0 = VecOps::unpacklo(vec[0], vec[1]),
+			a1 = VecOps::unpackhi(vec[0], vec[1]),
+			a2 = VecOps::unpacklo(vec[2], vec[3]),
+			a3 = VecOps::unpackhi(vec[2], vec[3]);
 		
-		// Shuffle a bit ...
-		dvec[0] = DVecOps::shuffle(upper, 0, 4, 1, 5, 2, 6, 3, 7);
-		dvec[1] = DVecOps::shuffle(lower, 0, 4, 1, 5, 2, 6, 3, 7);
+		vec[0] = VecOps::template shuffle<0, 1, 0, 1>(a0, a2),
+		vec[1] = VecOps::template shuffle<2, 3, 2, 3>(a0, a2),
+		vec[2] = VecOps::template shuffle<0, 1, 0, 1>(a1, a3),
+		vec[3] = VecOps::template shuffle<2, 3, 2, 3>(a1, a3);
 
 		// Voila!
 		return *this;
@@ -234,7 +315,7 @@ protected:
 			b5 = DVecOps::shuffle(B, 5, 4, 4, 4, 5, 4, 4, 4);
 
 		return DVecOps::mul(
-			DVecOps::load(T(1), T(-1), T(1), T(-1), T(-1), T(1), T(-1), T(1)),
+			DVecOps::row,
 			DVecOps::add(
 				DVecOps::sub(
 					DVecOps::mul(
@@ -294,9 +375,9 @@ protected:
 			a2 = DVecOps::shuffle(A, 3, 3, 3, 2, 3, 3, 3, 2),
 			a3 = DVecOps::shuffle(A, 6, 6, 5, 5, 6, 6, 5, 5),
 			a4 = DVecOps::shuffle(A, 1, 0, 0, 0, 1, 0, 0, 0),
-			a6 = DVecOps::shuffle(A, 5, 4, 4, 4, 5, 4, 4, 4);
+			a5 = DVecOps::shuffle(A, 5, 4, 4, 4, 5, 4, 4, 4);
 		
-		DVecOps::mul(
+		return DVecOps::mul(
 			DVecOps::load(T(1), T(-1), T(1), T(-1), T(-1), T(1), T(-1), T(1)),
 			DVecOps::add(
 				DVecOps::sub(
@@ -322,7 +403,7 @@ protected:
 							),
 							DVecOps::mul(
 								a2,
-								a6
+								a5
 							)
 						)
 					)
@@ -336,7 +417,7 @@ protected:
 						),
 						DVecOps::mul(
 							a0,
-							a6
+							a5
 						)
 					)
 				)
@@ -349,7 +430,7 @@ protected:
 
 public:
 	/// Calculate matrix of algebraic complements
-	Mat4<T> getAlgebraicComplementsMatrix()
+	Mat4<T> getAlgebraicComplementsMatrix() const
 	{
 		return Mat4<T>(
 			/// Upper vector
@@ -360,7 +441,7 @@ public:
 	}
 
 	/// Get matrix inverse
-	Mat4<T> operator!()
+	Mat4<T> operator!() const
 	{
 		// Get complements matrix
 		Mat4<T> c = getAlgebraicComplementsMatrix();
@@ -395,6 +476,46 @@ public:
 		}
 
 		return *this;
+	}
+
+	/// Inverse optimized for transform matrix
+	FORCE_INLINE Mat4<T> getInverseTransform() const
+	{
+		// First, transpose
+		Mat4<T> mt = getTranspose();
+
+		VecT
+			s0 = VecOps::mul(mt.vec[0], mt.vec[0]),
+			s1 = VecOps::mul(mt.vec[1], mt.vec[1]),
+			s2 = VecOps::mul(mt.vec[2], mt.vec[2]),
+
+			t0 = VecOps::mul(mt.vec[0], mt.vec[3]),
+			t1 = VecOps::mul(mt.vec[1], mt.vec[3]),
+			t2 = VecOps::mul(mt.vec[2], mt.vec[3]);
+		
+		s0 = VecOps::hadd(s0, s1),
+		s2 = VecOps::hadd(s2, VecOps::zero);
+
+		t0 = VecOps::hadd(t0, t1),
+		t2 = VecOps::hadd(t2, VecOps::zero);
+
+		s0 = VecOps::hadd(s0, s2);
+		t0 = VecOps::hadd(t0, t2);
+
+		// Set last row
+		mt.vec[3] = VecOps::load(T(0), T(0), T(0), T(1));
+
+		// Set translation
+		mt.vec[0] = VecOps::add(mt.vec[0], VecOps::template shuffle<3, 3, 3, 0>(t0));
+		mt.vec[1] = VecOps::add(mt.vec[1], VecOps::template shuffle<3, 3, 3, 1>(t0));
+		mt.vec[2] = VecOps::add(mt.vec[2], VecOps::template shuffle<3, 3, 3, 2>(t0));
+
+		// Scale matrix
+		mt.vec[0] = VecOps::div(mt.vec[0], VecOps::template shuffle<0, 0, 0, 0>(s0)),
+		mt.vec[1] = VecOps::div(mt.vec[1], VecOps::template shuffle<1, 1, 1, 1>(s0)),
+		mt.vec[2] = VecOps::div(mt.vec[2], VecOps::template shuffle<2, 2, 2, 2>(s0));
+
+		return mt;
 	}
 
 	/// Print matrix to stdout or specified fd
@@ -512,7 +633,7 @@ public:
 		T aspect = T(16) / T(9);
 		fov = T(1) / PlatformMath::tan(fov);
 		/// @todo Get framebuffer size if possible
-		
+
 		return Mat4<T>(
 			fov, T(0), T(0), T(0),
 			T(0), fov * aspect, T(0), T(0),
@@ -527,7 +648,7 @@ template<>
 FORCE_INLINE void Mat4<float32, true>::print(FILE * out) const
 {
 	fprintf(out, "m4f (%.3f, %.3f, %.3f, %.3f)\n", array[0x0], array[0x1], array[0x2], array[0x3]);
-	fprintf(out, "    (%.3f, %.3f, %.3f, %.3f)\n", array[0x4], array[0x5], array[0x6], array[0x3]);
+	fprintf(out, "    (%.3f, %.3f, %.3f, %.3f)\n", array[0x4], array[0x5], array[0x6], array[0x7]);
 	fprintf(out, "    (%.3f, %.3f, %.3f, %.3f)\n", array[0x8], array[0x9], array[0xa], array[0xb]);
 	fprintf(out, "    (%.3f, %.3f, %.3f, %.3f)\n", array[0xc], array[0xd], array[0xe], array[0xf]);
 }

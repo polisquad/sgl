@@ -152,10 +152,9 @@ public:
 	//////////////////////////////////////////////////
 	
 	/// Invert vector direction
-	FORCE_INLINE Vec4<T> & operator-()
+	FORCE_INLINE Vec4<T> operator-() const
 	{
-		x = -x, y = -y, z = -z, w = -w;
-		return *this;
+		return Vec4<T>(VecOps::bxor(data, VecOps::neg));
 	}
 
 	/**
@@ -272,7 +271,7 @@ public:
 	 * @param [in] v vector operand
 	 * @return dot product as T
 	 */
-	FORCE_INLINE Vec4<T> operator&(const Vec4<T> & v) const
+	FORCE_INLINE T operator&(const Vec4<T> & v) const
 	{
 		return x * v.x + y * v.y + z * v.z + w * v.w;
 	}
@@ -291,13 +290,13 @@ public:
 template<>
 FORCE_INLINE bool Vec4<float32, true>::isNearlyZero() const
 {
-	return VecOps::template cmp<Simd::CMP_GE>(VecOps::bor(data, VecOps::load(-0.f)), VecOps::load(-0.f)) == 0xf;
+	return VecOps::template cmp<Simd::CMP_GE>(VecOps::bor(data, VecOps::neg), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) == 0xf;
 }
 
 template<>
 FORCE_INLINE bool Vec4<float32, true>::isEqual(const Vec4<float32> & v) const
 {
-	return VecOps::template cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecOps::load(-0.f)), VecOps::load(-0.f));
+	return VecOps::template cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecOps::neg), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) == 0xf;
 }
 
 template<>

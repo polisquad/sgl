@@ -132,7 +132,7 @@ public:
 	/// Use @ref isNearlyZero() for floating points
 	FORCE_INLINE bool operator==(const Vec3<T> & v) const
 	{
-		return x < v.x == y < v.y == z < v.z;
+		return x == v.x & y == v.y & z == v.z;
 	}
 	FORCE_INLINE bool operator!=(const Vec3<T> & v) const
 	{
@@ -165,10 +165,9 @@ public:
 	//////////////////////////////////////////////////
 	
 	/// Invert vector direction
-	FORCE_INLINE Vec3<T> & operator-()
+	FORCE_INLINE Vec3<T> operator-() const
 	{
-		x = -x, y = -y, z = -z;
-		return *this;
+		return Vec3<T>(-x, -y, -z);
 	}
 
 	/**
@@ -285,7 +284,7 @@ public:
 	 * @param [in] v vector operand
 	 * @return dot product as T
 	 */
-	FORCE_INLINE Vec3<T> operator&(const Vec3<T> & v) const
+	FORCE_INLINE T operator&(const Vec3<T> & v) const
 	{
 		return x * v.x + y * v.y + z * v.z;
 	}
@@ -338,13 +337,13 @@ FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator/(float32 s) const
 template<>
 FORCE_INLINE bool Vec3<float32, true>::isNearlyZero() const
 {
-	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(data, VecT{-0.f, -0.f, -0.f, -0.f}), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) >= 0xe;
+	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(data, VecOps::neg), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) >= 0xe;
 }
 
 template<>
 FORCE_INLINE bool Vec3<float32, true>::isEqual(const Vec3<float32> & v) const
 {
-	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecT{-0.f, -0.f, -0.f, -0.f}), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) >= 0xe;
+	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecOps::neg), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) >= 0xe;
 }
 
 template<>

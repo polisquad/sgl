@@ -124,21 +124,21 @@ public:
 
 		return Vec3<T, true>(
 			VecOps::add(
-				v.data,
-				VecOps::add(
+				VecOps::sub(
+					v.data,
 					VecOps::mul(
 						VecOps::load(this->w),
 						t
+					)
+				),
+				VecOps::sub(
+					VecOps::mul(
+						VecOps::template shuffle<1, 0, 0, 0>(this->data),
+						VecOps::template shuffle<2, 2, 1, 1>(t)
 					),
-					VecOps::sub(
-						VecOps::mul(
-							VecOps::template shuffle<1, 0, 0, 0>(this->data),
-							VecOps::template shuffle<2, 2, 1, 1>(t)
-						),
-						VecOps::mul(
-							VecOps::template shuffle<2, 2, 1, 1>(this->data),
-							VecOps::template shuffle<1, 0, 0, 0>(t)
-						)
+					VecOps::mul(
+						VecOps::template shuffle<2, 2, 1, 1>(this->data),
+						VecOps::template shuffle<1, 0, 0, 0>(t)
 					)
 				)
 			)

@@ -12,7 +12,7 @@
  * If possible uses vector intrinsics to
  * boost performance
  */
-template<typename T, bool = hasVectorIntrinsics(T, 4)>
+template<typename T = float32, bool = hasVectorIntrinsics(T, 4)>
 struct Vec4
 {
 public:
@@ -146,10 +146,9 @@ public:
 	//////////////////////////////////////////////////
 	
 	/// Invert vector direction
-	CONSTEXPR FORCE_INLINE Vec4<T, false> & operator-()
+	CONSTEXPR FORCE_INLINE Vec4<T, false> operator-() const
 	{
-		x = -x, y = -y, z = -z, w = -w;
-		return *this;
+		return Vec4<T, false>(-x -y, -z, -w);
 	}
 
 	/**
@@ -266,7 +265,7 @@ public:
 	 * @param [in] v vector operand
 	 * @return dot product as T
 	 */
-	CONSTEXPR FORCE_INLINE Vec4<T, false> operator&(const Vec4<T, false> & v) const
+	CONSTEXPR FORCE_INLINE T operator&(const Vec4<T, false> & v) const
 	{
 		return x * v.x + y * v.y + z * v.z + w * v.w;
 	}

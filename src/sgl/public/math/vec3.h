@@ -12,7 +12,7 @@
  * If possible uses vector intrinsics to
  * boost performance
  */
-template<typename T, bool = hasVectorIntrinsics(T, 4)>
+template<typename T = float32, bool = hasVectorIntrinsics(T, 4)>
 struct Vec3
 {
 public:
@@ -156,10 +156,9 @@ public:
 	//////////////////////////////////////////////////
 	
 	/// Invert vector direction
-	FORCE_INLINE Vec3<T, false> & operator-()
+	FORCE_INLINE Vec3<T, false> operator-() const
 	{
-		x = -x, y = -y, z = -z;
-		return *this;
+		return Vec3<T, false>(-x, -y, -z);
 	}
 
 	/**

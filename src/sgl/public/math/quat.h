@@ -106,7 +106,7 @@ public:
 		/** @see http://people.csail.mit.edu/bkph/articles/Quaternions.pdf */
 		const Vec3<T, bHVI> q(this->x, this->y, this->z);
 		const Vec3<T, bHVI> t = T(2) * (q ^ v);
-		return v + (this->w * t) + (q ^ t);
+		return v - (this->w * t) + (q ^ t);
 	}
 	template<bool bHVI>
 	CONSTEXPR FORCE_INLINE Vec4<T, bHVI> operator*(const Vec4<T, bHVI> & v) const { return Vec4<T, bHVI>(operator*(Vec3<T, bHVI>(v)), v.w); }

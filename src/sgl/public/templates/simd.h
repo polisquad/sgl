@@ -15,7 +15,12 @@ namespace Simd
 	 */
 	template<typename T, uint8 N>
 	struct Vector { using Type = void; };
+} // Simd
 
+#if PLATFORM_ENABLE_SIMD
+
+namespace Simd
+{
 	/**
 	 * Comparison operations
 	 */
@@ -28,13 +33,7 @@ namespace Simd
 		CMP_GE = _MM_CMPINT_GE,
 		CMP_LE = _MM_CMPINT_LE
 	};
-} // Simd
 
-#if PLATFORM_ENABLE_SIMD
-
-
-namespace Simd
-{
 	/// Float specialization
 	template<>
 	struct Vector<float32, 4>
@@ -42,6 +41,15 @@ namespace Simd
 	public:
 		/// Intrinsic type
 		using Type = __m128;
+
+		/// Constants
+		/// @{
+		static const Type zero;
+		static const Type unit;
+		static const Type neg;
+		static const Type rowEven;
+		static const Type rowOdd;
+		/// @}
 
 	public:
 		/// Create vector from four scalar values
@@ -88,10 +96,25 @@ namespace Simd
 		static FORCE_INLINE int32 cmp(Type v1, Type v2) { return _mm_movemask_ps(_mm_cmp_ps(v1, v2, Op)); }
 
 		/**
-		 * Shuffles (permutes) elements of two vectors
+		 * Shuffles elements of two vectors
 		 * 
+		 * @param [in] a,b,c,d permutation indices
+		 * @param [in] v1,v2 vectors to shuffle
+		 * @return new vector
+		 * @{
+		 */
+		template<uint8 a, uint8 b, uint8 c, uint8 d>
+		static FORCE_INLINE Type shuffle(Type v1, Type v2)
+		{
+			return _mm_shuffle_ps(v1, v2, _MM_SHUFFLE(d, c, b, a));
+		}
+		/// @}	
+
+		/**
+		 * Shuffles (permutes) elements of one vectors
+		 * 
+		 * @param [in] a,b,c,d permutation indices
 		 * @param [in] v vector to shuffle
-		 * @param [in] a-h permutation source indices
 		 * @return new vector
 		 */
 		template<uint8 a, uint8 b, uint8 c, uint8 d>
@@ -99,7 +122,33 @@ namespace Simd
 		{
 			return _mm_permute_ps(v, _MM_SHUFFLE(d, c, b, a));
 		}
+		
+		/// Unpack and interleave components from two vectors
+		/// @{
+		static FORCE_INLINE Type unpacklo(Type v1, Type v2)
+		{
+			return _mm_unpacklo_ps(v1, v2);
+		}
+		static FORCE_INLINE Type unpackhi(Type v1, Type v2)
+		{
+			return _mm_unpackhi_ps(v1, v2);
+		}
+		/// @}
 	};
+
+	/// Shuffle specializations
+	/// @{
+	template<>
+	FORCE_INLINE Vector<float32, 4>::Type Vector<float32, 4>::shuffle<0, 1, 0, 1>(Type v1, Type v2)
+	{
+		return _mm_movelh_ps(v1, v2);
+	}
+	template<>
+	FORCE_INLINE Vector<float32, 4>::Type Vector<float32, 4>::shuffle<2, 3, 2, 3>(Type v1, Type v2)
+	{
+		return _mm_movehl_ps(v2, v1);
+	}
+	/// @}
 
 	/**
 	 * Float specialization
@@ -110,6 +159,14 @@ namespace Simd
 	public:
 		/// Intrinsics data type
 		using Type = __m256;
+
+		/// Constants
+		/// @{
+		static const Type zero;
+		static const Type unit;
+		static const Type neg;
+		static const Type row;
+		/// @}
 
 	public:
 		/// Create vector from four scalar values
@@ -138,6 +195,16 @@ namespace Simd
 		static FORCE_INLINE Type hadd(Type v1, Type v2) { return _mm256_hadd_ps(v1, v2); }
 		/// @}
 
+		/**
+		 * Compare two vector intrinsics
+		 * 
+		 * @param [in] op comparison operation
+		 * @param [in] v1,v2 intrinsics operands
+		 * @return comparison result as bitmask
+		 */
+		template<int32 Op = CMP_EQ>
+		static FORCE_INLINE int32 cmp(Type v1, Type v2) { return _mm256_movemask_ps(_mm256_cmp_ps(v1, v2, Op)); }
+
 		/// Unpacks and interleaves vector components
 		/// @see https://software.intel.com/sites/landingpage/IntrinsicsGuide/#expand=3306,5554,5559,3327,3328,6068,6068&text=_mm256_unpacklo_ps
 		static FORCE_INLINE Type unpacklo(Type v1, Type v2) { return _mm256_unpacklo_ps(v1, v2); }
@@ -159,6 +226,5 @@ namespace Simd
 		}
 	};
 } // Simd
-
 
 #endif

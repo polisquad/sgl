@@ -8,7 +8,7 @@
 /**
  * A 2-components vector
  */
-template<typename T>
+template<typename T = float32>
 struct Vec2
 {
 public:
