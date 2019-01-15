@@ -1,5 +1,4 @@
-#ifndef SGL_PLATFORM_H
-#define SGL_PLATFORM_H
+#pragma once
 
 /// Define all other platforms to be 0
 #ifndef PLATFORM_WINDOWS
@@ -102,5 +101,3 @@ typedef PlatformTypes::float32	float32;
 typedef PlatformTypes::float64	float64;
 typedef PlatformTypes::float128	float128;
 /** @} */
-
-#endif

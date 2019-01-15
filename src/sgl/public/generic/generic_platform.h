@@ -1,5 +1,4 @@
-#ifndef SGL_GENERIC_PLATFORM_H
-#define SGL_GENERIC_PLATFORM_H
+#pragma once
 
 /**
  * @struct GenericPlatformTypes generic/generic_platform.h
@@ -33,5 +32,3 @@ struct GenericPlatformTypes
 	typedef long double	float128;
 	/** @} */
 };
-
-#endif

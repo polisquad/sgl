@@ -58,6 +58,9 @@ namespace Simd
 		/// Create vector from single scalar value
 		static CONSTEXPR FORCE_INLINE Type load(float32 s) { return Type{s, s, s, s}; }
 
+		/// Create vector from memory buffer
+		static FORCE_INLINE Type load(const float32 * buffer) { return _mm_load_ps(buffer); }
+
 		/**
 		 * Arithmetic operations
 		 * 
@@ -177,6 +180,9 @@ namespace Simd
 
 		/// Create vector from single scalar value
 		static CONSTEXPR FORCE_INLINE Type load(float32 s) { return Type{s, s, s, s, s, s, s, s}; }
+
+		/// Create vector from memory buffer
+		static FORCE_INLINE Type load(const float32 * buffer) { return _mm256_load_ps(buffer); }
 
 		/**
 		 * Arithmetic operations

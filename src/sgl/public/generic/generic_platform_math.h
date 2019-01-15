@@ -1,5 +1,4 @@
-#ifndef SGL_GENERIC_PLATFORM_MATH_H
-#define SGL_GENERIC_PLATFORM_MATH_H
+#pragma once
 
 #include "core_types.h"
 #include "hal/platform_stdlib.h"
@@ -75,5 +74,3 @@ FORCE_INLINE float32 GenericPlatformMath::abs(float32 s)
 {
 	return fabsf(s);
 }
-
-#endif

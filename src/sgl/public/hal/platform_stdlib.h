@@ -1,5 +1,4 @@
-#ifndef SGL_PLATFORM_STDLIB_H
-#define SGL_PLATFORM_STDLIB_H
+#pragma once
 
 /////////////////////////////////////////////////
 // Standard library headers                    //
@@ -27,5 +26,3 @@
 #include <new>
 #include <type_traits>
 /** @} */
-
-#endif

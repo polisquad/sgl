@@ -1,5 +1,4 @@
-#ifndef SGL_TYPES_H
-#define SGL_TYPES_H
+#pragma once
 
 /**
  * @brief Integer types definitions
@@ -26,5 +25,3 @@ typedef float		float32;
 typedef double		float64;
 typedef long double	float128;
 /** @} */
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SGL_BOX_H
-#define SGL_BOX_H
+#pragma once
 
 #include "vec3.h"
 
@@ -261,5 +260,3 @@ void Box<float32>::print(FILE * stream) const
 {
 	fprintf(stream, "min(%.3f, %.3f, %.3f) : max(%.3f, %.3f, %.3f)\n", min.x, min.y, min.z, max.x, max.y, max.z);
 }
-
-#endif

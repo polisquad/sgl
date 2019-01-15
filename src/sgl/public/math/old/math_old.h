@@ -1,5 +1,4 @@
-#ifndef SGL_MATH_H
-#define SGL_MATH_H
+#pragma once
 
 #include "math.hpp"
 
@@ -234,6 +233,4 @@ bool Math::intersect(const Vec3<float32> & p0, const Vec3<float32> & p1, const V
 
 	return true;
 }
-#endif
-
 #endif
