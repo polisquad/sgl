@@ -1,4 +1,5 @@
 #include "public/test_containers.h"
+#include "public/test_math.h"
 
 /// @brief Global allocator
 Malloc * gMalloc = nullptr;

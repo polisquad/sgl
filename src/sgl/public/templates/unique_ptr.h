@@ -2,6 +2,7 @@
 #define SGL_UNIQUE_PTR_H
 
 #include "core_types.h"
+#include <memory>
 
 /**
  * Just a typedef for now

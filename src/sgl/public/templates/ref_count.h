@@ -67,6 +67,9 @@ public:
 	/// @brief Returns reference count
 	FORCE_INLINE uint32 getRefCount() const { return ref ? ref->getRefCount() : 0; }
 
+	/// @brief Release reference
+	FORCE_INLINE void release() { *this = nullptr; }
+
 	/// @brief Swap two ref pointers, ref count does not change
 	/// @{
 	FORCE_INLINE void swap(RefCountPtr & other) { auto t = ref; ref = other.ref, other.ref = t; }

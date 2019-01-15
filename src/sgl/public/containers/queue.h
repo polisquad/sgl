@@ -100,7 +100,10 @@ bool Queue<T>::pop(T & _data)
 		// Decrement counter
 		--numClients;
 		
+		// Dealloc node
 		_data = node->data;
+		allocator->free(node);
+		
 		return true;
 	}
 

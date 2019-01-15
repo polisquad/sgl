@@ -2,8 +2,10 @@
 
 #include "hal/platform_memory.h"
 #include "containers/array.h"
+#include "containers/linked_list.h"
 #include "containers/queue.h"
 #include "containers/string.h"
+#include "containers/tree_map.h"
 #include "containers/containers.h"
 
 /**
@@ -84,7 +86,8 @@ TEST(Containers, arr_stress_test)
 TEST(Containers, str_construct)		{ String str("sneppy"); EXPECT_TRUE(strncmp(*str, "sneppy", 6) == 0); }
 TEST(Containers, str_append_cstr)	{ String str("sneppy"); str += "rulez"; EXPECT_TRUE(strncmp(*str, "sneppyrulez", 11) == 0); }
 TEST(Containers, str_append_str)	{ String str("sneppy"); str += String("rulez"); EXPECT_TRUE(strncmp(*str, "sneppyrulez", 11) == 0); }
-TEST(Containers, str_comarison)		{
+TEST(Containers, str_comparison)
+{
 
 	// Create a few strings
 	String a("sneppy"), b("Gu"), c("lpraat"), d("sNePPY");
@@ -105,3 +108,38 @@ TEST(Containers, str_comarison)		{
 	EXPECT_TRUE(b < c);
 	EXPECT_TRUE(b <= c);
 }
+
+/////////////////////////////////////////////////
+// LinkedList and queue test                   //
+/////////////////////////////////////////////////
+
+TEST(Containers, ll_insert)	{ LinkedList<uint64> ll; ll.insert(13), ll.insert(11); EXPECT_EQ(11, ll[0]); }
+TEST(Containers, ll_push)	{ LinkedList<uint64> ll; ll.push(13), ll.push(11); EXPECT_EQ(13, ll[0]); }
+TEST(Containers, ll_remove)	{ LinkedList<uint64> ll; ll.push(13), ll.push(11), ll.remove(); EXPECT_EQ(11, ll[0]); }
+TEST(Containers, ll_pop)	{ LinkedList<uint64> ll; ll.push(13), ll.push(11), ll.pop(); EXPECT_EQ(13, ll[0]); }
+TEST(Containers, ll_stress_test)
+{
+	LinkedList<uint64> ll;
+
+	// Insert
+	for (uint64 i = 0; i < 1024; ++i) ll.insert(i);
+	{
+		auto it = ll.begin();
+		for (uint64 i = 0; i < 1024; ++i, ++it) EXPECT_EQ(1023 - i, *it);
+	}
+
+	// Push
+	for (uint64 i = 0; i < 1024; ++i) ll.push(i);
+	{
+		auto it = ll.begin();
+		for (uint64 i = 0; i < 1024; ++i, ++it) EXPECT_EQ(1023 - i, *it);
+		for (uint64 i = 0; i < 1024; ++i, ++it) EXPECT_EQ(i, *it);
+	}
+}
+
+//////////////////////////////////////////////////
+// TreeMap test                                 //
+//////////////////////////////////////////////////
+
+TEST(Containers, tmap_push)	{ TreeMap<uint64, String> map; map[8] = "0100", map[9] = "0101", map[10] = "0110", map[11] = "0111"; EXPECT_EQ(String("0101"), map[9]); }
+TEST(Containers, tmap_find)	{ TreeMap<uint64, String> map; map[8] = "0100", map[9] = "0101", map[10] = "0110", map[11] = "0111"; auto it = map.find(7); EXPECT_TRUE(it == map.end()); it = map.find(8); EXPECT_TRUE(it != map.end()); }

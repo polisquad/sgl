@@ -12,14 +12,14 @@ template<typename UnsignedInt>
 struct Signed
 {
 	static_assert(IsIntegralV(UnsignedInt), "UnsignedInt must be an integer type");
-	typedef UnsignedInt Type;
+	using Type = void;
 };
 
 #define SignedT(T) typename Signed<T>::Type
 
-template<> struct Signed<uint8>		{ typedef int8 Type; };
-template<> struct Signed<uint16>	{ typedef int16 Type; };
-template<> struct Signed<uint32>	{ typedef int32 Type; };
-template<> struct Signed<uint64>	{ typedef int64 Type; };
+template<> struct Signed<uint8>		{ using Type = int8; };
+template<> struct Signed<uint16>	{ using Type = int16; };
+template<> struct Signed<uint32>	{ using Type = int32; };
+template<> struct Signed<uint64>	{ using Type = int64; };
 
 #endif
