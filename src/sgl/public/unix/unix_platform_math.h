@@ -2,6 +2,7 @@
 #define SGL_UNIX_PLATFORM_MATH_H
 
 #include "core_types.h"
+#include "unix_system_includes.h"
 
 /**
  * @struct UnixPlatformMath unix/unix_platform_math.h

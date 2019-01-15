@@ -18,7 +18,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <utime.h>
+#if PLATFORM_ENABLE_SIMD
+#include <immintrin.h>
+#endif // PLATFORM_ENABLE_SIMD
 
 #include <cassert>
-
-#endif

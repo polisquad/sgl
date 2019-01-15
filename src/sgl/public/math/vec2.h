@@ -1,548 +1,269 @@
-#ifndef SGL_VEC2_H
-#define SGL_VEC2_H
+#pragma once
 
 #include "core_types.h"
-#include "simd.h"
-#include "templates/enable_if.h"
-#include "templates/is_array.h"
+#include "hal/platform_math.h"
+#include "templates/is_void.h"
+#include "templates/simd.h"
 
 /**
- * @struct Vec2 vec2.h
- * @brief a 2-components templated vector
+ * A 2-components vector
  */
 template<typename T = float32>
-struct Vec2 : public SIMD<T>
+struct Vec2
 {
 public:
-	typedef typename SIMD<T>::VT VT;
-
 	union
 	{
-		/**
-		 * @brief SIMD data
-		 */
-		VT data;
+		/// Array data
+		T buffer[2];
 
-		/**
-		 * @brief C array representation
-		 */
-		T __vec[4];
-
-		/**
-		 * @brief Struct for single item access
-		 */
 		struct
 		{
-			T __gap[2];
-
-			/**
-			 * @brief Vector components
-			 * @{
-			 */
-			T y, x;
-			/** @} */
+			/// Vector components
+			/// @{
+			T x, y;
+			/// @}
 		};
 	};
 
 public:
-	/**
-	 * @brief Zero-constructor
-	 */
-	FORCE_INLINE Vec2();
+	/// Default constructor
+	CONSTEXPR FORCE_INLINE Vec2() : buffer{T(0), T(0)} {}
+
+	/// Components constructor
+	CONSTEXPR FORCE_INLINE Vec2(T _x, T _y) : buffer{_x, _y} {}
+
+	/// Scalar constructor
+	CONSTEXPR FORCE_INLINE Vec2(T s) : buffer{s, s} {}
+
+	/// Convert from @ref Vec3
+	template<bool bHasVectorIntrinsics>
+	CONSTEXPR FORCE_INLINE Vec2(const Vec3<T, bHasVectorIntrinsics> & v) : buffer{v.x, v.y} {}
+
+	/// Convert from @ref Vec4
+	template<bool bHasVectorIntrinsics>
+	CONSTEXPR FORCE_INLINE Vec2(const Vec4<T, bHasVectorIntrinsics> & v) : buffer{v.x, v.y} {}
+
+	/// Array random-access operator
+	FORCE_INLINE const T & operator[](uint8 i) const { return buffer[i]; }
+	FORCE_INLINE T & operator[](uint8 i) { return buffer[i]; }
+
+	/// Get vector squared size
+	FORCE_INLINE T getSquaredSize() const { return x * x + y * y; }
+
+	/// Get vector size
+	FORCE_INLINE T getSize() const { return PlatformMath::sqrt(x * x + y * y); }
+
+	/// Get normal vector
+	FORCE_INLINE Vec2<T> getNormal() const
+	{
+		const T size = getSize();
+		return Vec2<T>(x / size, y / size);
+	}
+
+	/// Normalize in place
+	FORCE_INLINE Vec2<T> & normalize()
+	{
+		const T size = getSize();
+		x /= size, y /= size;
+		return *this;
+	}
+
+	/// Return inverse vector
+	CONSTEXPR FORCE_INLINE Vec2<T> operator!()
+	{
+		return Vec2<T>(-x, -y);
+	}
+
+	/// Return true if vector is nearly zero
+	/// Only float specialization
+	FORCE_INLINE bool isNearlyZero() const;
 
 	/**
-	 * @brief Data-constructor
+	 * Vector-vector comparison operators
 	 * 
-	 * @param [in] data simd-like data structure
-	 */
-	FORCE_INLINE Vec2(const VT data);
-	
-	/**
-	 * @brief Vec-constructor
+	 * Strict comparison, all components must evaluate to true
 	 * 
-	 * @param [in] vec plain array
+	 * @param [in] v vector operand
+	 * @return comparison result as @c bool
+	 * @{
 	 */
-	FORCE_INLINE Vec2(const T * buffer);
+	/// Compare with float tolerance
+	FORCE_INLINE bool isEqual(const Vec2<T> & v) const;
+
+	FORCE_INLINE bool operator==(const Vec2<T> & v) const
+	{
+		return x == v.x & y == v.y;
+	}
+	FORCE_INLINE bool operator!=(const Vec2<T> & v) const
+	{
+		return x != v.x | y != v.y;
+	}
+	FORCE_INLINE bool operator<(const Vec2<T> & v) const
+	{
+		return x < v.x & y < v.y;
+	}
+	FORCE_INLINE bool operator>(const Vec2<T> & v) const
+	{
+		return x > v.x & y > v.y;
+	}
+	FORCE_INLINE bool operator<=(const Vec2<T> & v) const
+	{
+		return x <= v.x & y <= v.y;
+	}
+	FORCE_INLINE bool operator>=(const Vec2<T> & v) const
+	{
+		return x >= v.x & y >= v.y;
+	}
+	/// @}
 
 	/**
-	 * @brief Coordinates-constructor
+	 * Vector-vector compound assignment
 	 * 
-	 * @param [in] x,y coordinates values
-	 */
-	FORCE_INLINE Vec2(const T x, const T y);
-
-	/**
-	 * @brief Scalar-constructor
-	 * 
-	 * @param [in] s scalar value
-	 */
-	FORCE_INLINE Vec2(const T s);
-
-	/**
-	 * @brief Return read-only element of the simd vector
-	 * 
-	 * @param [in] i element index
-	 * 
-	 * @return read-only copy
-	 */
-	FORCE_INLINE T & operator[](uint8 i);
-
-	/**
-	 * @brief Return squared size of vector
-	 * 
-	 * @return squared size
-	 */
-	FORCE_INLINE float32 getSquaredSize() const;
-
-	/**
-	 * @brief Return size of vector
-	 * 
-	 * @return size (L^2-norm)
-	 */
-	FORCE_INLINE float32 getSize() const;
-
-	/**
-	 * @brief Get normalized copy of vector
-	 * 
-	 * @return normalized vector (copy)
-	 */
-	FORCE_INLINE Vec2<T> getNormal() const;
-
-	/**
-	 * @brief Normalize vector in place
-	 * 
+	 * @param [in] v vector operand
 	 * @return self
-	 */
-	FORCE_INLINE Vec2<T> & normalize();
-
-	/**
-	 * @brief Compare two vectors
-	 * 
-	 * @param [in] v other vector
-	 * 
-	 * @return Comparison result
-	 * 
 	 * @{
 	 */
-	FORCE_INLINE bool operator==(const Vec2<T> & v) const;
-	FORCE_INLINE bool operator!=(const Vec2<T> & v) const;
-	FORCE_INLINE bool operator<(const Vec2<T> & v) const;
-	FORCE_INLINE bool operator<=(const Vec2<T> & v) const;
-	FORCE_INLINE bool operator>(const Vec2<T> & v) const;
-	FORCE_INLINE bool operator>=(const Vec2<T> & v) const;
-	/** @} */
+	FORCE_INLINE Vec2<T> & operator+=(const Vec2<T> & v)
+	{
+		x += v.x, y += v.y;
+		return *this;
+	}
+	FORCE_INLINE Vec2<T> & operator-=(const Vec2<T> & v)
+	{
+		x -= v.x, y -= v.y;
+		return *this;
+	}
+	FORCE_INLINE Vec2<T> & operator*=(const Vec2<T> & v)
+	{
+		x *= v.x, y *= v.y;
+		return *this;
+	}
+	FORCE_INLINE Vec2<T> & operator/=(const Vec2<T> & v)
+	{
+		x /= v.x, y /= v.y;
+		return *this;
+	}
+	/// @}
 
 	/**
-	 * @brief Invert vector components
+	 * Vector-vector compound assignment
 	 * 
-	 * @return inverted vectors
-	 */
-	FORCE_INLINE Vec2<T> operator-() const;
-
-	/**
-	 * @brief Vector-vector component-wise operations
-	 * 
-	 * @param [in] v other vector
-	 * 
-	 * @return result of operation
-	 * 
+	 * @param [in] v scalar operand
+	 * @return self
 	 * @{
 	 */
-	FORCE_INLINE Vec2<T> operator+(const Vec2<T> & v) const;
-	FORCE_INLINE Vec2<T> operator-(const Vec2<T> & v) const;
-	FORCE_INLINE Vec2<T> operator*(const Vec2<T> & v) const;
-	FORCE_INLINE Vec2<T> operator/(const Vec2<T> & v) const;
-	/** @} */
+	FORCE_INLINE Vec2<T> & operator+=(T s)
+	{
+		x += s, y += s;
+		return *this;
+	}
+	FORCE_INLINE Vec2<T> & operator-=(T s)
+	{
+		x -= s, y -= s;
+		return *this;
+	}
+	FORCE_INLINE Vec2<T> & operator*=(T s)
+	{
+		x *= s, y *= s;
+		return *this;
+	}
+	FORCE_INLINE Vec2<T> & operator/=(T s)
+	{
+		x /= s, y /= s;
+		return *this;
+	}
+	/// @}
 
 	/**
-	 * @brief Vector-vector compound component-wise operations
+	 * Vector-vector element-wise arithmetic operations
 	 * 
-	 * @param [in] v other vector
-	 * 
-	 * @return result of operation
-	 * 
+	 * @param [in] v vector operand
+	 * @return new vector
 	 * @{
 	 */
-	FORCE_INLINE Vec2<T> & operator+=(const Vec2<T> & v);
-	FORCE_INLINE Vec2<T> & operator-=(const Vec2<T> & v);
-	FORCE_INLINE Vec2<T> & operator*=(const Vec2<T> & v);
-	FORCE_INLINE Vec2<T> & operator/=(const Vec2<T> & v);
-	/** @} */
+	CONSTEXPR FORCE_INLINE Vec2<T> operator+(const Vec2<T> & v) const
+	{
+		return Vec2<T>(x + v.x, y + v.y);
+	}
+	CONSTEXPR FORCE_INLINE Vec2<T> operator-(const Vec2<T> & v) const
+	{
+		return Vec2<T>(x - v.x, y - v.y);
+	}
+	CONSTEXPR FORCE_INLINE Vec2<T> operator*(const Vec2<T> & v) const
+	{
+		return Vec2<T>(x * v.x, y * v.y);
+	}
+	CONSTEXPR FORCE_INLINE Vec2<T> operator/(const Vec2<T> & v) const
+	{
+		return Vec2<T>(x / v.x, y / v.y);
+	}
+	/// @}
 
 	/**
-	 * @brief Vector-scalar element-wise operations
+	 * Vector-scalar element-wise arithmetic operations
 	 * 
-	 * @param [in] s scalar value
-	 * 
-	 * @return result of operation
-	 * 
+	 * @param [in] s scalar operand
+	 * @return new vector
 	 * @{
 	 */
-	FORCE_INLINE Vec2<T> operator+(const T s) const;
-	FORCE_INLINE Vec2<T> operator-(const T s) const;
-	FORCE_INLINE Vec2<T> operator*(const T s) const;
-	FORCE_INLINE Vec2<T> operator/(const T s) const;
+	CONSTEXPR FORCE_INLINE Vec2<T> operator+(T s) const
+	{
+		return Vec2<T>(x + s, y + s);
+	}
+	CONSTEXPR FORCE_INLINE Vec2<T> operator-(T s) const
+	{
+		return Vec2<T>(x - s, y - s);
+	}
+	CONSTEXPR FORCE_INLINE Vec2<T> operator*(T s) const
+	{
+		return Vec2<T>(x * s, y * s);
+	}
+	CONSTEXPR FORCE_INLINE Vec2<T> operator/(T s) const
+	{
+		return Vec2<T>(x / s, y / s);
+	}
+	/// @}
 
-	FORCE_INLINE friend Vec2<T> operator+(const T s, Vec2<T> & v) { return v + s; }
-	FORCE_INLINE friend Vec2<T> operator-(const T s, Vec2<T> & v) { return -v + s; }
-	FORCE_INLINE friend Vec2<T> operator*(const T s, Vec2<T> & v) { return v * s; }
-	FORCE_INLINE friend Vec2<T> operator/(const T s, Vec2<T> & v) { return Vec2<T>(s) - v; }
-	/** @} */
+	/// Dot product
+	CONSTEXPR FORCE_INLINE T operator&(const Vec2<T> & v) const
+	{
+		return x * v.x + y * v.y;
+	}
 
-	/**
-	 * @brief Vector-scalar compound element-wise operations
-	 * 
-	 * @param [in] s scalar value
-	 * 
-	 * @return result of operation
-	 * 
-	 * @{
-	 */
-	FORCE_INLINE Vec2<T> & operator+=(const T s);
-	FORCE_INLINE Vec2<T> & operator-=(const T s);
-	FORCE_INLINE Vec2<T> & operator*=(const T s);
-	FORCE_INLINE Vec2<T> & operator/=(const T s);
-	/** @} */
+	/// Cross product
+	/// @return @ref Vec3 orthogonal to the xy plane
+	CONSTEXPR FORCE_INLINE Vec3<T, hasVectorIntrinsics(T, 4)> operator^(const Vec2<T> & v) const
+	{
+		return Vec3<T, hasVectorIntrinsics(T, 4)>(T(0), T(0), x * v.y - y * v.x);
+	}
 
-	/**
-	 * @brief Vector-vector dot(scalar) product
-	 * 
-	 * @param [in] v other vector
-	 * 
-	 * @return dot product
-	 */
-	FORCE_INLINE T operator&(const Vec2<T> & v) const;
+	/// Cross product
+	/// @return z component of resulting orthogonal vector
+	CONSTEXPR FORCE_INLINE T cross(const Vec2<T> & v) const
+	{
+		return x * v.y - y * v.x;
+	}
 
-	/**
-	 * @brief Vector-vector cross product
-	 * 
-	 * @param [in] v other vector
-	 * 
-	 * @return cross product
-	 */
-	FORCE_INLINE float32 operator^(const Vec2<T> & v) const;
+	/// Convert to another underlying type
+	template<typename U>
+	FORCE_INLINE operator Vec2<U>() const
+	{
+		return Vec2<U>(U(x), U(y));
+	}
 
-	/**
-	 * @copydoc SIMD<T>::print()
-	 */
-	FORCE_INLINE void print(FILE * stream = stdout) const;
-
-	/**
-	 * @brief Component type conversion operator
-	 * 
-	 * @result converted vector
-	 */
-	template<typename T2>
-	FORCE_INLINE operator Vec2<T2>() const;
+	/// Print vector to stdout or file
+	FORCE_INLINE void print(FILE * out = stdout) const;
 };
 
-/////////////////////////////////////////////////
-// Constructors                                //
-/////////////////////////////////////////////////
-
-template<typename T>
-Vec2<T>::Vec2() : x(), y() {}
-
-template<typename T>
-Vec2<T>::Vec2(const VT data) : data(data) {}
-
-template<typename T>
-Vec2<T>::Vec2(const T * buffer) { memcpy(__vec, buffer, sizeof(__vec)); }
-
-template<typename T>
-Vec2<T>::Vec2(const T x, const T y) : x(x), y(y) {}
-
-template<typename T>
-Vec2<T>::Vec2(const T s) : x(s), y(s) {}
-
-template<typename T>
-T & Vec2<T>::operator[](uint8 i)
-{
-	// SIMD vector is reversed
-	return __vec[3 - i];
-}
-
-template<typename T>
-float32 Vec2<T>::getSquaredSize() const
-{
-	return x * x + y * y;
-}
-
-template<typename T>
-float32 Vec2<T>::getSize() const
-{
-	return sqrtf(getSquaredSize());
-}
-
-template<typename T>
-Vec2<T> Vec2<T>::getNormal() const
-{
-	const float32 size = getSize();
-	return Vec2<T>(x / size, y / size);
-}
-
-template<typename T>
-Vec2<T> & Vec2<T>::normalize()
-{
-	const float32 size = getSize();
-	x /= size, y /= size;
-	return *this;
-}
-
-///////////////////////////////
-// Vector-vector comaparison //
-///////////////////////////////
-
-template<typename T>
-bool Vec2<T>::operator==(const Vec2<T> & v) const
-{
-	/**
-	 * @brief IEEE comparison should be
-	 * faster than SIMD comparison
-	 */
-	return x == v.x & y == v.y;
-}
-
-template<typename T>
-bool Vec2<T>::operator!=(const Vec2<T> & v) const
-{
-	return x != v.x | y != v.y;
-}
-
-template<typename T>
-bool Vec2<T>::operator<(const Vec2<T> & v) const
-{
-	return x < v.x & y < v.y;
-}
-
-template<typename T>
-bool Vec2<T>::operator<=(const Vec2<T> & v) const
-{
-	return x <= v.x & y <= v.y;
-}
-
-template<typename T>
-bool Vec2<T>::operator>(const Vec2<T> & v) const
-{
-	return x > v.x & y > v.y;
-}
-
-template<typename T>
-bool Vec2<T>::operator>=(const Vec2<T> & v) const
-{
-	return x >= v.x & y >= v.y;
-}
-
-template<typename T>
-Vec2<T> Vec2<T>::operator-() const
-{
-	return Vec2<T>(-x, -y);
-}
-
-//////////////////////////////
-// Vector-vector operations //
-//////////////////////////////
-
-template<typename T>
-Vec2<T> Vec2<T>::operator+(const Vec2<T> & v) const
-{
-	return Vec2<T>(x + v.x, y + v.y);
-}
-
-template<typename T>
-Vec2<T> Vec2<T>::operator-(const Vec2<T> & v) const
-{
-	return Vec2<T>(x - v.x, y - v.y);
-}
-
-template<typename T>
-Vec2<T> Vec2<T>::operator*(const Vec2<T> & v) const
-{
-	return Vec2<T>(x * v.x, y * v.y);
-}
-
-template<typename T>
-Vec2<T> Vec2<T>::operator/(const Vec2<T> & v) const
-{
-	return Vec2<T>(x / v.x, y / v.y);
-}
-
-//////////////////////////////////////
-// Vector-vector compund operations //
-//////////////////////////////////////
-
-template<typename T>
-Vec2<T> & Vec2<T>::operator+=(const Vec2<T> & v)
-{
-	x += v.x, y += v.y;
-	return *this;
-}
-
-template<typename T>
-Vec2<T> & Vec2<T>::operator-=(const Vec2<T> & v)
-{
-	x -= v.x, y -= v.y;
-	return *this;
-}
-
-template<typename T>
-Vec2<T> & Vec2<T>::operator*=(const Vec2<T> & v)
-{
-	x *= v.x, y *= v.y;
-	return *this;
-}
-
-template<typename T>
-Vec2<T> & Vec2<T>::operator/=(const Vec2<T> & v)
-{
-	x /= v.x, y /= v.y;
-	return *this;
-}
-
-//////////////////////////////
-// Vector-scalar operations //
-//////////////////////////////
-
-template<typename T>
-Vec2<T> Vec2<T>::operator+(const T s) const
-{
-	return Vec2<T>(x + s, y + s);
-}
-
-template<typename T>
-Vec2<T> Vec2<T>::operator-(const T s) const
-{
-	return Vec2<T>(x - s, y - s);
-}
-
-template<typename T>
-Vec2<T> Vec2<T>::operator*(const T s) const
-{
-	return Vec2<T>(x * s, y * s);
-}
-
-template<typename T>
-Vec2<T> Vec2<T>::operator/(const T s) const
-{
-	return Vec2<T>(x / s, y / s);
-}
-
-///////////////////////////////////////
-// Vector-scalar compound operations //
-///////////////////////////////////////
-
-template<typename T>
-Vec2<T> & Vec2<T>::operator+=(const T s)
-{
-	x += s, y += s;
-	return *this;
-}
-
-template<typename T>
-Vec2<T> & Vec2<T>::operator-=(const T s)
-{
-	x -= s, y -= s;
-	return *this;
-}
-
-template<typename T>
-Vec2<T> & Vec2<T>::operator*=(const T s)
-{
-	x *= s, y *= s;
-	return *this;
-}
-
-template<typename T>
-Vec2<T> & Vec2<T>::operator/=(const T s)
-{
-	x /= s, y /= s;
-	return *this;
-}
-
-template<typename T>
-T Vec2<T>::operator&(const Vec2<T> & v) const
-{
-	return x * v.x + y * v.y;
-}
-
-template<typename T>
-float32 Vec2<T>::operator^(const Vec2<T> & v) const
-{
-	return x * v.y - y * v.x;
-}
-
-template<typename T1>
-template<typename T2>
-Vec2<T1>::operator Vec2<T2>() const
-{
-	return Vec2<T2>(static_cast<T2>(x), static_cast<T2>(y));
-}
-
-/////////////////////////////////////////////////
-// Float 32-bit specialization                 //
-/////////////////////////////////////////////////
-
-#if PLATFORM_ENABLE_SIMD
-
 template<>
-Vec2<float32>::Vec2(const float32 buffer[4]) { _mm_load_ps(buffer); }
-
-template<>
-Vec2<float32>::Vec2(const float32 s) : data(_mm_set1_ps(s)) {}
-
-template<>
-Vec2<float32> Vec2<float32>::getNormal() const
+FORCE_INLINE bool Vec2<float32>::isNearlyZero() const
 {
-	const __m128 size = _mm_sqrt_ps(_mm_set1_ps(x * x + y * y));
-	return Vec2<float32>(_mm_div_ps(data, size));
+	return PlatformMath::abs(x) <= FLT_EPSILON & PlatformMath::abs(y) <= FLT_EPSILON;
 }
 
 template<>
-Vec2<float32> & Vec2<float32>::normalize()
+FORCE_INLINE bool Vec2<float32>::isEqual(const Vec2<float32> & v) const
 {
-	const __m128 size = _mm_sqrt_ps(_mm_set1_ps(x * x + y * y));
-	data = _mm_div_ps(data, size);
-	return *this;
+	return PlatformMath::abs(x - v.x) <= FLT_EPSILON & PlatformMath::abs(y - v.y) <= FLT_EPSILON;
 }
-#endif
-
-template<>
-void Vec2<float32>::print(FILE * stream) const
-{
-	printf("v2(%.3f, %.3f)\n", x, y);
-}
-
-/////////////////////////////////////////////////
-// Int-32 specialization                       //
-/////////////////////////////////////////////////
-
-template<>
-void Vec2<int32>::print(FILE * stream) const
-{
-	printf("iv2(%d, %d)\n", x, y);
-}
-
-//////////////////////////////////////////////////
-// Unsigned-Int-32 specialization               //
-//////////////////////////////////////////////////
-
-template<>
-void Vec2<uint32>::print(FILE * stream) const
-{
-	printf("uv2(%u, %u)\n", x, y);
-}
-
-/////////////////////////////////////////////////
-// Type definitions                            //
-/////////////////////////////////////////////////
-
-/// @brief Type definitions for common vector types
-typedef Vec2<float32>	vec2;
-typedef Vec2<int32>		ivec2;
-typedef Vec2<uint32>	uvec2;
-
-typedef ivec2 point2;
-typedef uvec2 dim2;
-/// @}
-
-#endif
