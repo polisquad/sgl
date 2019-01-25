@@ -584,14 +584,14 @@ public:
 						{
 							/// @ref http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
 							return Mat4<T>(
-								q.w, q.z, -q.y, q.x,
-								-q.z, q.w, q.x, q.y,
-								q.y, -q.x, q.w, q.z,
-								-q.x, -q.y, -q.z, q.w
-							).multiplyTransposed(Mat4<T>(
 								q.w, -q.z, q.y, q.x,
 								q.z, q.w, -q.x, q.y,
 								-q.y, q.x, q.w, q.z,
+								-q.x, -q.y, -q.z, q.w
+							).multiplyTransposed(Mat4<T>(
+								q.w, q.z, -q.y, q.x,
+								-q.z, q.w, q.x, q.y,
+								q.y, -q.x, q.w, q.z,
 								-q.x, -q.y, -q.z, q.w
 							));
 						}
@@ -601,8 +601,32 @@ public:
 	/// Create a complete transform matrix
 	static FORCE_INLINE Mat4<T> transform(const Vec3<T> & t, const Quat<T> & r, const Vec3<T> & s = Vec3<T>::unit)
 	{
-		/// @todo Matrix multiplication is slow, there's a better (more complicated) way
-		return translation(t) * rotation(r) * scaling(s);
+		// Set rotation
+		Mat4<T> out = Mat4<T>(
+			r.w, r.z, -r.y, r.x,
+			-r.z, r.w, r.x, r.y,
+			r.y, -r.x, r.w, r.z,
+			-r.x, -r.y, -r.z, r.w
+		).multiplyTransposed(Mat4<T>(
+			r.w, -r.z, r.y, r.x,
+			r.z, r.w, -r.x, r.y,
+			-r.y, r.x, r.w, r.z,
+			-r.x, -r.y, -r.z, r.w
+		));
+
+		// Scale rotation
+		out.vec[0] = VecOps::mul(out.vec[0], VecOps::load(s.x)),
+		out.vec[1] = VecOps::mul(out.vec[1], VecOps::load(s.y)),
+		out.vec[2] = VecOps::mul(out.vec[2], VecOps::load(s.z));
+
+		// Set translation
+		out.vec[3] = t.data;
+		
+		// Transpose
+		out.transpose();
+		out(3, 3) = 1.f;
+
+		return out;
 	}
 
 	/// Create a projection matrix for OpenGL
