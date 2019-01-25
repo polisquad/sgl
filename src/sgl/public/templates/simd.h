@@ -52,14 +52,42 @@ namespace Simd
 		/// @}
 
 	public:
-		/// Create vector from four scalar values
-		static CONSTEXPR FORCE_INLINE Type load(float32 a, float32 b, float32 c, float32 d) { return Type{a, b, c, d}; }
+		/// Load methods
+		/// @{
+		/**
+		 * Creates a vector from scalar values
+		 * 
+		 * @param [in] a-h scalar operands
+		 * @return new vector
+		 */
+		static CONSTEXPR FORCE_INLINE Type load(float32 a, float32 b, float32 c, float32 d)
+		{
+			return Type{a, b, c, d};
+		}
 
-		/// Create vector from single scalar value
+		/**
+		 * Creates a vector from a single scalar value
+		 * 
+		 * @param [in] s scalar operand
+		 * @return new vector
+		 */
 		static CONSTEXPR FORCE_INLINE Type load(float32 s) { return Type{s, s, s, s}; }
 
-		/// Create vector from memory buffer
+		/**
+		 * Creates a vector from a memory buffer
+		 * 
+		 * Memory is required to be 32-Bytes aligned
+		 * 
+		 * @param [in] buffer memory buffer
+		 * @return new vector
+		 */
 		static FORCE_INLINE Type load(const float32 * buffer) { return _mm_load_ps(buffer); }
+
+		/**
+		 * Same as @copydoc load, but no alignment required
+		 */
+		static FORCE_INLINE Type loadu(const float32 * buffer) { return _mm_loadu_ps(buffer); }
+		/// @}
 
 		/**
 		 * Arithmetic operations
@@ -172,17 +200,42 @@ namespace Simd
 		/// @}
 
 	public:
-		/// Create vector from four scalar values
+		/// Load methods
+		/// @{
+		/**
+		 * Creates a vector from scalar values
+		 * 
+		 * @param [in] a-h scalar operands
+		 * @return new vector
+		 */
 		static CONSTEXPR FORCE_INLINE Type load(float32 a, float32 b, float32 c, float32 d, float32 e, float32 f, float32 g, float32 h)
 		{
 			return Type{a, b, c, d, e, f, g, h};
 		}
 
-		/// Create vector from single scalar value
+		/**
+		 * Creates a vector from a single scalar value
+		 * 
+		 * @param [in] s scalar operand
+		 * @return new vector
+		 */
 		static CONSTEXPR FORCE_INLINE Type load(float32 s) { return Type{s, s, s, s, s, s, s, s}; }
 
-		/// Create vector from memory buffer
+		/**
+		 * Creates a vector from a memory buffer
+		 * 
+		 * Memory is required to be 32-Bytes aligned
+		 * 
+		 * @param [in] buffer memory buffer
+		 * @return new vector
+		 */
 		static FORCE_INLINE Type load(const float32 * buffer) { return _mm256_load_ps(buffer); }
+
+		/**
+		 * Same as @copydoc load, but no alignment required
+		 */
+		static FORCE_INLINE Type loadu(const float32 * buffer) { return _mm256_loadu_ps(buffer); }
+		/// @}
 
 		/**
 		 * Arithmetic operations

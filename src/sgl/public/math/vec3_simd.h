@@ -337,13 +337,13 @@ FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator/(float32 s) const
 template<>
 FORCE_INLINE bool Vec3<float32, true>::isNearlyZero() const
 {
-	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(data, VecOps::neg), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) >= 0xe;
+	return (VecOps::cmp<Simd::CMP_GE>(VecOps::bor(data, VecOps::neg), VecOps::load(-FLT_EPSILON)) & 0x7) == 0x7;
 }
 
 template<>
 FORCE_INLINE bool Vec3<float32, true>::isEqual(const Vec3<float32> & v) const
 {
-	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecOps::neg), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) >= 0xe;
+	return (VecOps::cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecOps::neg), VecOps::load(-FLT_EPSILON)) & 0x7) == 0x7;
 }
 
 template<>
