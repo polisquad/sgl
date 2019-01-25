@@ -197,7 +197,7 @@ public:
 protected:
 	/// Transposed dot product
 	/// Second matrix is transposed w.r.t to the original matrix
-	Mat4<T> multiplyTransposed(const Mat4<T> & m)
+	Mat4<T> multiplyTransposed(const Mat4<T> & m) const
 	{
 		/// With loop unrolling is slightly more efficient
 		/// I'll leave this here commented in case
@@ -259,7 +259,7 @@ protected:
 
 public:
 	/// Matrix-matrix dot product (multiplication)
-	Mat4<T> operator*(const Mat4<T> & m)
+	Mat4<T> operator*(const Mat4<T> & m) const
 	{
 		// Transpose matrix for column access
 		return multiplyTransposed(m.getTranspose());
@@ -279,7 +279,7 @@ public:
 	 * @return transformed vector
 	 * @{
 	 */
-	FORCE_INLINE Vec4<T, true> operator*(const Vec4<T, true> & v)
+	FORCE_INLINE Vec4<T, true> operator*(const Vec4<T, true> & v) const
 	{
 		VecT
 			x = VecOps::mul(vec[0], v.data),
@@ -292,7 +292,7 @@ public:
 			VecOps::hadd(z, w)
 		));
 	}
-	FORCE_INLINE Vec3<T, true> operator*(const Vec3<T, true> & v) { return (Vec3<T, true>)operator*(Vec4<T, true>(v)); }
+	FORCE_INLINE Vec3<T, true> operator*(const Vec3<T, true> & v) const { return (Vec3<T, true>)operator*(Vec4<T, true>(v)); }
 	/// @}
 
 protected:
@@ -538,64 +538,63 @@ public:
 
 	/// Create a diag matrix with specified diagonal
 	/// @{
-									static CONSTEXPR FORCE_INLINE Mat4<T> diag(T a, T b, T c, T d)
-									{
-										return Mat4<T>(
-											a, T(0), T(0), T(0),
-											T(0), b, T(0), T(0),
-											T(0), T(0), c, T(0),
-											T(0), T(0), T(0), d
-										);
-									}
+						static CONSTEXPR FORCE_INLINE Mat4<T> diag(T a, T b, T c, T d)
+						{
+							return Mat4<T>(
+								a, T(0), T(0), T(0),
+								T(0), b, T(0), T(0),
+								T(0), T(0), c, T(0),
+								T(0), T(0), T(0), d
+							);
+						}
 	template<bool bHVI>	static CONSTEXPR FORCE_INLINE Mat4<T> diag(const Vec4<T, bHVI> & v) { return diag(v.x, v.y, v.z, v.w); }
 	/// @}
 
 	/// Create a transform matrix with scaling
 	/// @{
-									static FORCE_INLINE Mat4<T> scaling(T x, T y, T z)
-									{
-										return Mat4<T>(
-											x, T(0), T(0), T(0),
-											T(0), y, T(0), T(0),
-											T(0), T(0), z, T(0),
-											T(0), T(0), T(0), T(1)
-										);
-									}
+						static FORCE_INLINE Mat4<T> scaling(T x, T y, T z)
+						{
+							return Mat4<T>(
+								x, T(0), T(0), T(0),
+								T(0), y, T(0), T(0),
+								T(0), T(0), z, T(0),
+								T(0), T(0), T(0), T(1)
+							);
+						}
 	template<bool bHVI>	static CONSTEXPR FORCE_INLINE Mat4<T> scaling(const Vec3<T, bHVI> & v) { return scaling(v.x, v.y, v.z); }
 	/// @}
 
 	/// Create a transform matrix with translation
 	/// @{
-									static CONSTEXPR FORCE_INLINE Mat4<T> translation(T x, T y, T z)
-									{
-										return Mat4<T>(
-											 T(1),  T(0),  T(0), x,
-											 T(0),  T(1),  T(0), y,
-											 T(0),  T(0),  T(1), z,
-											 T(0),  T(0),  T(0),  T(1)
-										);
-									}
+						static CONSTEXPR FORCE_INLINE Mat4<T> translation(T x, T y, T z)
+						{
+							return Mat4<T>(
+									T(1),  T(0),  T(0), x,
+									T(0),  T(1),  T(0), y,
+									T(0),  T(0),  T(1), z,
+									T(0),  T(0),  T(0),  T(1)
+							);
+						}
 	template<bool bHVI>	static CONSTEXPR FORCE_INLINE Mat4<T> translation(const Vec3<T, bHVI> & v) { return translation(v.x, v.y, v.z); }
 	/// @}
 
 	/// Create a transform matrix with rotation
 	/// @{
-	template<bool bHVI>
-	static FORCE_INLINE Mat4<T> rotation(const Quat<T, bHVI> & q)
-	{
-		/// @ref http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
-		return Mat4<T>(
-			q.w, q.z, -q.y, q.x,
-			-q.z, q.w, q.x, q.y,
-			q.y, -q.x, q.w, q.z,
-			-q.x, -q.y, -q.z, q.w
-		).multiplyTransposed(Mat4<T>(
-			q.w, -q.z, q.y, q.x,
-			q.z, q.w, -q.x, q.y,
-			-q.y, q.x, q.w, q.z,
-			-q.x, -q.y, -q.z, q.w
-		));
-	}
+	template<bool bHVI>	static FORCE_INLINE Mat4<T> rotation(const Quat<T, bHVI> & q)
+						{
+							/// @ref http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
+							return Mat4<T>(
+								q.w, q.z, -q.y, q.x,
+								-q.z, q.w, q.x, q.y,
+								q.y, -q.x, q.w, q.z,
+								-q.x, -q.y, -q.z, q.w
+							).multiplyTransposed(Mat4<T>(
+								q.w, -q.z, q.y, q.x,
+								q.z, q.w, -q.x, q.y,
+								-q.y, q.x, q.w, q.z,
+								-q.x, -q.y, -q.z, q.w
+							));
+						}
 	template<bool bHVI>	static FORCE_INLINE Mat4<T> rotation(T angle, const Vec3<T, bHVI> & axis) { return rotation(Quat<T, bHVI>(angle, axis)); }
 	/// @}
 
