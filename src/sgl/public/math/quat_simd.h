@@ -17,7 +17,7 @@ public:
 
 public:
 	/// Default constructor
-	CONSTEXPR FORCE_INLINE Quat() : Vec4<T, true>(T(1), T(0), T(0), T(0)) {};
+	CONSTEXPR FORCE_INLINE Quat() : Quat<T, true>(T(0), Vec3<T, true>::up) {};
 
 	/// Convert @ref Vec4
 	CONSTEXPR FORCE_INLINE Quat(const Vec4<T, true> & v) : Vec4<T, true>(v) {};
