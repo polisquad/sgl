@@ -605,41 +605,21 @@ public:
 		return translation(t) * rotation(r) * scaling(s);
 	}
 
-	/// Create a projection matrix
+	/// Create a projection matrix for OpenGL
+	/// 
+	/// X-right, Y-up, Z-forward (left-handed coordinate system)
 	/// @{
 	/**
 	 * @param [in] r,l,t,b,f,n extent of projection box
 	 * @return projection matrix
 	 */
-	static CONSTEXPR FORCE_INLINE Mat4<T> projection(T r, T l, T t, T b, T f, T n)
-	{
-		/// @see http://www.songho.ca/opengl/gl_projectionmatrix.html
-		return Mat4<T>(
-			(T(2) * n) / (r - l), T(0), (r + l) / (r - l), T(0),
-			T(0), (T(2) * n) / (t - b), (t + b) / (t - b), T(0),
-			T(0), T(0), (n + f) / (n - f), (T(2) * n * f) / (n - f),
-			T(0), T(0), T(-1), T(0)
-		);
-	}
+	static CONSTEXPR FORCE_INLINE Mat4<T> glProjection(T r, T l, T t, T b, T f, T n);
 	/**
 	 * @param [in] fov camera field of view
 	 * @param [in] near,far distance of near and far planes
 	 * @return projection matrix
 	 */
-	static CONSTEXPR FORCE_INLINE Mat4<T> projection(T fov/* = PlatformMath::PI */, T n = T(1), T f = T(1000))
-	{
-		// Default aspect ratio
-		T aspect = T(16) / T(9);
-		fov = T(1) / PlatformMath::tan(fov);
-		/// @todo Get framebuffer size if possible
-
-		return Mat4<T>(
-			fov, T(0), T(0), T(0),
-			T(0), fov * aspect, T(0), T(0),
-			T(0), T(0), (n + f) / (n - f), (T(2) * n * f) / (n - f),
-			T(0), T(0), T(-1), T(0)
-		);
-	}
+	static CONSTEXPR FORCE_INLINE Mat4<T> glProjection(T fov/* = PlatformMath::PI */, T n = T(1), T f = T(1000));
 	/// @}
 };
 
@@ -655,3 +635,35 @@ FORCE_INLINE void Mat4<float32, true>::print(FILE * out) const
 //////////////////////////////////////////////////
 // Constructors
 //////////////////////////////////////////////////
+
+template<>
+FORCE_INLINE Mat4<float32, true> Mat4<float32, true>::glProjection(
+	float32 r, float32 l,
+	float32 t, float32 b,
+	float32 n, float32 f
+)
+{
+	/// @see http://www.songho.ca/opengl/gl_projectionmatrix.html
+	return Mat4<float32>(
+		(2.f * n) / (r - l), 0.f, -(r + l) / (r - l), 0.f,
+		0.f, (2.f * n) / (t - b), -(t + b) / (t - b), 0.f,
+		0.f, 0.f, (n + f) / (n - f), (2.f * n * f) / (n - f),
+		0.f, 0.f, 1.f, 0.f
+	);
+}
+
+template<>
+FORCE_INLINE Mat4<float32, true> Mat4<float32, true>::glProjection(float32 fov, float32 n, float32 f)
+{
+	// Default aspect ratio
+	float32 aspect = 16.f / 9.f;
+	fov = 1.f / PlatformMath::tan(fov / 2.f);
+	/// @todo Get framebuffer size if possible
+
+	return Mat4<float32>(
+		fov, 0.f, 0.f, 0.f,
+		0.f, fov * aspect, 0.f, 0.f,
+		0.f, 0.f, (f + n) / (f - n), (2.f * n * f) / (n - f),
+		0.f, 0.f, 1.f, 0.f
+	);
+}
