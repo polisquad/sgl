@@ -300,14 +300,16 @@ public:
 		// but with everything vectorized is better like this
 		//return Vec3<T>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
 
-		VecOps::sub(
-			VecOps::mul(
-				VecOps::template shuffle<1, 2, 0, 3>(data),
-				VecOps::template shuffle<2, 0, 1, 3>(v.data)
-			),
-			VecOps::mul(
-				VecOps::template shuffle<2, 0, 1, 3>(data),
-				VecOps::template shuffle<1, 2, 0, 3>(v.data)
+		return Vec3<T>(
+			VecOps::sub(
+				VecOps::mul(
+					VecOps::template shuffle<1, 2, 0, 3>(data),
+					VecOps::template shuffle<2, 0, 1, 3>(v.data)
+				),
+				VecOps::mul(
+					VecOps::template shuffle<2, 0, 1, 3>(data),
+					VecOps::template shuffle<1, 2, 0, 3>(v.data)
+				)
 			)
 		);
 	}
