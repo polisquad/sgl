@@ -9,15 +9,18 @@
 #include "hal/malloc_ansi.h"
 #include "templates/const_ref.h"
 #include "templates/is_trivially_copyable.h"
+#include "templates/enable_if.h"
+#include "templates/same_type.h"
 
 /**
  * @class Array containers/array.h
  * A dynamic array
  */
 template<typename T, typename AllocT = MallocAnsi>
-class GCC_ALIGN(16) Array
+class GCC_ALIGN(32) Array
 {
-	friend String;
+	template<typename U, typename AllocU>	friend class Array;
+											friend String;
 
 public:
 	/// Iterators type definitions
@@ -40,11 +43,11 @@ protected:
 
 public:
 	/// Default constructor
-	FORCE_INLINE Array(uint64 _size = 0, AllocT * _allocator = reinterpret_cast<MallocAnsi*>(gMalloc)) :
+	explicit FORCE_INLINE Array(uint64 _size = 2, AllocT * _allocator = reinterpret_cast<AllocT*>(gMalloc)) :
 		allocator(_allocator),
 		bHasOwnAllocator(_allocator == nullptr),
 		buffer(nullptr),
-		size(_size),
+		size(_size ? _size : 2),
 		count(0U)
 	{
 		// Create a default allocator
@@ -56,6 +59,14 @@ public:
 	}
 
 	/// Copy constructor
+	FORCE_INLINE Array(const Array<T, AllocT> & other) : Array(other.size, nullptr)
+	{
+		// Copy content
+		count = other.count;
+		moveOrCopy(buffer, other.buffer, count);
+	}
+
+	/// Copy constructor with different allocator type
 	template<typename AllocU>
 	FORCE_INLINE Array(const Array<T, AllocU> & other) : Array(other.size, nullptr)
 	{
@@ -77,8 +88,30 @@ public:
 	}
 
 	/// Copy assignment
+	FORCE_INLINE Array<T, AllocT> & operator=(const Array<T, AllocT> & other)
+	{
+		// Realloc or create new buffer
+		if (buffer == nullptr)
+		{
+			size = other.size;
+			buffer = reinterpret_cast<T*>(allocator->malloc(size * sizeof(T)));
+		}
+		else if (other.count > size)
+		{
+			allocator->free(buffer);
+
+			size = other.size;
+			buffer = reinterpret_cast<T*>(allocator->malloc(size * sizeof(T)));
+		}
+
+		// Copy content
+		count = other.count;
+		moveOrCopy(buffer, other.buffer, count);
+	}
+
+	/// Copy assignment with different allocator type
 	template<typename AllocU>
-	FORCE_INLINE Array<T, AllocT> & operator=(const Array<T, AllocU> & other)
+	FORCE_INLINE Array<T, AllocT> & operator=(const Array<T, AllocT> & other)
 	{
 		// Realloc or create new buffer
 		if (buffer == nullptr)
@@ -123,8 +156,8 @@ public:
 	/// Destructor
 	FORCE_INLINE ~Array()
 	{
-		if (buffer)
-			allocator->free(buffer);
+		//if (buffer)
+			//allocator->free(buffer);
 		
 		if (bHasOwnAllocator)
 			delete allocator;

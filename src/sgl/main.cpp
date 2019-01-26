@@ -24,9 +24,7 @@ int main()
 {
 	Memory::createGMalloc();
 	gMallocBinned = new MallocBinned;
-	String name("Sneppy");
-
-	return 0;
+	
 	return
 		Test::memory() &
 		Test::array() &
@@ -154,7 +152,7 @@ int32 Test::queue()
 	start = clock();
 
 	Queue<uint64> qAnsi;
-	Queue<uint64> qBinned(gMallocBinned);
+	Queue<uint64, MallocBinned> qBinned(gMallocBinned);
 
 	printf("------------------------------\n");
 
@@ -221,11 +219,12 @@ int32 Test::list()
 {
 	auto start = clock();
 	void * buffer;
+	uint64 client;
 
 	start = clock();
 
 	Queue<uint64> llAnsi;
-	Queue<uint64> llBinned(gMallocBinned);
+	Queue<uint64, MallocBinned> llBinned(gMallocBinned);
 
 	printf("------------------------------\n");
 
@@ -233,7 +232,7 @@ int32 Test::list()
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		llAnsi.push(i);
 	for (uint64 i = 0; i < 1024 * 128; ++i)
-		llAnsi.pop();
+		llAnsi.pop(client);
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		llAnsi.push(i);
 	printf("llAnsi           | %ld ticks\n", clock() - start);
@@ -242,7 +241,7 @@ int32 Test::list()
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		llBinned.push(i);
 	for (uint64 i = 0; i < 1024 * 128; ++i)
-		llBinned.pop();
+		llBinned.pop(client);
 	for (uint64 i = 0; i < 1024 * 128; ++i)
 		llBinned.push(i);
 	printf("llBinned         | %ld ticks\n", clock() - start);
