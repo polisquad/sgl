@@ -63,7 +63,7 @@ public:
 	MallocBinned();
 
 	/// @brief Destructor
-	~MallocBinned();
+	FORCE_INLINE ~MallocBinned() {}
 
 	/// @group MallocInterface
 	/// @{

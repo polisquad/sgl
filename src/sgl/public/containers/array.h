@@ -2,7 +2,8 @@
 #define SGL_ARRAY_H
 
 #include "core_types.h"
-#include "hal/platform_stdlib.h"
+#include "containers_fwd.h"
+#include "hal/platform_crt.h"
 #include "hal/platform_math.h"
 #include "hal/platform_memory.h"
 #include "hal/malloc_ansi.h"
@@ -16,6 +17,8 @@
 template<typename T, typename AllocT = MallocAnsi>
 class GCC_ALIGN(16) Array
 {
+	friend String;
+
 public:
 	/// Iterators type definitions
 	using Iterator		= T*;
@@ -37,7 +40,7 @@ protected:
 
 public:
 	/// Default constructor
-	FORCE_INLINE Array(uint64 _size = 0, AllocT * _allocator = nullptr) :
+	FORCE_INLINE Array(uint64 _size = 0, AllocT * _allocator = reinterpret_cast<MallocAnsi*>(gMalloc)) :
 		allocator(_allocator),
 		bHasOwnAllocator(_allocator == nullptr),
 		buffer(nullptr),
@@ -131,6 +134,15 @@ public:
 	/// @{
 	FORCE_INLINE T *		operator*()			{ return buffer; }
 	FORCE_INLINE const T *	operator*() const	{ return buffer; }
+	/// @}
+
+	/// STL compliant iterators
+	/// @{
+	FORCE_INLINE Iterator		begin()			{ return buffer; }
+	FORCE_INLINE ConstIterator	begin() const	{ return buffer; }
+
+	FORCE_INLINE Iterator		end()		{ return buffer + count; }
+	FORCE_INLINE ConstIterator	end() const	{ return buffer + count; }
 	/// @}
 
 	/// Random access operator
@@ -280,7 +292,7 @@ public:
 	 * @param [in] i item's position
 	 * @param [in] n number of items to remove
 	 */
-	FORCE_INLINE void removeAt(uint64 i, uint64 n)
+	FORCE_INLINE void removeAt(uint64 i, uint64 n = 1)
 	{
 		// Just move back memory
 		if (i < count)

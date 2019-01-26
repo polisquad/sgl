@@ -2,7 +2,7 @@
 #define SGL_GENERIC_PLATFORM_MATH_H
 
 #include "core_types.h"
-#include "hal/platform_stdlib.h"
+#include "hal/platform_crt.h"
 #include "templates/is_integral.h"
 
 /**

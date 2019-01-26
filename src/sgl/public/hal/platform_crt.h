@@ -1,5 +1,5 @@
-#ifndef SGL_PLATFORM_STDLIB_H
-#define SGL_PLATFORM_STDLIB_H
+#ifndef SGL_platform_crt_H
+#define SGL_platform_crt_H
 
 /////////////////////////////////////////////////
 // Standard library headers                    //

@@ -3,13 +3,10 @@
 #include "hal/malloc_binned.h"
 #include "hal/platform_math.h"
 #include "generic/memory_pool.h"
-#include "core/engine.h"
-#include "core/event_bus.h"
-#include "core/logger.h"
 #include "coremin.h"
 
-Malloc * gMalloc = nullptr;
-Malloc * gMallocBinned = nullptr;
+Malloc			* gMalloc = nullptr;
+MallocBinned	* gMallocBinned = nullptr;
 
 namespace Test
 {
@@ -78,8 +75,8 @@ int32 Test::array()
 
 	printf("------------------------------\n");
 
-	Array<uint64> aAnsi(2);
-	Array<uint64> aBinned(2, gMallocBinned);
+	Array<uint64>				aAnsi(2);
+	Array<uint64, MallocBinned>	aBinned(2, gMallocBinned);
 	std::vector<uint64>::iterator it;
 
 	start = clock();
@@ -105,11 +102,11 @@ int32 Test::array()
 
 	printf("------------------------------\n");
 
-	start = clock();
+	/* start = clock();
 	aAnsi.append(aAnsi);
 	printf("AAnsi::append   | %ld ticks\n", clock() - start);
 
-	printf("------------------------------\n");
+	printf("------------------------------\n"); */
 
 	start = clock();
 	for (uint64 i = 0; i < 1024 * 128; ++i)
@@ -123,8 +120,8 @@ int32 Test::array()
 
 	printf("------------------------------\n");
 
-	aAnsi.reset();
-	aBinned.reset();
+	/* aAnsi.reset();
+	aBinned.reset(); */
 	std::vector<uint64> stdvec; stdvec.reserve(2);
 
 	start = clock();

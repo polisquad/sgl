@@ -13,11 +13,6 @@ class Malloc;
 class Event;
 /// @}
 
-/// Containers
-/// @{
-template<typename> class Array;
-template<typename> class Queue;
-class String;
-/// @}
+#include "containers/containers_fwd.h"
 
 #endif

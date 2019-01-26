@@ -17,7 +17,7 @@
 // Common headers                              //
 /////////////////////////////////////////////////
 
-#include "hal/platform_stdlib.h"
+#include "hal/platform_crt.h"
 #include "hal/platform_memory.h"
 #include "templates/is_integral.h"
 #include "templates/is_pointer.h"

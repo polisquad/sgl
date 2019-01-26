@@ -1,5 +1,5 @@
 #include "hal/malloc_binned.h"
-#include "hal/platform_stdlib.h"
+#include "hal/platform_crt.h"
 #include "generic/memory_pool.h"
 
 MallocBinned::MallocBinned()
