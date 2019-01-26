@@ -51,6 +51,9 @@ FORCE_INLINE typename EnableIf<!IsTriviallyCopyable<T>::value, void>::Type moveO
 	// Copy construct each element
 	uint64 i = 0;
 
+	/// @todo remove
+	printf("not trivially copyable eh eh");
+
 	for (; i < n - 8; i += 8)
 	{
 			  T * _dest	= dest + i;

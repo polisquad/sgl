@@ -22,7 +22,7 @@ struct GenericPlatformString
 	template<typename C>
 	static FORCE_INLINE uint64 strlen(const C * string)
 	{
-		return string ? strlen(string) : 0;
+		return string ? ::strlen(string) : 0;
 	}
 
 	/**

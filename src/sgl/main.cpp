@@ -23,8 +23,10 @@ namespace Test
 int main()
 {
 	Memory::createGMalloc();
-	gMallocBinned = new MallocBinned();
+	gMallocBinned = new MallocBinned;
+	String name("Sneppy");
 
+	return 0;
 	return
 		Test::memory() &
 		Test::array() &
