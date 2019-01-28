@@ -3,7 +3,7 @@
 #include "core_types.h"
 
 template<typename, typename>		class Array;
-template<typename>					class BinaryTree;
+template<typename, typename>		class BinaryTree;
 template<typename, typename>		class HashMap;
 template<typename, typename>		class IMap;
 template<typename, typename>		class LinkedList;

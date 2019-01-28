@@ -20,30 +20,32 @@ namespace Test
 	/// @}
 }
 
+#include <map>
+
 int main()
 {
 	Memory::createGMalloc();
 	gMallocBinned = new MallocBinned;
+
+	uint64 sum = 0;
+
+	//srand(clock());
+
+	BinaryTree<uint64, MallocBinned> tree;
+	for (uint32 i = 0; i < 1024 * 1024; ++i)
+		tree.insertUnique(rand() % (1024 * 128));
+
+	/* std::map<uint64, uint64> tree;
+	for (uint32 i = 0; i < 1024 * 1024; ++i)
+		tree.insert(std::make_pair(rand() % (1024 * 128), i)); */
 	
-	BinaryNode<uint64> * node = new BinaryNode<uint64>(4, BinaryNode<uint64>::NodeColor::BLACK);
-	node->insert(new BinaryNode<uint64>(2));
-	node = node->insert(new BinaryNode<uint64>(3));
-	node->insert(new BinaryNode<uint64>(1));
-	node->insert(new BinaryNode<uint64>(7));
-	node->insert(new BinaryNode<uint64>(2));
-	node->repair();
-
-	// Print tree
-	Queue<BinaryNode<uint64>*> queue;
-	queue.push(node);
-
-	BinaryNode<uint64> * it;
-	while (queue.pop(it))
+	for (uint32 i = 0; i < 1024 * 128; ++i)
 	{
-		printf("%llu\n", it->getData());
-		if (it->left) queue.push(it->left);
-		if (it->right) queue.push(it->right);
+		auto it = tree.find(i);
+		if (it != tree.end()) ++sum;
 	}
+
+	printf("%llu\n", sum);
 
 	return 0;
 
