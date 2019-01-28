@@ -362,7 +362,7 @@ public:
 	 * @{
 	 */
 	/// @return self
-	FORCE_INLINE LinkedList<T, AllocT> & operator+=(const T & elem)
+	FORCE_INLINE LinkedList<T, AllocT> & operator+=(typename ConstRef<T>::Type elem)
 	{
 		// Push to end, replaces tail
 		if (LIKELY(tail))
@@ -374,7 +374,7 @@ public:
 		return *this;
 	}
 	/// @return ref to inserted element
-	FORCE_INLINE T & push(const T & elem)
+	FORCE_INLINE T & push(typename ConstRef<T>::Type elem)
 	{
 		operator+=(elem);
 		return tail->data;
@@ -382,7 +382,7 @@ public:
 	/// @}
 
 	/// Inserts in first position
-	FORCE_INLINE T & insert(const T & elem)
+	FORCE_INLINE T & pushFront(typename ConstRef<T>::Type elem)
 	{
 		if (LIKELY(head))
 			head = head->prev = createLink(elem, head);
@@ -401,7 +401,7 @@ public:
 	 * 
 	 * @return ref to inserted elem
 	 */
-	T & insert(const T & elem, uint64 i = 0)
+	T & insert(typename ConstRef<T>::Type elem, uint64 i = 0)
 	{
 		// Find i-th link
 		LinkRef<T> it;
@@ -455,7 +455,7 @@ public:
 
 	/// Removes first element of the list
 	/// @{
-	FORCE_INLINE bool remove()
+	FORCE_INLINE bool popFront()
 	{
 		if (head)
 		{
@@ -471,12 +471,12 @@ public:
 
 		return false;
 	}
-	FORCE_INLINE bool remove(T & data)
+	FORCE_INLINE bool popFront(T & data)
 	{
 		if (head)
 		{
 			moveOrCopy(data, head->data);
-			return remove();
+			return popFront();
 		}
 
 		return false;

@@ -13,9 +13,6 @@ int main(int argc, char ** argv)
 	// Context initialization
 	Memory::createGMalloc();
 
-	// Containers initialization
-	initContainers();
-
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }

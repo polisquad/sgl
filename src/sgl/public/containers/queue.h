@@ -265,7 +265,7 @@ public:
 		{
 			// Get data out
 			moveOrCopy(data, first->data);
-			return true;
+			return pop();
 		}
 
 		return false;
