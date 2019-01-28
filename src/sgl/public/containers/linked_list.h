@@ -28,8 +28,8 @@ public:
 	/// Default constructor
 	FORCE_INLINE Link(typename ConstRef<T>::Type _data, Link * _next, Link * _prev) :
 		data(_data),
-		prev(_next),
-		next(_prev) {}
+		prev(_prev),
+		next(_next) {}
 
 	/// Destructor
 	FORCE_INLINE ~Link()
@@ -141,7 +141,7 @@ public:
 
 	private:
 		/// Default-constructor, private usage
-		LinkedListIterator(LinkRef _link = nullptr) : curr(_link) {}
+		LinkedListIterator(LinkRef<T> _link = nullptr) : curr(_link) {}
 	};
 
 	using Iterator		= LinkedListIterator<T>;
@@ -153,10 +153,10 @@ protected:
 	bool bHasOwnAllocator;
 
 	/// Head of the list
-	LinkRef head;
+	LinkRef<T> head;
 
 	/// Tail of the list
-	LinkRef tail;
+	LinkRef<T> tail;
 
 	/// List length
 	uint64 count;
@@ -241,7 +241,11 @@ public:
 	/// Copy assignment
 	FORCE_INLINE LinkedList<T, AllocT> & operator=(const LinkedList<T, AllocT> & other)
 	{
-		// @todo empty self first
+		// empty self first
+		empty();
+
+		// @todo Instead of 'empty and allocate' new links
+		// use existing ones, just copy the new data
 
 		if (other.head)
 		{
@@ -265,7 +269,11 @@ public:
 	template<typename AllocU>
 	FORCE_INLINE LinkedList<T, AllocT> & operator=(const LinkedList<T, AllocU> & other)
 	{
-		// @todo empty self first
+		// empty self first
+		empty();
+
+		// @todo Instead of 'empty and allocate' new links
+		// use existing ones, just copy the new data
 
 		if (other.head)
 		{
@@ -288,7 +296,8 @@ public:
 	/// Move assignment
 	FORCE_INLINE LinkedList<T, AllocT> & operator=(LinkedList<T, AllocT> && other)
 	{
-		// @todo empty self first
+		// empty self first
+		empty();
 
 		allocator			= other.allocator;
 		bHasOwnAllocator	= other.bHasOwnAllocator;
@@ -303,7 +312,8 @@ public:
 	/// Destructor
 	FORCE_INLINE ~LinkedList()
 	{
-		// @todo
+		// Empty list
+		empty();
 
 		// Delete own allocator
 		if (bHasOwnAllocator)
@@ -433,8 +443,13 @@ public:
 	}
 	FORCE_INLINE bool pop(T & data)
 	{
-		moveOrCopy(data, tail->data);
-		return pop();
+		if (tail)
+		{
+			moveOrCopy(data, head->data);
+			return pop();
+		}
+
+		return false;
 	}
 	/// @}
 
@@ -458,9 +473,34 @@ public:
 	}
 	FORCE_INLINE bool remove(T & data)
 	{
-		moveOrCopy(data, head->data);
-		return remove();
+		if (head)
+		{
+			moveOrCopy(data, head->data);
+			return remove();
+		}
+
+		return false;
 	}
+	/// @}
+
+	/// Empty the list
+	/// @{
+	FORCE_INLINE void empty()
+	{
+		LinkRef<T> it; while ((it = head))
+		{
+			// Move to next
+			head = head->next;
+
+			// Destroy link
+			it->~Link();
+			allocator->free(it);
+		}
+
+		// Make sure tail is null as well
+		head = tail = nullptr;
+	}
+	FORCE_INLINE void flush() { empty(); }
 	/// @}
 };
 

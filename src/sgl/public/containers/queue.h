@@ -132,7 +132,11 @@ public:
 	/// Copy assignment
 	FORCE_INLINE Queue<T, AllocT> & operator=(const Queue<T, AllocT> & other)
 	{
-		// @todo empty self first
+		// Empty self first
+		empty();
+
+		// @todo Instead of 'empty and allocate' new links
+		// use existing ones, just copy the new data
 
 		if (other.first)
 		{
@@ -156,8 +160,12 @@ public:
 	template<typename AllocU>
 	FORCE_INLINE Queue<T, AllocT> & operator=(const Queue<T, AllocU> & other)
 	{
-		// @todo empty self first
+		// Empty self first
+		empty();
 
+		// @todo Instead of 'empty and allocate' new links
+		// use existing ones, just copy the new data
+		
 		if (other.first)
 		{
 			// Set first
@@ -179,7 +187,8 @@ public:
 	/// Move assignment
 	FORCE_INLINE Queue<T, AllocT> & operator=(Queue<T, AllocT> && other)
 	{
-		// @todo empty self first
+		// empty self first
+		empty();
 
 		allocator			= other.allocator;
 		bHasOwnAllocator	= other.bHasOwnAllocator;
@@ -194,7 +203,8 @@ public:
 	/// Destructor
 	FORCE_INLINE ~Queue()
 	{
-		// @todo
+		// Empty queue
+		empty();
 
 		// Delete own allocator
 		if (bHasOwnAllocator)
@@ -260,6 +270,25 @@ public:
 
 		return false;
 	}
+	/// @}
+
+	/// Empty the queue
+	/// @{
+	FORCE_INLINE void empty()
+	{
+		ClientRef it; while ((it = first))
+		{
+			// Move to next
+			first = first->next;
+
+			// Destroy link
+			allocator->free(it);
+		}
+
+		// Make sure last is null as well
+		first = last = nullptr;
+	}
+	FORCE_INLINE void flush() { empty(); }
 	/// @}
 };
 

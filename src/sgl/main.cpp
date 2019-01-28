@@ -24,7 +24,16 @@ int main()
 {
 	Memory::createGMalloc();
 	gMallocBinned = new MallocBinned;
-	
+
+	LinkedList<float128> ll;
+
+	ll += 2.0;
+	ll += 2.0;
+	ll += 2.0;
+	ll += 2.0;
+
+	return 0;
+
 	return
 		Test::memory() &
 		Test::array() &
