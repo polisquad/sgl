@@ -3,333 +3,465 @@
 
 #include "core_types.h"
 #include "hal/platform_memory.h"
+#include "hal/malloc_ansi.h"
+#include "templates/const_ref.h"
+#include "templates/is_trivially_copyable.h"
+
+/// A single link of the list
+template<typename T>
+struct GCC_ALIGN(32) Link
+{
+	template<typename U, typename AllocU>
+	friend class LinkedList;
+
+protected:
+	/// Next link
+	Link * next;
+
+	/// Previous link
+	Link * prev;
+
+	/// Data held by the link
+	T data;
+
+public:
+	/// Default constructor
+	FORCE_INLINE Link(typename ConstRef<T>::Type _data, Link * _next, Link * _prev) :
+		data(_data),
+		prev(_next),
+		next(_prev) {}
+
+	/// Destructor
+	FORCE_INLINE ~Link()
+	{
+		unlink();
+	}
+
+	/// Returns data
+	/// @{
+	FORCE_INLINE 	   T & operator*()			{ return data; }
+	FORCE_INLINE const T & operator*() const	{ return data; }
+	/// @}
+
+	/// Link next
+	FORCE_INLINE void linkNext(Link * _next)
+	{
+		next = _next;
+		if (LIKELY(next != nullptr))
+		{
+			// Your prev is my prev!
+			prev = next->prev;
+
+			// Link with next
+			next->prev = this;
+
+			if (prev != nullptr)
+				// Link with prev
+				prev->next = this;
+		}
+	}
+
+	/// Link prev
+	FORCE_INLINE void linkPrev(Link * _prev)
+	{
+		prev = _prev;
+		if (LIKELY(prev != nullptr))
+		{
+			// Your next is my next!
+			next = prev->next;
+
+			// Link with prev
+			prev->next = this;
+
+			if (next != nullptr)
+				// Link with next
+				next->prev = this;
+		}
+	}
+
+	/// Unlik this link
+	FORCE_INLINE void unlink()
+	{
+		if (next != nullptr) next->prev = this->prev;
+		if (prev != nullptr) prev->next = this->next;
+		
+		prev = next = nullptr;
+	}
+};
+
+/// Link pointer
+template<typename T> using LinkRef = Link<T>*;
 
 /**
  * @class LinkedList containers/linked_list.h
- * @brief Implementation of a traditional linked list container
+ * Implementation of a traditional linked list container
  */
-template<typename T>
-class LinkedList
+template<typename T, typename AllocT = MallocAnsi>
+class GCC_ALIGN(32) LinkedList
 {
+	template<typename U, typename AllocU>
+	friend class LinkedList;
+
 public:
-	/// @brief A single link of the list
-	struct Link
-	{
-	public:
-		/// @brief Data held by the link
-		T data;
+	/// Link type
+	using LinkT		= Link<T>;
+	using LinkRefT	= LinkRef<T>;
 
-		/// @brief Next link
-		Link * next;
-
-		/// @brief Previous link
-		Link * prev;
-
-	public:
-		/// @brief Default-constructor, initializes data
-		FORCE_INLINE Link(const T & _data) :
-			data(_data),
-			prev(nullptr),
-			next(nullptr) {}
-
-		FORCE_INLINE ~Link()
-		{
-			// Unlink me
-			unlink();
-		}
-
-		/// @brief Link next
-		FORCE_INLINE void linkNext(Link * _next)
-		{
-			next = _next;
-			if (LIKELY(next != nullptr))
-			{
-				// Your prev is my prev!
-				prev = next->prev;
-
-				// Link with next
-				next->prev = this;
-
-				if (prev != nullptr)
-				{
-					// Link with prev
-					prev->next = this;
-				}
-			}
-		}
-
-		/// @brief Link prev
-		FORCE_INLINE void linkPrev(Link * _prev)
-		{
-			prev = _prev;
-			if (LIKELY(prev != nullptr))
-			{
-				// Your next is my next!
-				next = prev->next;
-
-				// Link with prev
-				prev->next = this;
-
-				if (next != nullptr)
-				{
-					// Link with next
-					next->prev = this;
-				}
-			}
-		}
-
-		/// @brief Unlik this link
-		FORCE_INLINE void unlink()
-		{
-			if (next != nullptr) next->prev = this->prev;
-			if (prev != nullptr) prev->next = this->next;
-			prev = next = nullptr;
-		}
-	};
-	typedef Link* LinkRef;
-
-	/// @brief LinkedList iterator
-	template<typename _T = T>
+	/// LinkedList iterator
+	template<typename U>
 	class LinkedListIterator
 	{
 		friend LinkedList;
 
 	private:
-		/// @brief Current link
-		LinkRef curr;
+		/// Current link
+		LinkRef<T> curr;
 
 	public:
-		/// @brief Iterator methods
+		/// Iterator methods
 		/// @{
-		FORCE_INLINE LinkedListIterator<_T> & operator++() { if (curr != nullptr) curr = curr->next; }
-		FORCE_INLINE LinkedListIterator<_T> & operator--() { if (curr != nullptr) curr = curr->prev; }
+		FORCE_INLINE LinkedListIterator<U> & operator++()
+		{
+			curr = curr->next;
+		}
+		FORCE_INLINE LinkedListIterator<U> & operator--()
+		{
+			curr = curr->prev;
+		}
 
 		FORCE_INLINE bool operator==(const LinkedListIterator & iter) const { return curr == iter.curr; }
 		FORCE_INLINE bool operator!=(const LinkedListIterator & iter) const { return curr != iter.curr; }
 
-		FORCE_INLINE _T & operator*() const { return curr->data; }
-		FORCE_INLINE _T * operator->() const { return &curr->data; }
+		FORCE_INLINE U & operator* () const { return curr->data; }
+		FORCE_INLINE U * operator->() const { return &(curr->data); }
 		/// @}
 
+		/// Returns the link itself, not the underlying data
+		FORCE_INLINE LinkRef<T> getLink() { return curr; }
+
 	private:
-		/// @brief Default-constructor, private usage
+		/// Default-constructor, private usage
 		LinkedListIterator(LinkRef _link = nullptr) : curr(_link) {}
 	};
-	typedef LinkedListIterator<      T> Iterator;
-	typedef LinkedListIterator<const T> ConstIterator;
+
+	using Iterator		= LinkedListIterator<T>;
+	using ConstIterator	= LinkedListIterator<T>;
 
 protected:
 	/// @biref Allocator used to allocate new links
-	Malloc * allocator;
+	AllocT * allocator;
+	bool bHasOwnAllocator;
 
-	/// @brief Head of the list
+	/// Head of the list
 	LinkRef head;
 
-	/// @brief Tail of the list
+	/// Tail of the list
 	LinkRef tail;
 
-	/// @brief List length
+	/// List length
 	uint64 count;
 
 public:
-	/// @brief Default-constructor, empty list
-	LinkedList(Malloc * _allocator = gMalloc) :
+	/// Default-constructor, empty list
+	FORCE_INLINE LinkedList(AllocT * _allocator = reinterpret_cast<AllocT*>(gMalloc)) :
 		allocator(_allocator),
+		bHasOwnAllocator(_allocator == nullptr),
 		head(nullptr),
 		tail(nullptr),
-		count(0) {}
+		count(0)
+	{
+		// Create own allocator
+		if (bHasOwnAllocator)
+			allocator = new AllocT;
+	}
 
-	/// @brief Return list length
+protected:
+	/// Creates a new link with the provided data
+	FORCE_INLINE LinkRef<T> createLink(typename ConstRef<T>::Type data, LinkRef<T> next = nullptr, LinkRef<T> prev = nullptr)
+	{
+		return new (reinterpret_cast<LinkRef<T>>(allocator->malloc(sizeof(Link<T>)))) Link<T>(data, next, prev);
+	}
+
+public:
+	/// Copy constructor
+	FORCE_INLINE LinkedList(const LinkedList<T, AllocT> & other) : LinkedList(nullptr)
+	{
+		if (other.head)
+		{
+			// Set head
+			head = tail = createLink(other.head->data);
+
+			// Very costly, we have to reinsert all the clients
+			LinkRef<T> it = other.head->next;
+			while (it)
+			{
+				tail = tail->next = createLink(it->data);
+				it = it->next;
+			}
+		}
+
+		// Set num clients
+		count = other.count;
+	}
+
+	/// Copy constructor with different allocator type
+	template<typename AllocU>
+	FORCE_INLINE LinkedList(const LinkedList<T, AllocU> & other) : LinkedList(nullptr)
+	{
+		if (other.head)
+		{
+			// Set head
+			head = tail = createLink(other.head->data);
+
+			// Very costly, we have to reinsert all the clients
+			typename LinkedList<T, AllocU>::LinkRefT it = other.head->next;
+			while (it)
+			{
+				tail = tail->next = createLink(it->data);
+				it = it->next;
+			}
+		}
+
+		// Set num clients
+		count = other.count;
+	}
+
+	/// Move constructor
+	FORCE_INLINE LinkedList(LinkedList<T, AllocT> && other) :
+		allocator(other.allocator),
+		bHasOwnAllocator(other.bHasOwnAllocator),
+		head(other.head),
+		tail(other.tail),
+		count(other.count)
+	{
+		other.bHasOwnAllocator = false;
+		other.head = other.tail = nullptr;
+	}
+
+	/// Copy assignment
+	FORCE_INLINE LinkedList<T, AllocT> & operator=(const LinkedList<T, AllocT> & other)
+	{
+		// @todo empty self first
+
+		if (other.head)
+		{
+			// Set head
+			head = tail = createLink(other.head->data);
+
+			// Very costly, we have to reinsert all the clients
+			LinkRef<T> it = other.head->next;
+			while (it)
+			{
+				tail = tail->next = createLink(it->data);
+				it = it->next;
+			}
+		}
+
+		// Set num clients
+		count = other.count;
+	}
+
+	/// Copy assignment with different allocator type
+	template<typename AllocU>
+	FORCE_INLINE LinkedList<T, AllocT> & operator=(const LinkedList<T, AllocU> & other)
+	{
+		// @todo empty self first
+
+		if (other.head)
+		{
+			// Set head
+			head = tail = createLink(other.head->data);
+
+			// Very costly, we have to reinsert all the clients
+			typename LinkedList<T, AllocU>::LinkRefT it = other.head->next;
+			while (it)
+			{
+				tail = tail->next = createLink(it->data);
+				it = it->next;
+			}
+		}
+
+		// Set num clients
+		count = other.count;
+	}
+
+	/// Move assignment
+	FORCE_INLINE LinkedList<T, AllocT> & operator=(LinkedList<T, AllocT> && other)
+	{
+		// @todo empty self first
+
+		allocator			= other.allocator;
+		bHasOwnAllocator	= other.bHasOwnAllocator;
+		head				= other.head;
+		tail				= other.tail;
+		count				= other.count;
+
+		other.bHasOwnAllocator = false;
+		other.head = other.tail = nullptr;
+	}
+
+	/// Destructor
+	FORCE_INLINE ~LinkedList()
+	{
+		// @todo
+
+		// Delete own allocator
+		if (bHasOwnAllocator)
+			delete allocator;
+	}
+
+	/// Return list length
 	/// @{
-	FORCE_INLINE uint64 getCount() const { return count; }
-	FORCE_INLINE uint64 getLength() const { return count; }
+	FORCE_INLINE uint64 getCount() const	{ return count; }
+	FORCE_INLINE uint64 getLength() const	{ return count; }
 	/// @}
 
-	/// @brief Random access operator, O(i) time
-	T & operator[](uint64 i);
+	/// Random access operator, O(i) time
+	T & operator[](uint64 i)
+	{		
+		if (i < count / 2)
+		{
+			LinkRef<T> it = head;
+			while (i > 0) it = it->next, --i;
 
-	/// @brief Iterators
+			return it->data;
+		}
+		else
+		{
+			i = (count - 1) - i;
+			LinkRef<T> it = tail;
+			while (i > 0) it = it->prev, --i;
+
+			return it->data;
+		}
+	}
+
+	/// Iterators
 	/// @{
-	FORCE_INLINE Iterator begin()	{ return Iterator(head); }
-	FORCE_INLINE Iterator end()		{ return Iterator(nullptr); }
+	FORCE_INLINE Iterator		begin()			{ return Iterator(head); }
+	FORCE_INLINE ConstIterator	begin() const	{ return ConstIterator(head); }
 
-	FORCE_INLINE ConstIterator begin() const	{ return ConstIterator(head); }
-	FORCE_INLINE ConstIterator end() const		{ return ConstIterator(nullptr); }
+	FORCE_INLINE Iterator		end()		{ return Iterator(nullptr); }
+	FORCE_INLINE ConstIterator	end() const	{ return ConstIterator(nullptr); }
 	/// @}
 
 	/**
-	 * @brief Insert a new element at the end of the end of the list
+	 * Insert a new element at the end of the end of the list
 	 * 
 	 * @param [in] elem element to insert
 	 * @{
 	 */
 	/// @return self
-	FORCE_INLINE LinkedList<T> & operator+=(const T & elem)
+	FORCE_INLINE LinkedList<T, AllocT> & operator+=(const T & elem)
 	{
-		// Create new link
-		LinkRef link = reinterpret_cast<Link*>(allocator->malloc(sizeof(Link)));
-		new (link) Link(elem);
-
 		// Push to end, replaces tail
-		if (UNLIKELY(tail == nullptr))
-			tail = head = link;
+		if (LIKELY(tail))
+			tail = tail->next = createLink(elem, nullptr, tail);
 		else
-		{
-			link->linkPrev(tail);
-			tail = link;
-		}
+			head = tail = createLink(elem);
 
-		// Update count
 		++count;
+		return *this;
 	}
 	/// @return ref to inserted element
-	FORCE_INLINE T & push(const T & elem) { operator+=(elem); return tail->data; }
+	FORCE_INLINE T & push(const T & elem)
+	{
+		operator+=(elem);
+		return tail->data;
+	}
 	/// @}
 
-	/**
-	 * @brief Insert a new element at the beginning of the list
-	 * 
-	 * @param [in] elem element to insert
-	 * 
-	 * @return ref to inserted elem
-	 */
+	/// Inserts in first position
 	FORCE_INLINE T & insert(const T & elem)
 	{
-		// Create new link
-		LinkRef link = reinterpret_cast<Link*>(allocator->malloc(sizeof(Link)));
-		new (link) Link(elem);
-
-		// Insert at the beginnig, replaces head
-		if (UNLIKELY(head == nullptr))
-			head = tail = link;
+		if (LIKELY(head))
+			head = head->prev = createLink(elem, head);
 		else
-		{
-			link->linkNext(head);
-			head = link;
-		}
+			head = tail = createLink(elem);
 
-		// Update count
 		++count;
+		return head->data;
 	}
 
 	/**
-	 * @brief Insert a new element at the provided position
+	 * Insert a new element at the provided position
 	 * 
 	 * @param [in]	elem	element to insert
 	 * @param [in]	i		element position
 	 * 
 	 * @return ref to inserted elem
 	 */
-	T & insert(const T & elem, uint64 i);
-
-	/// @brief Removes last element of the list
-	FORCE_INLINE void pop()
+	T & insert(const T & elem, uint64 i = 0)
 	{
-		LinkRef removed = tail;
-		tail = tail->prev;
-		removed->unlink();
+		// Find i-th link
+		LinkRef<T> it;
+		if (i < count / 2)
+		{
+			it = head;
+			while (i > 0) it = it->next, --i;
+		}
+		else
+		{
+			i = (count - 1) - i, it = tail;
+			while (i > 0) it = it->prev, --i;
+		}
+
+		// Create link in i-th position
+		LinkRef<T> link = createLink(elem);
+		link->linkNext(it);
+
+		++count;
+		return link->data;
 	}
 
-	/// @brief Removes first element of the list
-	FORCE_INLINE void remove()
+	/// Removes last element of the list
+	/// @{
+	FORCE_INLINE bool pop()
 	{
-		LinkRef removed = head;
-		head = head->next;
-		removed->unlink();
-	}
+		if (tail)
+		{
+			LinkRef<T> removed = tail;
+			tail = tail->prev;
 
-	/// @brief Removes i-th element from the list
-	void remove(uint64 i);
+			removed->~Link();
+			allocator->free(removed);
+
+			return true;
+		}
+
+		return false;
+	}
+	FORCE_INLINE bool pop(T & data)
+	{
+		moveOrCopy(data, tail->data);
+		return pop();
+	}
+	/// @}
+
+	/// Removes first element of the list
+	/// @{
+	FORCE_INLINE bool remove()
+	{
+		if (head)
+		{
+			// Unlink
+			LinkRef<T> removed = head;
+			head = head->next;
+
+			removed->~Link();
+			allocator->free(removed);
+
+			return true;
+		}
+
+		return false;
+	}
+	FORCE_INLINE bool remove(T & data)
+	{
+		moveOrCopy(data, head->data);
+		return remove();
+	}
+	/// @}
 };
-
-template<typename T>
-T & LinkedList<T>::operator[](uint64 i)
-{
-	// Default return value
-	static T def;
-
-	if (UNLIKELY(i < 0 | i >= count))
-		// Return if OOB
-		return def;
-	
-	if (i < count / 2)
-	{
-		LinkRef it = head;
-		while (i > 0) it = it->next, --i;
-
-		if (LIKELY(it != nullptr)) return it->data;
-	}
-	else
-	{
-		i = (count - 1) - i;
-		LinkRef it = tail;
-		while (i > 0) it = it->prev, --i;
-
-		if (LIKELY(it != nullptr)) return it->data;
-	}
-
-	return def;
-}
-
-template<typename T>
-T & LinkedList<T>::insert(const T & elem, uint64 i)
-{
-	if (UNLIKELY(i <= 0))
-		return insert(elem);
-	else if (UNLIKELY(i >= count - 1))
-		return push(elem);
-	
-	// Create new link
-	LinkRef link = reinterpret_cast<Link*>(allocator->malloc(sizeof(Link)));
-	new (link) Link(elem);
-
-	LinkRef it;
-	if (i < count / 2)
-	{
-		it = head;
-		while (i > 0) it = it->next, --i;
-	}
-	else
-	{
-		i = (count - 1) - i, it = tail;
-		while (i > 0) it = it->prev, --i;
-	}
-
-	// Update links
-	link->linkNext(it);
-
-	// Update count
-	++count;
-
-	return link->data;
-}
-
-template<typename T>
-void LinkedList<T>::remove(uint64 i)
-{
-	if (UNLIKELY(i <= 0))
-		remove();
-	else if (UNLIKELY(i >= count - 1))
-		pop();
-
-	LinkRef it;
-	if (i < count / 2)
-	{
-		it = head;
-		while (i > 0) it = it->next, --i;
-	}
-	else
-	{
-		i = (count - 1) - i, it = tail;
-		while (i > 0) it = it->next, --i;
-	}
-
-	// Unlink
-	it->unlink();
-}
-
-/// @brief Provides access to the unscoped link type
-template<typename T> using Link = typename LinkedList<T>::Link;
-template<typename T> using LinkRef = typename LinkedList<T>::LinkRef;
 
 #endif

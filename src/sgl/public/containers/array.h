@@ -9,8 +9,6 @@
 #include "hal/malloc_ansi.h"
 #include "templates/const_ref.h"
 #include "templates/is_trivially_copyable.h"
-#include "templates/enable_if.h"
-#include "templates/same_type.h"
 
 /**
  * @class Array containers/array.h

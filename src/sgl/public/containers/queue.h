@@ -6,8 +6,6 @@
 #include "hal/malloc_ansi.h"
 #include "templates/const_ref.h"
 #include "templates/is_trivially_copyable.h"
-#include "templates/enable_if.h"
-#include "templates/same_type.h"
 
 /**
  * @class Queue containers/queue.h
@@ -24,13 +22,13 @@ class GCC_ALIGN(32) Queue
 
 protected:
 	/// A client node
-	struct Client
+	struct GCC_ALIGN(32) Client
 	{
-		/// Data carried by the client
-		T data;
-
 		/// Next client in queue
 		Client * next;
+
+		/// Data carried by the client
+		T data;
 
 		/// Default constructor
 		FORCE_INLINE Client(typename ConstRef<T>::Type & _data, Client * _next = nullptr) :
@@ -191,6 +189,16 @@ public:
 
 		other.bHasOwnAllocator = false;
 		other.first = other.last = nullptr;
+	}
+
+	/// Destructor
+	FORCE_INLINE ~Queue()
+	{
+		// @todo
+
+		// Delete own allocator
+		if (bHasOwnAllocator)
+			delete allocator;
 	}
 	
 	/// Returns number of clients in queue
