@@ -387,6 +387,134 @@ protected:
 		return new (reinterpret_cast<NodeRef>(allocator->malloc(sizeof(Node)))) Node(data);
 	}
 
+	/// Recursively replicate structure of another tree
+	template<typename U>
+	void replicateStructure(NodeRef replica, BinaryNodeRef<U> original)
+	{
+		// Create left
+		if (original->left)
+		{
+			if (replica->left)
+				// Don't recreate node
+				moveOrCopy(replica->left->data, original->left->data);
+			else
+				replica->setLeftChild(createNode(original->left->data));
+			
+			replicateStructure(replica->left, original->left);
+		}
+		else if (replica->left)
+			// Remove unused nodes
+			empty(replica->left);
+
+		// Create right
+		if (original->right)
+		{
+			if (replica->right)
+				// Don't recreate node
+				moveOrCopy(replica->right->data, original->right->data);
+			else
+				replica->setRightChild(createNode(original->right->data));
+			
+			replicateStructure(replica->right, original->right);
+		}
+		else if (replica->right)
+			// Remove unused nodes
+			empty(replica->right);
+	}
+
+public:
+	/// Copy constructor
+	FORCE_INLINE BinaryTree(const BinaryTree<T, AllocT> & other) : BinaryTree(nullptr)
+	{
+		if (other.root)
+			// Copy the tree structure as-is
+			replicateStructure(root = createNode(other.root->data), other.root);
+		
+		numNodes = other.numNodes;
+	}
+
+	/// Copy constructor (different allocator)
+	template<typename AllocU>
+	FORCE_INLINE BinaryTree(const BinaryTree<T, AllocU> & other) : BinaryTree(nullptr)
+	{
+		if (other.root)
+			// Copy the tree structure as-is
+			replicateStructure(root = createNode(other.root->data), other.root);
+		
+		numNodes = other.numNodes;
+	}
+
+	/// Move constructor
+	FORCE_INLINE BinaryTree(BinaryTree<T, AllocT> && other) :
+		allocator(other.allocator),
+		bHasOwnAllocator(other.bHasOwnAllocator),
+		root(other.root),
+		numNodes(other.numNodes)
+	{
+		other.bHasOwnAllocator = false;
+		other.root = nullptr;
+	}
+
+	/// Copy assignment
+	FORCE_INLINE BinaryTree<T, AllocT> & operator=(const BinaryTree<T, AllocT> & other)
+	{
+		// Copy the tree structure as-is
+		if (other.root)
+		{
+			if (root)
+			{
+				moveOrCopy(root->data, other.root->data);
+				replicateStructure(root, other.root);
+			}
+			else
+				replicateStructure(root = createNode(other.root->data), other.root);
+		}
+		
+		numNodes = other.numNodes;
+	}
+
+	/// Copy assignment (different allocator)
+	template<typename AllocU>
+	FORCE_INLINE BinaryTree<T, AllocT> & operator=(const BinaryTree<T, AllocU> & other)
+	{
+		// Copy the tree structure as-is
+		if (other.root)
+		{
+			if (root)
+			{
+				moveOrCopy(root->data, other.root->data);
+				replicateStructure(root, other.root);
+			}
+			else
+				replicateStructure(root = createNode(other.root->data), other.root);
+		}
+		
+		numNodes = other.numNodes;
+	}
+
+	/// Move assignment
+	FORCE_INLINE BinaryTree<T, AllocT> & operator=(BinaryTree<T, AllocT> && other)
+	{
+		allocator			= other.allocator;
+		bHasOwnAllocator	= other.bHasOwnAllocator;
+		root				= other.root;
+		numNodes			= other.numNodes;
+
+		other.bHasOwnAllocator	= false;
+		other.root				= nullptr;
+	}
+
+	/// Destructor
+	FORCE_INLINE ~BinaryTree()
+	{
+		// Empty tree
+		empty(root);
+
+		// Delete own allocator
+		if (bHasOwnAllocator)
+			delete allocator;
+	}
+
 public:
 	/// Get number of nodes
 	FORCE_INLINE uint64 getSize() const { return numNodes; }
@@ -410,7 +538,7 @@ public:
 	 * 
 	 * @param [in] data data to insert in node
 	 */
-	FORCE_INLINE T & insert(typename ConstRef<T>::Type data)
+	T & insert(typename ConstRef<T>::Type data)
 	{
 		if (LIKELY(root != nullptr))
 		{
@@ -436,7 +564,7 @@ public:
 	 * 
 	 * @param [in] data data to insert in node
 	 */
-	FORCE_INLINE T & insertUnique(typename ConstRef<T>::Type data)
+	T & insertUnique(typename ConstRef<T>::Type data)
 	{
 		if (LIKELY(root != nullptr))
 		{
@@ -464,6 +592,28 @@ public:
 			return root->data;
 		}
 	}
+
+	/// Recursively removes all nodes of the tree
+	/// @{
+	FORCE_INLINE void empty() { return empty(root); }
+
+protected:
+	void empty(NodeRef node)
+	{
+		if (node)
+		{
+			NodeRef
+				left	= node->left,
+				right	= node->right;
+			
+			// Dealloc node
+			allocator->free(node);
+
+			// Depth first
+			empty(left), empty(right);
+		}
+	}
+	///@}
 };
 
 #endif

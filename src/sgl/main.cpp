@@ -31,21 +31,33 @@ int main()
 
 	//srand(clock());
 
-	BinaryTree<uint64, MallocBinned> tree;
+	BinaryTree<uint64, MallocAnsi> tree;
 	for (uint32 i = 0; i < 1024 * 1024; ++i)
-		tree.insertUnique(rand() % (1024 * 128));
+		tree.insertUnique(rand() % (1024 * 1024));
 
 	/* std::map<uint64, uint64> tree;
 	for (uint32 i = 0; i < 1024 * 1024; ++i)
-		tree.insert(std::make_pair(rand() % (1024 * 128), i)); */
+		tree.insert(std::make_pair(rand() % (1024 * 1024), i)); */
 	
-	for (uint32 i = 0; i < 1024 * 128; ++i)
+	/* for (uint32 i = 0; i < 1024 * 128; ++i)
 	{
 		auto it = tree.find(i);
 		if (it != tree.end()) ++sum;
 	}
 
-	printf("%llu\n", sum);
+	printf("%llu\n", sum); */
+
+	/* BinaryTree<uint64, MallocAnsi> other = tree;
+
+	tree.empty();
+
+	for (uint32 i = 0; i < 1024 * 128; ++i)
+	{
+		auto it = tree.find(i);
+		if (it != tree.end()) --sum;
+	}
+
+	printf("%llu\n", sum); */
 
 	return 0;
 
