@@ -5,6 +5,8 @@
 #include "generic/memory_pool.h"
 #include "coremin.h"
 
+#include "hal/malloc_pool.h"
+
 Malloc			* gMalloc = nullptr;
 MallocBinned	* gMallocBinned = nullptr;
 
@@ -21,23 +23,51 @@ namespace Test
 }
 
 #include <map>
+#include <omp.h>
 
 int main()
 {
 	Memory::createGMalloc();
-	gMallocBinned = new MallocBinned;
+	//gMallocBinned = new MallocBinned;
 
-	uint64 sum = 0;
+	//uint64 sum = 0;
 
 	//srand(clock());
 
-	BinaryTree<uint64, MallocAnsi> tree;
+	auto pool = new MallocPool(1024 * 1024 * 2, sizeof(BinaryNode<uint64>), alignof(BinaryNode<uint64>));
+
+	auto start = omp_get_wtime();
 	for (uint32 i = 0; i < 1024 * 1024; ++i)
-		tree.insertUnique(rand() % (1024 * 1024));
+	{
+		void * block = pool->malloc(64);
+		if (rand() % 1024 == 0)
+			pool->free(block);
+	}
+
+	/* for (uint32 i = 0; i < 1024 * 1024; ++i)
+	{
+		void * block = gMalloc->malloc(64);
+		if (rand() % 1024 == 0)
+			gMalloc->free(block);
+	} */
+	printf("%f\n", omp_get_wtime() - start);
+
+	/* auto pool = new MemoryPool(64, 1024 * 1024 * 2, gMalloc->malloc(64 * 1024 * 1024));
+	for (uint32 i = 0; i < 1024 * 2; ++i)
+	{
+		void * block = pool->allocate(64);
+		printf("%p\n");
+		if (rand() % 1024 == 0)
+			pool->free(block);
+	} */
+
+	/* BinaryTree<uint64, MallocAnsi> tree;
+	for (uint32 i = 0; i < 1024 * 1024; ++i)
+		tree.insertUnique(rand() % (1024 * 128)); */
 
 	/* std::map<uint64, uint64> tree;
 	for (uint32 i = 0; i < 1024 * 1024; ++i)
-		tree.insert(std::make_pair(rand() % (1024 * 1024), i)); */
+		tree.insert(std::make_pair(rand() % (1024 * 128), i)); */
 	
 	/* for (uint32 i = 0; i < 1024 * 128; ++i)
 	{
@@ -58,15 +88,19 @@ int main()
 	}
 
 	printf("%llu\n", sum); */
+	/* BinaryNodeRef<uint64> node;
+	while (node = new (reinterpret_cast<BinaryNodeRef<uint64>>(pool->malloc(sizeof(BinaryNode<uint64>)))) BinaryNode<uint64>(13)) if ((rand() % 65536) == 0) pool->free(node);
+
+	printf("SOASOAOS %llu\n", sum); */
 
 	return 0;
 
-	return
+	/* return
 		Test::memory() &
 		Test::array() &
 		Test::list() &
 		Test::queue() &
-		Test::map();
+		Test::map(); */
 }
 
 int32 Test::memory()

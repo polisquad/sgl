@@ -77,14 +77,14 @@ struct GenericPlatformMath
 	 * 
 	 * @return aligned result
 	 */
-	template<typename T>
-	static CONSTEXPR FORCE_INLINE T alignUp(T n, T alignment)
+	template<typename Int>
+	static CONSTEXPR FORCE_INLINE Int alignUp(Int n, Int alignment)
 	{
 		// T must be an integer type
-		static_assert(IsIntegralV(T), "Cannot align non-integral type");
+		static_assert(IsIntegral<Int>::value, "Cannot align non-integral type");
 
 		// Align up
-		const T a = alignment - 1;
+		const Int a = alignment - 1;
 		return n & a ? (n | a) + 1 : n;
 	}
 

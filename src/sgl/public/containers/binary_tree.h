@@ -378,6 +378,8 @@ public:
 		// Create own allocator
 		if (bHasOwnAllocator)
 			allocator = new AllocT;
+		/* else
+			printf("%p\n", allocator); */
 	}
 
 protected:
