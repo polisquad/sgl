@@ -44,7 +44,7 @@ public:
 	/// @copydoc IMap::operator[]
 	virtual FORCE_INLINE ValT & operator[](const KeyT & key) override
 	{
-		auto iter = tree.find(PairT(key)); // Note that it can also automatically convert key to a @ref KVPair using implicit conversion constructor
+		auto iter = tree.find(PairT(key)); // Note that it can also automatically convert key to a @ref Pair using implicit conversion constructor
 		if (iter != tree.end())
 			// Return found value
 			return (*iter).second;

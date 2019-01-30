@@ -7,7 +7,7 @@
 #include "templates/const_ref.h"
 
 /**
- * @struct BinaryNode containers/binary_tree.h
+ * @struct BinaryNode<T>containers/binary_tree.h
  * 
  * A standalone node of a binary tree.
  * The template type must define at least
@@ -19,15 +19,16 @@ struct GCC_ALIGN(32) BinaryNode
 {
 	template<typename U, typename AllocU>
 	friend class BinaryTree;
-protected:
+	
+public:
 	/// Parent node
-	BinaryNode * parent;
+	BinaryNode<T>* parent;
 
 	/// Left child node
-	BinaryNode * left;
+	BinaryNode<T>* left;
 
 	/// Right child node
-	BinaryNode * right;
+	BinaryNode<T>* right;
 
 	/// Node data
 	T data;
@@ -44,9 +45,9 @@ public:
 	FORCE_INLINE BinaryNode(
 		typename ConstRef<T>::Type _data,
 		NodeColor _color = NodeColor::RED,
-		BinaryNode * _parent = nullptr,
-		BinaryNode * _left = nullptr,
-		BinaryNode * _right = nullptr
+		BinaryNode<T>* _parent = nullptr,
+		BinaryNode<T>* _left = nullptr,
+		BinaryNode<T>* _right = nullptr
 	)
 		: parent(_parent)
 		, left(_left)
@@ -77,7 +78,7 @@ public:
 	 * @{
 	 */
 	/// Search begins from this node
-	FORCE_INLINE BinaryNode * find(typename ConstRef<T>::Type search)
+	FORCE_INLINE BinaryNode<T> * find(typename ConstRef<T>::Type search)
 	{
 		if (search < data)
 			return left ? left->find(search) : nullptr;
@@ -88,7 +89,7 @@ public:
 	}
 
 	/// Search begins from right/left node
-	FORCE_INLINE BinaryNode * findNext(typename ConstRef<T>::Type search)
+	FORCE_INLINE BinaryNode<T> * findNext(typename ConstRef<T>::Type search)
 	{
 		if (search < data)
 			return left ? left->find(search) : nullptr;
@@ -96,10 +97,16 @@ public:
 			return right ? right->find(search) : nullptr;
 	}
 	/// @}
+
+	/// Get root of this tree
+	FORCE_INLINE BinaryNode<T> * getRoot()
+	{
+		return parent ? parent->getRoot() : this;
+	}
 	
 protected:
 	/// Set node as left child
-	FORCE_INLINE BinaryNode * setLeftChild(BinaryNode * node)
+	FORCE_INLINE BinaryNode<T> * setLeftChild(BinaryNode<T>* node)
 	{
 		// @todo handle child replacement
 
@@ -108,7 +115,7 @@ protected:
 	}
 
 	/// Set node as right child
-	FORCE_INLINE BinaryNode * setRightChild(BinaryNode * node)
+	FORCE_INLINE BinaryNode<T> * setRightChild(BinaryNode<T> * node)
 	{
 		// @todo handle child replacement
 
@@ -129,7 +136,7 @@ public:
 	 * @return inserted node
 	 * @{
 	 */
-	FORCE_INLINE BinaryNode<T> * insert(BinaryNode * node)
+	FORCE_INLINE BinaryNode<T> * insert(BinaryNode<T> * node)
 	{
 		if (node->data < data)
 			return left ? left->insert(node) : setLeftChild(node)->repair();
@@ -138,7 +145,7 @@ public:
 	}
 	
 	/// If node already exists, don't reinsert it
-	FORCE_INLINE BinaryNode<T> * insertUnique(BinaryNode * node)
+	FORCE_INLINE BinaryNode<T> * insertUnique(BinaryNode<T> * node)
 	{
 		if (node->data < data)
 			return left ? left->insertUnique(node) : setLeftChild(node)->repair();
@@ -151,7 +158,7 @@ public:
 
 	/// Repair tree structure starting from this node
 	/// @return self
-	BinaryNode * repair()
+	BinaryNode<T> * repair()
 	{
 		// Case 0: I'm (g)root
 		if (parent == nullptr)
@@ -169,12 +176,12 @@ public:
 		else
 		{
 			// Get relatives
-			BinaryNode
+			BinaryNode<T>
 				* grand = parent->parent,
 				* uncle = grand ? (grand->left == parent ? grand->right : grand->left) : nullptr;
 			
-			// Case 2: uncle is red
-			if (uncle && uncle->isRed())
+			// Case 2: uncle exists
+			if (uncle)
 			{
 				uncle->color = parent->color = NodeColor::BLACK;
 				grand->color = NodeColor::RED;
@@ -244,7 +251,7 @@ protected:
 			parent->setRightChild(right);
 
 		// Set right-left as my right child
-		BinaryNode * prevRight = right;
+		BinaryNode<T> * prevRight = right;
 		setRightChild(right->left);
 		
 		// Set me as left child
@@ -263,7 +270,7 @@ protected:
 			parent->setRightChild(left);
 
 		// Set left-right as my left child
-		BinaryNode * prevLeft = left;
+		BinaryNode<T>* prevLeft = left;
 		setLeftChild(left->right);
 		
 		// Set me as right child

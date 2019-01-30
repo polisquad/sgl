@@ -14,7 +14,7 @@ struct GCC_ALIGN(32) Link
 	template<typename U, typename AllocU>
 	friend class LinkedList;
 
-protected:
+public:
 	/// Next link
 	Link * next;
 
@@ -26,7 +26,7 @@ protected:
 
 public:
 	/// Default constructor
-	FORCE_INLINE Link(typename ConstRef<T>::Type _data, Link * _next, Link * _prev) :
+	FORCE_INLINE Link(typename ConstRef<T>::Type _data, Link * _next = nullptr, Link * _prev = nullptr) :
 		data(_data),
 		prev(_prev),
 		next(_next) {}
@@ -37,10 +37,16 @@ public:
 		unlink();
 	}
 
+	/// Returns next link
+	FORCE_INLINE Link * getNext() { return next; }
+
 	/// Returns data
 	/// @{
 	FORCE_INLINE 	   T & operator*()			{ return data; }
 	FORCE_INLINE const T & operator*() const	{ return data; }
+
+	FORCE_INLINE 	   T & getData()		{ return data; }
+	FORCE_INLINE const T & getData() const	{ return data; }
 	/// @}
 
 	/// Link next

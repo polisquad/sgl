@@ -1,4 +1,37 @@
 #include "hal/malloc_pool.h"
+MallocPool::MallocPool(uint64 _numBlocks, sizet _blockSize, sizet blockAlignment, void * buffer) :
+	pool(buffer),
+	bHasOwnBuffer(buffer == nullptr),
+	numBlocks(_numBlocks),
+	blockSize(_blockSize),
+	numFreeBlocks(numBlocks)
+{
+	const sizet
+		descriptorSize	= sizeof(void*),
+		chunkSize		= PlatformMath::alignUp(descriptorSize + blockSize, blockAlignment),
+		poolSize		= blockAlignment + chunkSize * numBlocks;
+
+	// Allocate pool
+	if (bHasOwnBuffer)
+	{
+		if (posix_memalign(&pool, blockAlignment, poolSize)) return;
+	}
+
+	// Padding for aligned blocks
+	head = setOffset(pool, blockAlignment - descriptorSize);
+	// Set pool end address
+	end = reinterpret_cast<void*>(reinterpret_cast<uint64>(pool) + poolSize);
+
+	// Init linked list
+	for (uint64 b = 0; b < numBlocks - 1; ++b)
+		head = setOffset(head, chunkSize);
+	
+	// Set last as nullptr
+	setNext(head, nullptr);
+	
+	// Reset head
+	head = getNext(pool);
+}
 
 void * MallocPool::malloc(sizet n, uint32 alignment)
 {

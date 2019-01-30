@@ -11,14 +11,14 @@ class IMap
 {
 public:
 	/// The pair type
-	typedef KVPair<KeyT, ValT> PairT;
+	typedef Pair<KeyT, ValT> PairT;
 
 public:
 	/**
 	 * @brief Access value with key
 	 * 
 	 * If an entry associated with the given key
-	 * is found, the @ref KVPair is returned.
+	 * is found, the @ref Pair is returned.
 	 * If no entry is found, a new one is created
 	 * on the fly and a reference to the pair is
 	 * returned
