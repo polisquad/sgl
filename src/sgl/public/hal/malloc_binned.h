@@ -62,6 +62,11 @@ protected:
 	/// Allows for fast deallocation (O(log(N)) search)
 	PoolNodeRef root;
 
+	/// Some stats
+	/// @{
+	uint64 numPools;
+	/// @}
+
 public:
 	/// Default constructor
 	MallocBinned();
@@ -82,6 +87,9 @@ public:
 		}
 	}
 
+	/// Returns number of allocated pools
+	FORCE_INLINE uint64 getNumPools() { return numPools; }
+
 protected:
 	/// Get bucket index from required size
 	FORCE_INLINE uint32 getBucketIndex(sizet n) const
@@ -94,6 +102,9 @@ protected:
 	/// Forced inline, not used outside class
 	FORCE_INLINE MallocPool * createPool(uint32 bucketIdx)
 	{
+		/// Update stats
+		++numPools;
+
 		/**
 		 * Create a new pool.
 		 *  PoolLink PoolNode Padding Pool buffer

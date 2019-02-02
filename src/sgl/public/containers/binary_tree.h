@@ -17,8 +17,7 @@
 template<typename T>
 struct GCC_ALIGN(32) BinaryNode
 {
-	template<typename U, typename AllocU>
-	friend class BinaryTree;
+	template<typename, typename> friend class BinaryTree;
 	
 public:
 	/// Parent node
@@ -55,20 +54,17 @@ public:
 		, data(_data)
 		, color(_color) {}
 
-	/// Access node data
-	/// @{
-	FORCE_INLINE 	   T & operator*()			{ return data; }
-	FORCE_INLINE const T & operator*() const	{ return data; }
-
-	FORCE_INLINE	   T & getData()		{ return data; }
-	FORCE_INLINE const T & getData() const	{ return data; }
-	/// @}
-
 	/// Returns true if parent matches color
 	/// @{
 	FORCE_INLINE bool isBlack()	{ return color == NodeColor::BLACK; }
 	FORCE_INLINE bool isRed()	{ return color == NodeColor::RED; }
 	/// @}
+
+	/// Get root of this tree
+	FORCE_INLINE BinaryNode<T> * getRoot()
+	{
+		return parent ? parent->getRoot() : this;
+	}
 
 	/**
 	 * Finds node that matches data
@@ -97,12 +93,6 @@ public:
 			return right ? right->find(search) : nullptr;
 	}
 	/// @}
-
-	/// Get root of this tree
-	FORCE_INLINE BinaryNode<T> * getRoot()
-	{
-		return parent ? parent->getRoot() : this;
-	}
 	
 protected:
 	/// Set node as left child
@@ -125,7 +115,7 @@ protected:
 
 public:
 	/**
-	 * Insert a node in the tree structure
+	 * Insert a node in this subtree
 	 * 
 	 * The tree structure spawning from this node
 	 * is traversed until a suitable leaf is found.
@@ -290,8 +280,8 @@ template<typename T> using BinaryNodeRef = BinaryNode<T>*;
 template<typename T, typename AllocT = MallocAnsi>
 class GCC_ALIGN(32) BinaryTree
 {
-	template<typename U, typename AllocU>
-	friend class BinaryTree;
+	template<typename, typename>			friend class BinaryTree;
+	template<typename, typename, typename>	friend class TreeMap;
 
 public:
 	/// Node type
@@ -302,8 +292,7 @@ public:
 	template<typename U>
 	struct GCC_ALIGN(32) NodeIterator
 	{
-		template<typename V, typename AllocV>
-		friend class BinaryTree;
+		template<typename, typename> friend class BinaryTree;
 
 	private:
 		/// Current node

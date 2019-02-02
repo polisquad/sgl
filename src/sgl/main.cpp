@@ -28,6 +28,14 @@ int main()
 {
 	Memory::createGMalloc();
 	gMallocBinned = new MallocBinned;
+	
+	Queue<uint64, MallocAnsi> q;
+	for (uint64 i = 0; i < 1024 * 1024; ++i)
+		q.push(i);
+	
+	while (q.pop());
+	
+	printf("%llu\n", gMallocBinned->getNumPools());
 
 	return 0;
 
@@ -190,7 +198,7 @@ int32 Test::queue()
 
 int32 Test::map()
 {
-	auto start = clock();
+	/* auto start = clock();
 	Map<uint64, uint64> map;
 	std::map<uint64, uint64> stdmap;
 
@@ -218,7 +226,7 @@ int32 Test::map()
 
 	printf("------------------------------\n");
 
-	return 0;
+	return 0; */
 }
 
 int32 Test::list()

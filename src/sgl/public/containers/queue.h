@@ -17,8 +17,7 @@ template <typename T, typename AllocT = MallocAnsi>
 class GCC_ALIGN(32) Queue
 {
 	// Sometimes C++ doesn't really make sense ...
-	template<typename U, typename AllocU>
-	friend class Queue;
+	template<typename, typename> friend class Queue;
 
 protected:
 	/// A client node

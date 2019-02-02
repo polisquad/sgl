@@ -37,18 +37,6 @@ public:
 		unlink();
 	}
 
-	/// Returns next link
-	FORCE_INLINE Link * getNext() { return next; }
-
-	/// Returns data
-	/// @{
-	FORCE_INLINE 	   T & operator*()			{ return data; }
-	FORCE_INLINE const T & operator*() const	{ return data; }
-
-	FORCE_INLINE 	   T & getData()		{ return data; }
-	FORCE_INLINE const T & getData() const	{ return data; }
-	/// @}
-
 	/// Link next
 	FORCE_INLINE void linkNext(Link * _next)
 	{

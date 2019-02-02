@@ -5,7 +5,7 @@
 #include "containers/linked_list.h"
 #include "containers/queue.h"
 #include "containers/string.h"
-#include "containers/tree_map.h"
+#include "containers/map.h"
 #include "containers/containers.h"
 
 /**
@@ -15,7 +15,7 @@
  */
 
 /////////////////////////////////////////////////
-// Global containers                           //
+// Global containers
 /////////////////////////////////////////////////
 
 /// @{
@@ -24,7 +24,7 @@ static Queue<uint64> * queue;
 /// @}
 
 /////////////////////////////////////////////////
-// Array tests                                 //
+// Array tests
 /////////////////////////////////////////////////
 
 TEST(Containers, arr_test)
@@ -60,7 +60,7 @@ TEST(Containers, arr_test)
 }
 
 /////////////////////////////////////////////////
-// String test                                 //
+// String test
 /////////////////////////////////////////////////
 
 TEST(Containers, str_construct)		{ String str("sneppy"); EXPECT_TRUE(strncmp(*str, "sneppy", 6) == 0); }
@@ -90,7 +90,7 @@ TEST(Containers, str_comparison)
 }
 
 /////////////////////////////////////////////////
-// LinkedList and queue test                   //
+// LinkedList and queue test
 /////////////////////////////////////////////////
 
 TEST(Containers, ll_test)
@@ -116,8 +116,5 @@ TEST(Containers, ll_test)
 }
 
 //////////////////////////////////////////////////
-// TreeMap test                                 //
+// Map test
 //////////////////////////////////////////////////
-
-/* TEST(Containers, tmap_push)	{ TreeMap<uint64, String> map; map[8] = "0100", map[9] = "0101", map[10] = "0110", map[11] = "0111"; EXPECT_EQ(String("0101"), map[9]); }
-TEST(Containers, tmap_find)	{ TreeMap<uint64, String> map; map[8] = "0100", map[9] = "0101", map[10] = "0110", map[11] = "0111"; auto it = map.find(7); EXPECT_TRUE(it == map.end()); it = map.find(8); EXPECT_TRUE(it != map.end()); } */

@@ -13,11 +13,25 @@ template<typename A, typename B>
 class Pair
 {
 public:
-	/// First element
-	A first;
+	union
+	{
+		struct {
+			/// First element
+			A first;
 
-	/// Second element
-	B second;
+			/// Second element
+			B second;
+		};
+
+		struct {
+			/// Pair key
+			A key;
+
+			/// Pair value
+			B val;
+		};
+	};
+	
 
 public:
 	/// Pair constructor

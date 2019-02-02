@@ -19,7 +19,6 @@ void * MallocBinned::malloc(sizet n, uint32 alignment)
 	uint32 bucketIdx = getBucketIndex(n);
 
 	{
-
 		// Try first pool
 		PoolLinkRef head = buckets[bucketIdx];
 		if (head->data.numFreeBlocks)

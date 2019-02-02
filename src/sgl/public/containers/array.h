@@ -17,8 +17,8 @@
 template<typename T, typename AllocT = MallocAnsi>
 class GCC_ALIGN(32) Array
 {
-	template<typename U, typename AllocU>	friend class Array;
-											friend String;
+	template<typename, typename>	friend class Array;
+									friend String;
 
 public:
 	/// Iterators type definitions
