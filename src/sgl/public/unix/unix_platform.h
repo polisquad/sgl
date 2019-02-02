@@ -1,5 +1,7 @@
 #pragma once
 
+#include "generic/generic_platform.h"
+
 #include <linux/version.h>
 
 /**
@@ -40,8 +42,8 @@ typedef struct UnixPlatformTypes : public GenericPlatformTypes
 #endif
 #define FORCE_NOINLINE				__attribute__((noinline))
 #define RESTRICT					__restrict
-#define LIKELY(expr)				__builtin_expect(expr, 1)
-#define UNLIKELY(expr)				__builtin_expect(expr, 0)
+#define LIKELY(expr)				__builtin_expect(static_cast<bool>(expr), 1)
+#define UNLIKELY(expr)				__builtin_expect(static_cast<bool>(expr), 0)
 #define FUNCTION_CHECK_RETURN_END	__attribute__((warn_unused_return))
 #define GCC_PACK(n)					__attribute__((packed,aligned(n)))
 #define GCC_ALIGN(n)				__attribute__((aligned(n)))

@@ -1,19 +1,16 @@
 #pragma once
 
 #include "core_types.h"
-#include <type_traits>
 
 /**
- * Just a typedef.
- * This will probably remain a typedef
+ * Sets Type to specified type if boolean condition is true
  */
-template<bool V, typename T = void>
-using EnableIf = std::enable_if<V, T>;
+template<bool Cond, typename T = void>
+struct EnableIf {};
 
-/**
- * Just a typedef.
- * This will probably remain a typedef
- */
-template<bool V, typename T = void>
-using EnableIfT = std::enable_if_t<V, T>;
+template<typename T>
+struct EnableIf<true, T> { using Type = T; };
+
+/// Quick macro
+#define EnableIfT(Cond, T) typename EnableIf<Cond, T>::Type
 

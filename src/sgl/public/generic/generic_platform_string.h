@@ -4,11 +4,12 @@
 
 /**
  * @struct GenericPlatformString generic/generic_platform_string.h
- * @brief Utility functions to work with C-like strings
+ * 
+ * Utility functions to work with C-like strings
  */
 struct GenericPlatformString
 {
-	/// @brief Convert a character to lowercase
+	/// Convert a character to lowercase
 	template<typename C>
 	static FORCE_INLINE C toLower(C c)
 	{
@@ -16,8 +17,15 @@ struct GenericPlatformString
 		return c < 96 ? c + 32 : c;
 	}
 
+	/// Get length of a null terminated string
+	template<typename C>
+	static FORCE_INLINE uint64 strlen(const C * string)
+	{
+		return string ? ::strlen(string) : 0;
+	}
+
 	/**
-	 * @brief Compare two C-strings
+	 * Compare two C-strings
 	 * 
 	 * @param s1,s2 C-strigs (assumed to be null-terminated)
 	 * 
@@ -36,7 +44,7 @@ struct GenericPlatformString
 	}
 
 	/**
-	 * @brief Same as @ref strcmp but case insensitive
+	 * Same as @ref strcmp but case insensitive
 	 */
 	template<typename S1, typename S2>
 	static FORCE_INLINE int32 strcmpi(const S1 * s1, const S2 * s2)
@@ -58,7 +66,7 @@ struct GenericPlatformString
 	}
 
 	/**
-	 * @brief Same as @ref strcmp but with limit
+	 * Same as @ref strcmp but with limit
 	 */
 	template<typename S1, typename S2>
 	static FORCE_INLINE int32 strncmp(const S1 * s1, const S2 * s2, uint64 n)
@@ -73,7 +81,7 @@ struct GenericPlatformString
 	}
 
 	/**
-	 * @brief Same as @ref strncmp but case insensitive
+	 * Same as @ref strncmp but case insensitive
 	 */
 	template<typename S1, typename S2>
 	static FORCE_INLINE int32 strncmpi(const S1 * s1, const S2 * s2, uint64 n)

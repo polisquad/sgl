@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core_types.h"
-#include "hal/platform_stdlib.h"
+#include "hal/platform_crt.h"
 #include "templates/is_integral.h"
 
 /**
@@ -76,14 +76,14 @@ struct GenericPlatformMath
 	 * 
 	 * @return aligned result
 	 */
-	template<typename T>
-	static CONSTEXPR FORCE_INLINE T alignUp(T n, T alignment)
+	template<typename IntT, typename IntU>
+	static CONSTEXPR FORCE_INLINE IntT alignUp(IntT n, IntU alignment)
 	{
 		// T must be an integer type
-		static_assert(IsIntegralV(T), "Cannot align non-integral type");
+		static_assert(IsIntegral<IntT>::value, "Cannot align non-integral type");
 
 		// Align up
-		const T a = alignment - 1;
+		const IntU a = alignment - 1;
 		return n & a ? (n | a) + 1 : n;
 	}
 

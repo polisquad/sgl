@@ -1,252 +1,151 @@
 #include "hal/malloc_binned.h"
-#include "hal/platform_stdlib.h"
-#include "generic/memory_pool.h"
 
-MallocBinned::MallocBinned()
+MallocBinned::MallocBinned() :
+	buckets{},
+	root(nullptr)
 {
-	// Create a big chunk to contain first buckets
-	/** @todo Use @ref Memory::malloc() */
-	const sizet bufferSize
-		= BINNED_NUM_BUCKETS * sizeof(BucketPool) * 2
-		+ BINNED_NUM_BUCKETS * sizeof(MemoryPool)
-		+ 2 * (BINNED_POOL_SIZE / BINNED_BLOCK_MIN_SIZE) * sizeof(MemoryPool::Index)
-		+ BINNED_NUM_BUCKETS * (BINNED_POOL_ALIGNMENT + BINNED_POOL_SIZE);
-	sizet buffer = reinterpret_cast<sizet>(gMalloc->malloc(bufferSize));
-
-	// Init all buckets with a pool
-	for (uint8 i = 0; i < BINNED_NUM_BUCKETS; ++i)
-	{
-		BucketPool * bucketHeader	= reinterpret_cast<BucketPool*>(buffer);
-		BucketPool * bucketFooter	= reinterpret_cast<BucketPool*>(bucketHeader + 1);
-		MemoryPool * memoryPool		= reinterpret_cast<MemoryPool*>(bucketFooter + 1);
-		void * poolBuffer			= memoryPool + 1;
-
-		// Calculate block size and num blocks
-		const sizet blockSize = (0x1 << i) * BINNED_BLOCK_MIN_SIZE;
-		const sizet numBlocks = BINNED_POOL_SIZE / blockSize;
-
-		// Sanity check
-		ASSERT(blockSize * numBlocks == BINNED_POOL_SIZE, "Error in binned malloc creation");
-
-		// Create pool
-		new (memoryPool) MemoryPool(blockSize, numBlocks, poolBuffer, BINNED_POOL_ALIGNMENT);
-		
-		// Init buckets
-		buckets[i] = bucketHeader, bucketsTails[i] = bucketFooter;
-		bucketHeader->pool = bucketFooter->pool = memoryPool;
-		bucketHeader->next = bucketFooter->next = nullptr;
-
-		// Advance buffer
-		buffer += (BINNED_POOL_SIZE / blockSize) * sizeof(MemoryPool::Index) + BINNED_POOL_SIZE + BINNED_POOL_ALIGNMENT;
-	}
+	// Create pools
+	for (uint32 i = 0; i < MALLOC_BINNED_NUM_BUCKETS; ++i)
+		createPool(i);
 }
 
-void * MallocBinned::malloc(uintP n, uint32 alignment)
+void * MallocBinned::malloc(sizet n, uint32 alignment)
 {
-	// Get bucket index
-	const uint8 bucketIdx = getBucketIndexFromSize(n);
-	if (UNLIKELY(bucketIdx >= BINNED_NUM_BUCKETS))
-		/** @todo Use external malloc */
+	if (n > MALLOC_BINNED_BLOCK_MAX_SIZE)
+		// Use global allocator
 		return gMalloc->malloc(n, alignment);
+	
+	// Find bucket index
+	uint32 bucketIdx = getBucketIndex(n);
 
-	// Get free pool
-	void * out = nullptr;
-	BucketPool * it = buckets[bucketIdx], * prev = nullptr;
-
-	// First pool should be free
 	{
-		MemoryPool * memoryPool = it->pool;
-		if (memoryPool->getUsable() >= n)
+		// Try first pool
+		PoolLinkRef head = buckets[bucketIdx];
+		if (head->data.numFreeBlocks)
+			return head->data.malloc(n);
+
+		// Find next free pool
+		PoolLinkRef it = head->next;
+		while (it && it->data.numFreeBlocks == 0) it = it->next;
+
+		if (it)
 		{
-			out = memoryPool->allocate(n);
+			// Bring forth
+			it->unlink();
+			it->linkNext(head);
+			buckets[bucketIdx] = it;
 
-			// Bring back
-			if (UNLIKELY(memoryPool->getUsable() == 0 & it->next != nullptr))
-			{
-				// Pop from head
-				buckets[bucketIdx] = it->next;
-				it->next = nullptr;
-
-				// Push to back
-				bucketsTails[bucketIdx]->next = it;
-				bucketsTails[bucketIdx] = it;
-			}
+			// Allocate and return
+			return it->data.malloc(n);
 		}
 		else
 		{
-			// Create a new pool
-			it = createBucketPool(bucketIdx);
-			assert(it);
-
-			memoryPool = it->pool;
-			out = memoryPool->allocate(n);
+			MallocPool * pool;
+			if (pool = createPool(bucketIdx))
+				return pool->malloc(n);
 		}
 	}
-
-	// Set used bucket
-	if (LIKELY(out != nullptr)) lastUsed = it->pool;
-
-	return out;
-}
-
-void * MallocBinned::realloc(void * original, uintP n, uint32 alignment)
-{
-	// If no original block, just malloc it
-	if (UNLIKELY(original == nullptr)) return malloc(alignment);
-
-	// Get bucket index
-	const uint8 bucketIdx = getBucketIndexFromSize(n);
-	
-	if (LIKELY(bucketIdx < BINNED_NUM_BUCKETS))
-	{
-		void * out = nullptr;
-		BucketPool * it = buckets[bucketIdx], * prev = nullptr;
-		while (LIKELY(it != nullptr))
-		{
-			MemoryPool * memoryPool = it->pool;
-			if (memoryPool->hasBlock(original))
-			{
-				// No need to reallocate
-				return original;
-			}
-			else if (memoryPool->getUsable() >= n)
-			{
-				// Allocate from this pool
-				out = memoryPool->allocate(n);
-				PlatformMemory::memcpy(out, original, n);
-
-				// Bring back
-				if (UNLIKELY(memoryPool->getUsable() == 0))
-				{
-					// Pop
-					if (prev)
-						prev->next = it->next;
-					else
-						buckets[bucketIdx] = it->next;
-
-					bucketsTails[bucketIdx]->next = it;
-					bucketsTails[bucketIdx] = it;
-					it->next = nullptr;
-				}
-
-				break;
-			}
-
-			prev = it;
-			it = it->next;
-		}
-
-		// If we did not find any available block
-		// create a new memory pool
-		if (UNLIKELY(!it))
-		{
-			// Create new bucket pool
-			it = createBucketPool(bucketIdx);
-			assert(it);
-
-			MemoryPool * memoryPool = it->pool;
-			out = memoryPool->allocate(n);
-		}
-
-		// Free original block
-		free(original);
-
-		// Set used bucket
-		if (LIKELY(out != nullptr)) lastUsed = it->pool;
-
-		return out;
-	}
-	else
-	{
-		// Allocate, copy and then free
-		void * out = gMalloc->malloc(n, alignment);
-		PlatformMemory::memcpy(out, original, n);
-
-		// Free original block
-		free(original);
-
-		return out;
-	}	
 
 	return nullptr;
 }
 
-void MallocBinned::free(void * original)
+void * MallocBinned::realloc(void * original, sizet n, uint32 alignment)
 {
-#if SGL_BUILD_DEBUG
-	ASSERT(original != nullptr, "Cannot free nullptr");
-#else
-	if (UNLIKELY(original == nullptr)) return;
-#endif
+	if (original == nullptr) return malloc(n, alignment);
 
-	// Check last used pool
-	if (UNLIKELY(lastUsed && lastUsed->hasBlock(original)))
-	{
-		// Free block
-		lastUsed->free(original);
-		return;
-	}
+	// Find pool that alloc'd this block
 
-	// Slow? maybe
-	for (uint8 i = 0; i < BINNED_NUM_BUCKETS; ++i)
+	// Search key
+	Pair<void*, MallocPool*> searchKey(original);
+
+	PoolNodeRef it = root;
+	while (it)
 	{
-		BucketPool * it = buckets[i], * prev = nullptr;	
-		while (it)
+		if (searchKey < it->data)
+			it = it->left;
+		else
 		{
-			MemoryPool * pool = it->pool;
-			if (UNLIKELY(pool->hasBlock(original)))
+			MallocPool * pool = it->data.second;
+			if (pool->hasBlock(original))
 			{
-				pool->free(original);
-
-				// Bring to front if more usable memory
-				if (pool->getUsable() > buckets[i]->pool->getUsable())
+				if (n < pool->blockSize)
+					// No need to reallocate
+					return original;
+				else
 				{
-					prev->next = it->next;
-					it->next = buckets[i];
-					buckets[i] = it;
+					pool->free(original);
+					return malloc(n, alignment);
 				}
-
-				return;
 			}
-
-			prev = it;
-			it = it->next;
+			else
+				it = it->right;
 		}
 	}
 
-	// No free? Then external free
+	// Memory was alloc'd by the backup allocator
+	if (n > MALLOC_BINNED_BLOCK_MAX_SIZE)
+		return gMalloc->realloc(original, n, alignment);
+	else
+	{
+		gMalloc->free(original);
+		return malloc(n);
+	}
+}
+
+void MallocBinned::free(void * original)
+{
+	// Use tree to quickly find pool
+	
+	// Search key
+	Pair<void*, MallocPool*> searchKey(original);
+
+	PoolNodeRef it = root;
+	while (it)
+	{
+		if (searchKey < it->data)
+			it = it->left;
+		else
+		{
+			MallocPool * pool = it->data.second;
+			if (pool->hasBlock(original))
+			{
+				pool->free(original);
+				return;
+			}
+			else
+				it = it->right;
+		}
+	}
+
+	// Block was not alloc'd by pools
+	// Free using global allocator
 	gMalloc->free(original);
 }
 
-bool MallocBinned::getAllocSize(void * original, uintP & n) { return false; }
-
-MallocBinned::BucketPool * MallocBinned::createBucketPool(uint8 i)
+bool MallocBinned::getAllocSize(void * original, sizet & n)
 {
-	// Pool is created and appended to the
-	// head of the i-th bucket pool list
-
-	assert(i < BINNED_NUM_BUCKETS);
-
-	const sizet bufferSize
-		= sizeof(BucketPool) * 2
-		+ sizeof(MemoryPool)
-		+ BINNED_POOL_SIZE + BINNED_POOL_ALIGNMENT;
-	sizet buffer = reinterpret_cast<sizet>(gMalloc->malloc(bufferSize));
+	// Use tree to quickly find pool
 	
-	BucketPool * bucketHeader	= reinterpret_cast<BucketPool*>(buffer);
-	MemoryPool * memoryPool		= reinterpret_cast<MemoryPool*>(bucketHeader + 1);
-	void * poolBuffer			= memoryPool + 1;
+	// Search key
+	Pair<void*, MallocPool*> searchKey(original);
 
-	// Create memory pool
-	const sizet blockSize = (0x1 << i) * BINNED_BLOCK_MIN_SIZE;
-	const sizet numBlocks = BINNED_POOL_SIZE / blockSize;
-	assert(blockSize * numBlocks == BINNED_POOL_SIZE);
-	new (memoryPool) MemoryPool(blockSize, numBlocks, poolBuffer, BINNED_POOL_ALIGNMENT);
+	PoolNodeRef it = root;
+	while (it)
+	{
+		if (searchKey < it->data)
+			it = it->left;
+		else
+		{
+			MallocPool * pool = it->data.second;
+			if (pool->hasBlock(original))
+			{
+				n = pool->blockSize;
+				return true;
+			}
+			else
+				it = it->right;
+		}
+	}
 
-	// Link bucket
-	bucketHeader->pool = memoryPool;
-	bucketHeader->next = buckets[i];
-	buckets[i] = bucketHeader;
-
-	return bucketHeader;
+	return false;
 }

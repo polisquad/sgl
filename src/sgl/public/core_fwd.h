@@ -12,13 +12,4 @@ class Malloc;
 class Event;
 /// @}
 
-/// Containers
-/// @{
-template<typename> class Array;
-template<typename> class BinaryTree;
-template<typename> class LinkedList;
-template<typename, typename, typename> class Map;
-template<typename> class Queue;
-class String;
-/// @}
-
+#include "containers/containers_fwd.h"

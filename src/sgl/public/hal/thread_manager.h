@@ -4,7 +4,6 @@
 #include "templates/singleton.h"
 #include "hal/critical_section.h"
 #include "containers/string.h"
-#include "containers/tree_map.h"
 #include "containers/map.h"
 
 /// Forward declare
@@ -18,7 +17,7 @@ class ThreadManager : public Singleton<ThreadManager>
 {
 protected:
 	/// @brief List of thread objects
-	Map<uint64, RunnableThread*> threads;
+	Map<uint64, RunnableThread*, MallocBinned> threads;
 
 	/// @brief Critical section for threads list access
 	CriticalSection threadsCS;

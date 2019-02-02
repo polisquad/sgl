@@ -2,110 +2,291 @@
 
 #include "core_types.h"
 #include "hal/platform_memory.h"
+#include "hal/malloc_ansi.h"
+#include "templates/const_ref.h"
+#include "templates/is_trivially_copyable.h"
 
 /**
  * @class Queue containers/queue.h
+ * 
+ * A Queue class implemented as a
+ * singly-linked list
  */
-template <typename T>
-class Queue
+template <typename T, typename AllocT = MallocAnsi>
+class GCC_ALIGN(32) Queue
 {
+	// Sometimes C++ doesn't really make sense ...
+	template<typename, typename> friend class Queue;
+
 protected:
-	/// Linked list node
-	struct Node
+	/// A client node
+	struct GCC_ALIGN(32) Client
 	{
-		/// Link data
+		/// Next client in queue
+		Client * next;
+
+		/// Data carried by the client
 		T data;
 
-		/// Next and prev node
-		Node * next;
-
-		/// Node constructor
-		FORCE_INLINE Node(const T & elem, Node * _next = nullptr, Node * _prev = nullptr) :
-			data(elem), next(_next) {}
+		/// Default constructor
+		FORCE_INLINE Client(typename ConstRef<T>::Type & _data, Client * _next = nullptr) :
+			data(_data),
+			next(nullptr) {}
 	};
 
+	using ClientRef = Client*;
+
 protected:
-	/// @brief Used allocator
-	Malloc * allocator;
+	/// Allocator in use
+	AllocT * allocator;
+	bool bHasOwnAllocator;
 
-	/// @brief Front of the queue
-	Node * head;
+	/// First client
+	ClientRef first;
 
-	/// @brief Back of the queue
-	Node * tail;
+	/// Last client
+	ClientRef last;
 
-	/// @brief Number of clients in queue
+	/// Num of clients
 	uint64 numClients;
 
 public:
-	/// @brief Default-construct(or
-	FORCE_INLINE Queue(Malloc * _allocator = gMalloc) :
+	/// Default constructor
+	FORCE_INLINE Queue(AllocT * _allocator = reinterpret_cast<AllocT*>(gMalloc)) :
 		allocator(_allocator),
-		head(nullptr),
-		tail(nullptr),
-		numClients(0ULL) {}
+		bHasOwnAllocator(!_allocator),
+		first(nullptr),
+		last(nullptr),
+		numClients(0)
+	{
+		// Create a new allocator for the queue
+		if (bHasOwnAllocator)
+			allocator = new AllocT;
+	}
+
+protected:
+	/// Construct client node
+	FORCE_INLINE ClientRef createClient(typename ConstRef<T>::Type data)
+	{
+		return new (reinterpret_cast<ClientRef>(allocator->malloc(sizeof(Client)))) Client(data);
+	}
+
+public:
+	/// Copy constructor
+	FORCE_INLINE Queue(const Queue<T, AllocT> & other) : Queue(nullptr)
+	{
+		if (other.first)
+		{
+			// Set first
+			first = last = createClient(other.first->data);
+
+			// Very costly, we have to reinsert all the clients
+			ClientRef it = other.first->next;
+			while (it)
+			{
+				last = last->next = createClient(it->data);
+				it = it->next;
+			}
+		}
+
+		// Set num clients
+		numClients = other.numClients;
+	}
+
+	/// Copy constructor with different allocator type
+	template<typename AllocU>
+	FORCE_INLINE Queue(const Queue<T, AllocU> & other) : Queue(nullptr)
+	{
+		if (other.first)
+		{
+			// Set first
+			first = last = createClient(other.first->data);
+
+			// Very costly, we have to reinsert all the clients
+			typename Queue<T, AllocU>::ClientRef it = other.first->next;
+			while (it)
+			{
+				last = last->next = createClient(it->data);
+				it = it->next;
+			}
+		}
+
+		// Set num clients
+		numClients = other.numClients;
+	}
+
+	/// Move constructor
+	FORCE_INLINE Queue(Queue<T, AllocT> && other) :
+		allocator(other.allocator),
+		bHasOwnAllocator(other.bHasOwnAllocator),
+		first(other.first),
+		last(other.last),
+		numClients(other.numClients)
+	{
+		other.bHasOwnAllocator = false;
+		other.first = other.last = nullptr;
+	}
+
+	/// Copy assignment
+	FORCE_INLINE Queue<T, AllocT> & operator=(const Queue<T, AllocT> & other)
+	{
+		// Empty self first
+		empty();
+
+		// @todo Instead of 'empty and allocate' new links
+		// use existing ones, just copy the new data
+
+		if (other.first)
+		{
+			// Set first
+			first = last = createClient(other.first->data);
+
+			// Very costly, we have to reinsert all the clients
+			ClientRef it = other.first->next;
+			while (it)
+			{
+				last = last->next = createClient(it->data);
+				it = it->next;
+			}
+		}
+
+		// Set num clients
+		numClients = other.numClients;
+	}
+
+	/// Copy assignment with different allocator type
+	template<typename AllocU>
+	FORCE_INLINE Queue<T, AllocT> & operator=(const Queue<T, AllocU> & other)
+	{
+		// Empty self first
+		empty();
+
+		// @todo Instead of 'empty and allocate' new links
+		// use existing ones, just copy the new data
+		
+		if (other.first)
+		{
+			// Set first
+			first = last = createClient(other.first->data);
+
+			// Very costly, we have to reinsert all the clients
+			typename Queue<T, AllocU>::ClientRef it = other.first->next;
+			while (it)
+			{
+				last = last->next = createClient(it->data);
+				it = it->next;
+			}
+		}
+
+		// Set num clients
+		numClients = other.numClients;
+	}
+
+	/// Move assignment
+	FORCE_INLINE Queue<T, AllocT> & operator=(Queue<T, AllocT> && other)
+	{
+		// empty self first
+		empty();
+
+		allocator			= other.allocator;
+		bHasOwnAllocator	= other.bHasOwnAllocator;
+		first				= other.first;
+		last				= other.last;
+		numClients			= other.numClients;
+
+		other.bHasOwnAllocator = false;
+		other.first = other.last = nullptr;
+	}
+
+	/// Destructor
+	FORCE_INLINE ~Queue()
+	{
+		// Empty queue
+		empty();
+
+		// Delete own allocator
+		if (bHasOwnAllocator)
+			delete allocator;
+	}
 	
-	/**
-	 * @brief Push element to the back of the queue
-	 * 
-	 * @param [in] elem element to insert
-	 */
-	void push(const T & elem);
+	/// Returns number of clients in queue
+	FORCE_INLINE uint64 getLength() const { return numClients; }
 
 	/**
-	 * @brief Pop element from the front
+	 * Insert a new client in queue
 	 * 
-	 * @param [out] _data data contained in the head
-	 * 
-	 * @return true if queue not empty
+	 * @param [in] data client data
+	 * @return ref to inserted data
 	 */
-	bool pop(T & _data);
+	FORCE_INLINE T & push(typename ConstRef<T>::Type data)
+	{
+		// Insert at the end of the queue
+		if (last == nullptr)
+			first = last = createClient(data);
+		else
+			last = last->next = createClient(data);
+		
+		++numClients;
 
-	/// @brief Get number of clients in queue
+		return last->data;
+	}
+
+	/**
+	 * Pop first client in queue
+	 * 
+	 * @param [out] data value carried by client
+	 * @return true if queue was not empty
+	 * @{
+	 */
+	FORCE_INLINE bool pop()
+	{
+		if (first)
+		{
+			// Dealloc node
+			ClientRef next = first->next;
+			allocator->free(first);
+
+			// Link next
+			if (next)
+				first = next;
+			else
+				first = last = nullptr;
+
+			return true;
+		}
+
+		return false;
+	}
+	FORCE_INLINE bool pop(T & data)
+	{
+		if (first)
+		{
+			// Get data out
+			moveOrCopy(data, first->data);
+			return pop();
+		}
+
+		return false;
+	}
+	/// @}
+
+	/// Empty the queue
 	/// @{
-	FORCE_INLINE uint64 getCount() { return numClients; }
-	FORCE_INLINE uint64 getNumClients() { return numClients; };
+	FORCE_INLINE void empty()
+	{
+		ClientRef it; while ((it = first))
+		{
+			// Move to next
+			first = first->next;
+
+			// Destroy link
+			allocator->free(it);
+		}
+
+		// Make sure last is null as well
+		first = last = nullptr;
+	}
+	FORCE_INLINE void flush() { empty(); }
 	/// @}
 };
-
-template<typename T>
-void Queue<T>::push(const T & elem)
-{
-	Node * node = reinterpret_cast<Node*>(allocator->malloc(sizeof(Node)));
-	new (node) Node(elem);
-
-	// Push to back
-	if (UNLIKELY(tail == nullptr))
-		head = tail = node;
-	else
-	{
-		tail->next = node;
-		tail = node;
-	}
-
-	// Increment counter
-	++numClients;
-}
-
-template<typename T>
-bool Queue<T>::pop(T & _data)
-{
-	if (LIKELY(head != nullptr))
-	{
-		// Pop head
-		Node * node = head;
-		head = head->next;
-
-		// Decrement counter
-		--numClients;
-		
-		// Dealloc node
-		_data = node->data;
-		allocator->free(node);
-
-		return true;
-	}
-
-	return false;
-}
 
