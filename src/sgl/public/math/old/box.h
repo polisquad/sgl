@@ -260,6 +260,7 @@ void Box<float32>::print(FILE * stream) const
 {
 	fprintf(stream, "min(%.3f, %.3f, %.3f) : max(%.3f, %.3f, %.3f)\n", min.x, min.y, min.z, max.x, max.y, max.z);
 }
+<<<<<<< HEAD
 
 /// @brief Common type definitions
 /// @{
@@ -268,3 +269,5 @@ typedef Box<int32>		ibox;
 typedef Box<uint32>		ubox;
 /// @}
 
+=======
+>>>>>>> math

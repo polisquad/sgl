@@ -105,8 +105,7 @@ public:
 	/// Normalizes in place
 	FORCE_INLINE Vec3<T> & normalize()
 	{
-		const T size = PlatformMath::sqrt(x * x + y * y + z * z);
-		x /= size, y /= size, z /= size;
+		data = VecOps::div(data, VecOps::load(PlatformMath::sqrt(x * x + y * y + z * z)));
 		return *this;
 	}
 
@@ -179,22 +178,22 @@ public:
 	 */
 	FORCE_INLINE Vec3<T> & operator+=(const Vec3<T> & v)
 	{
-		x += v.x, y += v.y, z += v.z;
+		data = VecOps::add(data, v.data);
 		return *this;
 	}
 	FORCE_INLINE Vec3<T> & operator-=(const Vec3<T> & v)
 	{
-		x -= v.x, y -= v.y, z -= v.z;
+		data = VecOps::sub(data, v.data);
 		return *this;
 	}
 	FORCE_INLINE Vec3<T> & operator*=(const Vec3<T> & v)
 	{
-		x *= v.x, y *= v.y, z *= v.z;
+		data = VecOps::mul(data, v.data);
 		return *this;
 	}
 	FORCE_INLINE Vec3<T> & operator/=(const Vec3<T> & v)
 	{
-		x /= v.x, y /= v.y, z /= v.z;
+		data = VecOps::div(data, v.data);
 		return *this;
 	}
 	/// @}
@@ -208,22 +207,22 @@ public:
 	 */
 	FORCE_INLINE Vec3<T> & operator+=(T s)
 	{
-		x += s, y += s, z += s;
+		data = VecOps::add(data, VecOps::load(s));
 		return *this;
 	}
 	FORCE_INLINE Vec3<T> & operator-=(T s)
 	{
-		x -= s, y -= s, z -= s;
+		data = VecOps::sub(data, VecOps::load(s));
 		return *this;
 	}
 	FORCE_INLINE Vec3<T> & operator*=(T s)
 	{
-		x *= s, y *= s, z *= s;
+		data = VecOps::mul(data, VecOps::load(s));
 		return *this;
 	}
 	FORCE_INLINE Vec3<T> & operator/=(T s)
 	{
-		x /= s, y /= s, z /= s;
+		data = VecOps::div(data, VecOps::load(s));
 		return *this;
 	}
 	/// @}
@@ -297,7 +296,22 @@ public:
 	 */
 	FORCE_INLINE Vec3<T> operator^(const Vec3<T> & v) const
 	{
-		return Vec3<T>(y * v.z - z * v.y, x * v.z - z * v.x, x * v.y - y * v.x);
+		// This may be faster alone,
+		// but with everything vectorized is better like this
+		//return Vec3<T>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+
+		return Vec3<T>(
+			VecOps::sub(
+				VecOps::mul(
+					VecOps::template shuffle<1, 2, 0, 3>(data),
+					VecOps::template shuffle<2, 0, 1, 3>(v.data)
+				),
+				VecOps::mul(
+					VecOps::template shuffle<2, 0, 1, 3>(data),
+					VecOps::template shuffle<1, 2, 0, 3>(v.data)
+				)
+			)
+		);
 	}
 
 	/// Convert to another underlying type
@@ -337,13 +351,13 @@ FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator/(float32 s) const
 template<>
 FORCE_INLINE bool Vec3<float32, true>::isNearlyZero() const
 {
-	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(data, VecOps::neg), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) >= 0xe;
+	return (VecOps::cmp<Simd::CMP_GE>(VecOps::bor(data, VecOps::neg), VecOps::load(-FLT_EPSILON)) & 0x7) == 0x7;
 }
 
 template<>
 FORCE_INLINE bool Vec3<float32, true>::isEqual(const Vec3<float32> & v) const
 {
-	return VecOps::cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecOps::neg), VecT{-FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON, -FLT_EPSILON}) >= 0xe;
+	return (VecOps::cmp<Simd::CMP_GE>(VecOps::bor(VecOps::sub(data, v.data), VecOps::neg), VecOps::load(-FLT_EPSILON)) & 0x7) == 0x7;
 }
 
 template<>

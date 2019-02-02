@@ -68,4 +68,3 @@ struct GenericPlatformTypes
 	typedef widechar	tchar;
 	/// @}
 };
-

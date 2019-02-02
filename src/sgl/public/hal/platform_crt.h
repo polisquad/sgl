@@ -27,4 +27,3 @@
 #include <cassert>
 #include <memory>
 /** @} */
-

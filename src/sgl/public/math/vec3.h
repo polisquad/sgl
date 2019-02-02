@@ -288,7 +288,7 @@ public:
 	 */
 	CONSTEXPR FORCE_INLINE Vec3<T, false> operator^(const Vec3<T, false> & v) const
 	{
-		return Vec3<T, false>(y * v.z - z * v.y, x * v.z - z * v.x, x * v.y - y * v.x);
+		return Vec3<T, false>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
 	}
 
 	/// Convert to another underlying type

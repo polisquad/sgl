@@ -234,4 +234,7 @@ bool Math::intersect(const Vec3<float32> & p0, const Vec3<float32> & p1, const V
 	return true;
 }
 #endif
+<<<<<<< HEAD
 
+=======
+>>>>>>> math

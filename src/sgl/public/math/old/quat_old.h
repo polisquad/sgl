@@ -270,4 +270,3 @@ void Quat<float32>::print(FILE * stream) const
  */
 typedef Quat<float32> quat;
 /** @} */
-

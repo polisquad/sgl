@@ -12,4 +12,3 @@
 #ifndef SGL_BUILD_RELEASE
 	#define SGL_BUILD_RELEASE 0
 #endif
-

@@ -7,9 +7,7 @@
  * @struct UnixPlatformMath unix/unix_platform_math.h
  * @brief Unix specific math implementation
  */
-struct UnixPlatformMath : public GenericPlatformMath
+using PlatformMath = struct UnixPlatformMath : public GenericPlatformMath
 {
 	// Empty
 };
-typedef UnixPlatformMath PlatformMath;
-

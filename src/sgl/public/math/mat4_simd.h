@@ -197,7 +197,7 @@ public:
 protected:
 	/// Transposed dot product
 	/// Second matrix is transposed w.r.t to the original matrix
-	Mat4<T> multiplyTransposed(const Mat4<T> & m)
+	Mat4<T> multiplyTransposed(const Mat4<T> & m) const
 	{
 		/// With loop unrolling is slightly more efficient
 		/// I'll leave this here commented in case
@@ -259,7 +259,7 @@ protected:
 
 public:
 	/// Matrix-matrix dot product (multiplication)
-	Mat4<T> operator*(const Mat4<T> & m)
+	Mat4<T> operator*(const Mat4<T> & m) const
 	{
 		// Transpose matrix for column access
 		return multiplyTransposed(m.getTranspose());
@@ -279,7 +279,7 @@ public:
 	 * @return transformed vector
 	 * @{
 	 */
-	FORCE_INLINE Vec4<T, true> operator*(const Vec4<T, true> & v)
+	FORCE_INLINE Vec4<T, true> operator*(const Vec4<T, true> & v) const
 	{
 		VecT
 			x = VecOps::mul(vec[0], v.data),
@@ -292,7 +292,7 @@ public:
 			VecOps::hadd(z, w)
 		));
 	}
-	FORCE_INLINE Vec3<T, true> operator*(const Vec3<T, true> & v) { return (Vec3<T, true>)operator*(Vec4<T, true>(v)); }
+	FORCE_INLINE Vec3<T, true> operator*(const Vec3<T, true> & v) const { return (Vec3<T, true>)operator*(Vec4<T, true>(v)); }
 	/// @}
 
 protected:
@@ -538,109 +538,112 @@ public:
 
 	/// Create a diag matrix with specified diagonal
 	/// @{
-									static CONSTEXPR FORCE_INLINE Mat4<T> diag(T a, T b, T c, T d)
-									{
-										return Mat4<T>(
-											a, T(0), T(0), T(0),
-											T(0), b, T(0), T(0),
-											T(0), T(0), c, T(0),
-											T(0), T(0), T(0), d
-										);
-									}
+						static CONSTEXPR FORCE_INLINE Mat4<T> diag(T a, T b, T c, T d)
+						{
+							return Mat4<T>(
+								a, T(0), T(0), T(0),
+								T(0), b, T(0), T(0),
+								T(0), T(0), c, T(0),
+								T(0), T(0), T(0), d
+							);
+						}
 	template<bool bHVI>	static CONSTEXPR FORCE_INLINE Mat4<T> diag(const Vec4<T, bHVI> & v) { return diag(v.x, v.y, v.z, v.w); }
 	/// @}
 
 	/// Create a transform matrix with scaling
 	/// @{
-									static FORCE_INLINE Mat4<T> scaling(T x, T y, T z)
-									{
-										return Mat4<T>(
-											x, T(0), T(0), T(0),
-											T(0), y, T(0), T(0),
-											T(0), T(0), z, T(0),
-											T(0), T(0), T(0), T(1)
-										);
-									}
+						static FORCE_INLINE Mat4<T> scaling(T x, T y, T z)
+						{
+							return Mat4<T>(
+								x, T(0), T(0), T(0),
+								T(0), y, T(0), T(0),
+								T(0), T(0), z, T(0),
+								T(0), T(0), T(0), T(1)
+							);
+						}
 	template<bool bHVI>	static CONSTEXPR FORCE_INLINE Mat4<T> scaling(const Vec3<T, bHVI> & v) { return scaling(v.x, v.y, v.z); }
 	/// @}
 
 	/// Create a transform matrix with translation
 	/// @{
-									static CONSTEXPR FORCE_INLINE Mat4<T> translation(T x, T y, T z)
-									{
-										return Mat4<T>(
-											 T(1),  T(0),  T(0), x,
-											 T(0),  T(1),  T(0), y,
-											 T(0),  T(0),  T(1), z,
-											 T(0),  T(0),  T(0),  T(1)
-										);
-									}
+						static CONSTEXPR FORCE_INLINE Mat4<T> translation(T x, T y, T z)
+						{
+							return Mat4<T>(
+									T(1),  T(0),  T(0), x,
+									T(0),  T(1),  T(0), y,
+									T(0),  T(0),  T(1), z,
+									T(0),  T(0),  T(0),  T(1)
+							);
+						}
 	template<bool bHVI>	static CONSTEXPR FORCE_INLINE Mat4<T> translation(const Vec3<T, bHVI> & v) { return translation(v.x, v.y, v.z); }
 	/// @}
 
 	/// Create a transform matrix with rotation
 	/// @{
-	template<bool bHVI>
-	static FORCE_INLINE Mat4<T> rotation(const Quat<T, bHVI> & q)
-	{
-		/// @ref http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
-		return Mat4<T>(
-			q.w, q.z, -q.y, q.x,
-			-q.z, q.w, q.x, q.y,
-			q.y, -q.x, q.w, q.z,
-			-q.x, -q.y, -q.z, q.w
-		).multiplyTransposed(Mat4<T>(
-			q.w, -q.z, q.y, q.x,
-			q.z, q.w, -q.x, q.y,
-			-q.y, q.x, q.w, q.z,
-			-q.x, -q.y, -q.z, q.w
-		));
-	}
+	template<bool bHVI>	static FORCE_INLINE Mat4<T> rotation(const Quat<T, bHVI> & q)
+						{
+							/// @ref http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
+							return Mat4<T>(
+								q.w, -q.z, q.y, q.x,
+								q.z, q.w, -q.x, q.y,
+								-q.y, q.x, q.w, q.z,
+								-q.x, -q.y, -q.z, q.w
+							).multiplyTransposed(Mat4<T>(
+								q.w, q.z, -q.y, q.x,
+								-q.z, q.w, q.x, q.y,
+								q.y, -q.x, q.w, q.z,
+								-q.x, -q.y, -q.z, q.w
+							));
+						}
 	template<bool bHVI>	static FORCE_INLINE Mat4<T> rotation(T angle, const Vec3<T, bHVI> & axis) { return rotation(Quat<T, bHVI>(angle, axis)); }
 	/// @}
 
 	/// Create a complete transform matrix
 	static FORCE_INLINE Mat4<T> transform(const Vec3<T> & t, const Quat<T> & r, const Vec3<T> & s = Vec3<T>::unit)
 	{
-		/// @todo Matrix multiplication is slow, there's a better (more complicated) way
-		return translation(t) * rotation(r) * scaling(s);
+		// Set rotation
+		Mat4<T> out = Mat4<T>(
+			r.w, r.z, -r.y, r.x,
+			-r.z, r.w, r.x, r.y,
+			r.y, -r.x, r.w, r.z,
+			-r.x, -r.y, -r.z, r.w
+		).multiplyTransposed(Mat4<T>(
+			r.w, -r.z, r.y, r.x,
+			r.z, r.w, -r.x, r.y,
+			-r.y, r.x, r.w, r.z,
+			-r.x, -r.y, -r.z, r.w
+		));
+
+		// Scale rotation
+		out.vec[0] = VecOps::mul(out.vec[0], VecOps::load(s.x)),
+		out.vec[1] = VecOps::mul(out.vec[1], VecOps::load(s.y)),
+		out.vec[2] = VecOps::mul(out.vec[2], VecOps::load(s.z));
+
+		// Set translation
+		out.vec[3] = t.data;
+		
+		// Transpose
+		out.transpose();
+		out(3, 3) = 1.f;
+
+		return out;
 	}
 
-	/// Create a projection matrix
+	/// Create a projection matrix for OpenGL
+	/// 
+	/// X-right, Y-up, Z-forward (left-handed coordinate system)
 	/// @{
 	/**
 	 * @param [in] r,l,t,b,f,n extent of projection box
 	 * @return projection matrix
 	 */
-	static CONSTEXPR FORCE_INLINE Mat4<T> projection(T r, T l, T t, T b, T f, T n)
-	{
-		/// @see http://www.songho.ca/opengl/gl_projectionmatrix.html
-		return Mat4<T>(
-			(T(2) * n) / (r - l), T(0), (r + l) / (r - l), T(0),
-			T(0), (T(2) * n) / (t - b), (t + b) / (t - b), T(0),
-			T(0), T(0), (n + f) / (n - f), (T(2) * n * f) / (n - f),
-			T(0), T(0), T(-1), T(0)
-		);
-	}
+	static CONSTEXPR FORCE_INLINE Mat4<T> glProjection(T r, T l, T t, T b, T f, T n);
 	/**
 	 * @param [in] fov camera field of view
 	 * @param [in] near,far distance of near and far planes
 	 * @return projection matrix
 	 */
-	static CONSTEXPR FORCE_INLINE Mat4<T> projection(T fov/* = PlatformMath::PI */, T n = T(1), T f = T(1000))
-	{
-		// Default aspect ratio
-		T aspect = T(16) / T(9);
-		fov = T(1) / PlatformMath::tan(fov);
-		/// @todo Get framebuffer size if possible
-
-		return Mat4<T>(
-			fov, T(0), T(0), T(0),
-			T(0), fov * aspect, T(0), T(0),
-			T(0), T(0), (n + f) / (n - f), (T(2) * n * f) / (n - f),
-			T(0), T(0), T(-1), T(0)
-		);
-	}
+	static CONSTEXPR FORCE_INLINE Mat4<T> glProjection(T fov/* = PlatformMath::PI */, T n = T(1), T f = T(1000));
 	/// @}
 };
 
@@ -656,3 +659,35 @@ FORCE_INLINE void Mat4<float32, true>::print(FILE * out) const
 //////////////////////////////////////////////////
 // Constructors
 //////////////////////////////////////////////////
+
+template<>
+FORCE_INLINE Mat4<float32, true> Mat4<float32, true>::glProjection(
+	float32 r, float32 l,
+	float32 t, float32 b,
+	float32 n, float32 f
+)
+{
+	/// @see http://www.songho.ca/opengl/gl_projectionmatrix.html
+	return Mat4<float32>(
+		(2.f * n) / (r - l), 0.f, -(r + l) / (r - l), 0.f,
+		0.f, (2.f * n) / (t - b), -(t + b) / (t - b), 0.f,
+		0.f, 0.f, (n + f) / (n - f), (2.f * n * f) / (n - f),
+		0.f, 0.f, 1.f, 0.f
+	);
+}
+
+template<>
+FORCE_INLINE Mat4<float32, true> Mat4<float32, true>::glProjection(float32 fov, float32 n, float32 f)
+{
+	// Default aspect ratio
+	float32 aspect = 16.f / 9.f;
+	fov = 1.f / PlatformMath::tan(fov / 2.f);
+	/// @todo Get framebuffer size if possible
+
+	return Mat4<float32>(
+		fov, 0.f, 0.f, 0.f,
+		0.f, fov * aspect, 0.f, 0.f,
+		0.f, 0.f, (f + n) / (f - n), (2.f * n * f) / (n - f),
+		0.f, 0.f, 1.f, 0.f
+	);
+}

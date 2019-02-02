@@ -123,4 +123,3 @@ FORCE_INLINE float32 GenericPlatformMath::abs(float32 s)
 {
 	return fabsf(s);
 }
-

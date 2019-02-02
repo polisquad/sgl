@@ -17,7 +17,7 @@ public:
 
 public:
 	/// Default constructor
-	CONSTEXPR FORCE_INLINE Quat() : Vec4<T, true>(T(1), T(0), T(0), T(0)) {};
+	CONSTEXPR FORCE_INLINE Quat() : Quat<T>(T(0), Vec3<T, true>::up) {};
 
 	/// Convert @ref Vec4
 	CONSTEXPR FORCE_INLINE Quat(const Vec4<T, true> & v) : Vec4<T, true>(v) {};
@@ -53,25 +53,24 @@ public:
 
 	/// Override normalization methods to return quaternion
 	/// @{
-	FORCE_INLINE Quat<T, true> getNormal() const
+	FORCE_INLINE Quat<T> getNormal() const
 	{
 		const T size = this->getSize();
-		return Quat<T, true>(this->x / size, this->y / size, this->x / size, this->w / size);
+		return Quat<T>(VecOps::div(this->data, VecOps::load(size)));
 	}
 	/// In-place
-	FORCE_INLINE Quat<T, true> & normalize()
+	FORCE_INLINE Quat<T> & normalize()
 	{
 		const T size = this->getSize();
-		this->x /= size, this->y /= size,
-		this->z /= size, this->w /= size;
+		this->data = VecOps::div(this->data, VecOps::load(size));
 		return *this;
 	}
 	/// @}
 
 	/// Get inverse quaternion
-	FORCE_INLINE Quat<T, true> operator!() const
+	FORCE_INLINE Quat<T> operator!() const
 	{
-		return Quat<T, true>(this->x, this->y, this->z, -this->w);
+		return Quat<T>(-this->x, -this->y, -this->z, this->w);
 	}
 
 	/**
@@ -82,19 +81,42 @@ public:
 	 * @param [in] q quat operand
 	 * @return combined rotation quaternion
 	 */
-	CONSTEXPR FORCE_INLINE Quat<T, true> operator*(const Quat<T, true> & q) const
+	CONSTEXPR FORCE_INLINE Quat<T> operator*(const Quat<T> & q) const
 	{
 		/// @ref https://en.wikipedia.org/wiki/Quaternion#Hamilton_product
 		/// Wikipedia uses (angle, axis<i, j, k>) notation
 		/// Here we use (axis<x, y, z>, angle) notation,
 		/// thus everything is inverted
 		return Quat<T, true>(
-			this->w * q.x + this->x * q.w + this->y * q.z - this->z * q.y,
-			this->w * q.y - this->x * q.z + this->y * q.w + this->z * q.x,
-			this->w * q.z + this->x * q.y - this->y * q.x + this->z * q.w,
-			this->w * q.w - this->x * q.x - this->y * q.y - this->z * q.z
+			VecOps::add(
+				VecOps::sub(
+					VecOps::mul(
+						VecOps::template shuffle<3, 3, 3, 3>(this->data),
+						q.data
+					),
+					VecOps::mul(
+						VecOps::template shuffle<2, 0, 1, 0>(this->data),
+						VecOps::template shuffle<1, 2, 0, 0>(this->data)
+					)
+				),
+				VecOps::add(
+					VecOps::bxor(
+						VecT{0.f, 0.f, 0.f, -0.f},
+						VecOps::mul(
+							VecOps::template shuffle<1, 1, 0, 1>(this->data),
+							VecOps::template shuffle<2, 3, 1, 1>(this->data)
+						)
+					),
+					VecOps::bxor(
+						VecT{0.f, 0.f, 0.f, -0.f},
+						VecOps::mul(
+							VecOps::template shuffle<0, 2, 2, 2>(this->data),
+							VecOps::template shuffle<3, 0, 3, 2>(this->data)
+						)
+					)
+				)
+			)
 		);
-		/// @todo should we normalize?
 	}
 	
 	/**
@@ -107,45 +129,11 @@ public:
 	CONSTEXPR FORCE_INLINE Vec3<T, true> operator*(const Vec3<T, true> & v) const
 	{
 		/** @see http://people.csail.mit.edu/bkph/articles/Quaternions.pdf */
-		VecT t = 
-		VecOps::mul(
-			VecOps::load(T(2)),
-			VecOps::sub(
-				VecOps::mul(
-					VecOps::template shuffle<1, 0, 0, 0>(this->data),
-					VecOps::template shuffle<2, 2, 1, 1>(v.data)
-				),
-				VecOps::mul(
-					VecOps::template shuffle<2, 2, 1, 1>(this->data),
-					VecOps::template shuffle<1, 0, 0, 0>(v.data)
-				)
-			)
-		);
-
-		return Vec3<T, true>(
-			VecOps::add(
-				VecOps::sub(
-					v.data,
-					VecOps::mul(
-						VecOps::load(this->w),
-						t
-					)
-				),
-				VecOps::sub(
-					VecOps::mul(
-						VecOps::template shuffle<1, 0, 0, 0>(this->data),
-						VecOps::template shuffle<2, 2, 1, 1>(t)
-					),
-					VecOps::mul(
-						VecOps::template shuffle<2, 2, 1, 1>(this->data),
-						VecOps::template shuffle<1, 0, 0, 0>(t)
-					)
-				)
-			)
-		);
+		const Vec3<T, true> q(this->data);
+		const Vec3<T, true> t = 2.f * (q ^ v);
+		return v + (this->w * t) + (q ^ t);
 	}
-	template<bool bHVI>
-	CONSTEXPR FORCE_INLINE Vec4<T, bHVI> operator*(const Vec4<T, bHVI> & v) const { return Vec4<T, bHVI>(operator*(Vec3<T, bHVI>(v)), v.w); }
+	CONSTEXPR FORCE_INLINE Vec4<T, true> operator*(const Vec4<T, true> & v) const { return Vec4<T, true>(operator*(Vec3<T, true>(v)), v.w); }
 	/// @}
 
 	/// Direction vectors
