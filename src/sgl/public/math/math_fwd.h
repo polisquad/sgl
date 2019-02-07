@@ -23,8 +23,8 @@ template<typename>			struct Box;
 using vec2 = Vec2<float32>;
 using vec3 = Vec3<float32, hasVectorIntrinsics(float32, 4)>;
 using vec4 = Vec4<float32, hasVectorIntrinsics(float32, 4)>;
-using mat3 = Mat3<float32, hasVectorIntrinsics(float32, 4)>;
 using quat = Quat<float32, hasVectorIntrinsics(float32, 4)>;
+using mat3 = Mat3<float32, hasVectorIntrinsics(float32, 4)>;
 using mat4 = Mat4<float32, hasVectorIntrinsics(float32, 4) & hasVectorIntrinsics(float32, 8)>;
 
 using ivec2 = Vec2<int32>;
