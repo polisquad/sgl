@@ -170,8 +170,8 @@ public:
 				* grand = parent->parent,
 				* uncle = grand ? (grand->left == parent ? grand->right : grand->left) : nullptr;
 			
-			// Case 2: uncle exists
-			if (uncle)
+			// Case 2: uncle exists and is red
+			if (uncle && uncle->isRed())
 			{
 				uncle->color = parent->color = NodeColor::BLACK;
 				grand->color = NodeColor::RED;
@@ -181,7 +181,7 @@ public:
 			}
 			else
 			{
-				// Case 3: ROTATIONS ARGHHH!!
+				// Case 3: uncle is black or doesn't exist
 
 				// Bring me on the outside
 				if (grand->left == parent)
