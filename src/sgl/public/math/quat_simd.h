@@ -30,6 +30,11 @@ public:
 	CONSTEXPR FORCE_INLINE Quat(T angle, const Vec3<T, bHVI> & axis) :
 		Vec4<T, true>(axis.getNormal() * PlatformMath::sin(angle / 2.f), PlatformMath::cos(angle / 2.f)) {}
 
+	/// Physics angular vector constructor
+	template<bool bHVI>
+	CONSTEXPR FORCE_INLINE Quat(const Vec3<T, bHVI> & axis) :
+		Quat<T, true>(axis.getSize(), axis.isNearlyZero() ? Vec3<T, true>::up : axis.getNormal()) {}
+
 	/// Returns angle and axis
 	template<bool bHVI>
 	FORCE_INLINE void getAngleAndAxis(T & angle, Vec3<T, bHVI> & axis) const
