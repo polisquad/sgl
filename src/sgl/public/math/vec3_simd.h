@@ -325,29 +325,6 @@ public:
 	void print(FILE * out = stdout) const;
 };
 
-/// Vector-scalar operations optimized for float
-template<>
-FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator+(float32 s) const
-{
-	return Vec3<float32, true>(VecOps::add(data, VecT{s, s, s, s}));
-}
-template<>
-FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator-(float32 s) const
-{
-	return Vec3<float32, true>(VecOps::sub(data, VecT{s, s, s, s}));
-}
-template<>
-FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator*(float32 s) const
-{
-	return Vec3<float32, true>(VecOps::mul(data, VecT{s, s, s, s}));
-}
-template<>
-FORCE_INLINE Vec3<float32, true> Vec3<float32, true>::operator/(float32 s) const
-{
-	return Vec3<float32, true>(VecOps::div(data, VecT{s, s, s, s}));
-}
-/// @}
-
 template<>
 FORCE_INLINE bool Vec3<float32, true>::isNearlyZero() const
 {

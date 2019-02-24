@@ -275,7 +275,7 @@ public:
 	 * @param [in] v vector operand
 	 * @return dot product as T
 	 */
-	CONSTEXPR FORCE_INLINE Vec3<T, false> operator&(const Vec3<T, false> & v) const
+	CONSTEXPR FORCE_INLINE T operator&(const Vec3<T, false> & v) const
 	{
 		return x * v.x + y * v.y + z * v.z;
 	}
