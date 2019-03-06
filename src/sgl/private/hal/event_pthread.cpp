@@ -29,7 +29,7 @@ bool PThreadEvent::wait(uint32 waitTime)
 			if (triggerState == TRIGGERED_ONE)
 			{
 				// Yo, it's mine
-				triggerState == TRIGGERED_NONE;
+				triggerState = TRIGGERED_NONE;
 				status = true;
 			}
 			else if (triggerState == TRIGGERED_ALL)
