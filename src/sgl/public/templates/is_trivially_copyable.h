@@ -82,3 +82,25 @@ FORCE_INLINE typename EnableIf<!IsTriviallyCopyable<T>::value, void>::Type moveO
 		new (dest + i) T(src[i]);
 }
 /// @}
+
+/**
+ * Swap two values
+ * 
+ * @param [in] a,b values to swap
+ * @{
+ */
+template<typename T>
+FORCE_INLINE typename EnableIf<IsTriviallyCopyable<T>::value, void>::Type swap(T & a, T & b)
+{
+	T t = a;
+	a = b;
+	b = t;
+}
+template<typename T>
+FORCE_INLINE typename EnableIf<!IsTriviallyCopyable<T>::value, void>::Type swap(T & a, T & b)
+{
+	T t(a);
+	new (&a) T(b);
+	new (&b) T(t);
+}
+/// @}

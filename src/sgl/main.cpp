@@ -1,4 +1,5 @@
 #include "coremin.h"
+#include "containers/sorting.h"
 
 Malloc * gMalloc = nullptr;
 
