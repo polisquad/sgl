@@ -101,7 +101,7 @@ public:
 					),
 					VecOps::mul(
 						VecOps::template shuffle<2, 0, 1, 0>(this->data),
-						VecOps::template shuffle<1, 2, 0, 0>(this->data)
+						VecOps::template shuffle<1, 2, 0, 0>(q.data)
 					)
 				),
 				VecOps::add(
@@ -109,14 +109,14 @@ public:
 						VecT{0.f, 0.f, 0.f, -0.f},
 						VecOps::mul(
 							VecOps::template shuffle<1, 1, 0, 1>(this->data),
-							VecOps::template shuffle<2, 3, 1, 1>(this->data)
+							VecOps::template shuffle<2, 3, 1, 1>(q.data)
 						)
 					),
 					VecOps::bxor(
 						VecT{0.f, 0.f, 0.f, -0.f},
 						VecOps::mul(
 							VecOps::template shuffle<0, 2, 2, 2>(this->data),
-							VecOps::template shuffle<3, 0, 3, 2>(this->data)
+							VecOps::template shuffle<3, 0, 3, 2>(q.data)
 						)
 					)
 				)
