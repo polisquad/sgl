@@ -244,6 +244,35 @@ public:
 	}
 
 	/**
+	 * Returns a subarray
+	 * 
+	 * @param [in] begin,end subarray range
+	 * @param [in] n subarray num of elements
+	 * @{
+	 */
+	FORCE_INLINE Array<T> operator()(uint64 begin, uint64 end) const
+	{
+		const uint32 n = end - begin;
+		Array out(n);
+
+		// Copy buffer and set count
+		moveOrCopy(out.buffer, buffer + begin, n);
+		out.count = n;
+
+		return out;
+	}
+
+	FORCE_INLINE Array<T> slice(uint64 begin) const
+	{
+		return operator()(begin, count);
+	}
+	FORCE_INLINE Array<T> slice(uint64 begin, uint64 end) const
+	{
+		return operator()(begin, end);
+	}
+	/// @}
+
+	/**
 	 * Insert a new item in the array
 	 * 
 	 * @param [in] item T operand
