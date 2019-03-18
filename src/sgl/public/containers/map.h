@@ -15,7 +15,7 @@
  * are sorted and all basic operations (insertion,
  * deletion, search) are O(log(n))
  */
-template<typename KeyT, typename ValT, typename AllocT = MallocBinned>
+template<typename KeyT, typename ValT, typename CompareT = Compare, typename AllocT = MallocBinned>
 class Map
 {
 public:
@@ -23,11 +23,11 @@ public:
 	using PairT = Pair<KeyT, ValT>;
 
 	/// Tree type
-	using TreeT = BinaryTree<PairT, AllocT>;
+	using TreeT = BinaryTree<PairT, CompareT, AllocT>;
 
 	/// Node type
-	using NodeT		= typename TreeT::Node;
-	using NodeRef	= NodeT*;
+	using Node		= typename TreeT::Node;
+	using NodeRef	= Node*;
 
 	/// Iterators
 	using Iterator		= typename TreeT::Iterator;

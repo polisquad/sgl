@@ -5,6 +5,7 @@
 #include "hal/platform_memory.h"
 #include "hal/malloc_ansi.h"
 #include "templates/const_ref.h"
+#include "templates/functional.h"
 
 /**
  * @struct BinaryNode<T>containers/binary_tree.h
@@ -14,20 +15,20 @@
  * operator<() and operator>() for node
  * comparison.
  */
-template<typename T>
+template<typename T, typename CompareT = Compare>
 struct GCC_ALIGN(32) BinaryNode
 {
-	template<typename, typename> friend class BinaryTree;
+	template<typename, typename, typename> friend class BinaryTree;
 	
 public:
 	/// Parent node
-	BinaryNode<T>* parent;
+	BinaryNode* parent;
 
 	/// Left child node
-	BinaryNode<T>* left;
+	BinaryNode* left;
 
 	/// Right child node
-	BinaryNode<T>* right;
+	BinaryNode* right;
 
 	/// Node data
 	T data;
@@ -44,9 +45,9 @@ public:
 	FORCE_INLINE BinaryNode(
 		typename ConstRef<T>::Type _data,
 		NodeColor _color = NodeColor::RED,
-		BinaryNode<T>* _parent = nullptr,
-		BinaryNode<T>* _left = nullptr,
-		BinaryNode<T>* _right = nullptr
+		BinaryNode* _parent = nullptr,
+		BinaryNode* _left = nullptr,
+		BinaryNode* _right = nullptr
 	)
 		: parent(_parent)
 		, left(_left)
@@ -61,7 +62,7 @@ public:
 	/// @}
 
 	/// Get root of this tree
-	FORCE_INLINE BinaryNode<T> * getRoot()
+	FORCE_INLINE BinaryNode * getRoot()
 	{
 		return parent ? parent->getRoot() : this;
 	}
@@ -74,20 +75,23 @@ public:
 	 * @{
 	 */
 	/// Search begins from this node
-	FORCE_INLINE BinaryNode<T> * find(typename ConstRef<T>::Type search)
+	FORCE_INLINE BinaryNode * find(typename ConstRef<T>::Type search)
 	{
-		if (search < data)
+		// Compare search key and node key
+		const int32 compare = CompareT().template operator()<decltype(search), decltype(data)>(search, data);
+
+		if (compare < 0)
 			return left ? left->find(search) : nullptr;
-		else if (search > data)
+		else if (compare > 0)
 			return right ? right->find(search) : nullptr;
 		else
 			return this;
 	}
 
 	/// Search begins from right/left node
-	FORCE_INLINE BinaryNode<T> * findNext(typename ConstRef<T>::Type search)
+	FORCE_INLINE BinaryNode * findNext(typename ConstRef<T>::Type search)
 	{
-		if (search < data)
+		if (CompareT().template operator()<decltype(search), decltype(data)>(search, data) < 0)
 			return left ? left->find(search) : nullptr;
 		else
 			return right ? right->find(search) : nullptr;
@@ -96,7 +100,7 @@ public:
 	
 protected:
 	/// Set node as left child
-	FORCE_INLINE BinaryNode<T> * setLeftChild(BinaryNode<T>* node)
+	FORCE_INLINE BinaryNode * setLeftChild(BinaryNode* node)
 	{
 		// @todo handle child replacement
 
@@ -105,7 +109,7 @@ protected:
 	}
 
 	/// Set node as right child
-	FORCE_INLINE BinaryNode<T> * setRightChild(BinaryNode<T> * node)
+	FORCE_INLINE BinaryNode * setRightChild(BinaryNode * node)
 	{
 		// @todo handle child replacement
 
@@ -126,20 +130,23 @@ public:
 	 * @return inserted node
 	 * @{
 	 */
-	FORCE_INLINE BinaryNode<T> * insert(BinaryNode<T> * node)
+	FORCE_INLINE BinaryNode * insert(BinaryNode * node)
 	{
-		if (node->data < data)
+		if (CompareT().template operator()<decltype(node->data), decltype(data)>(node->data, data) < 0)
 			return left ? left->insert(node) : setLeftChild(node)->repair();
 		else
 			return right ? right->insert(node) : setRightChild(node)->repair();
 	}
 	
 	/// If node already exists, don't reinsert it
-	FORCE_INLINE BinaryNode<T> * insertUnique(BinaryNode<T> * node)
+	FORCE_INLINE BinaryNode * insertUnique(BinaryNode * node)
 	{
-		if (node->data < data)
+		// Compare inserting node data against node data
+		int32 compare = CompareT().template operator()<decltype(node->data), decltype(data)>(node->data, data);
+		
+		if (compare < 0)
 			return left ? left->insertUnique(node) : setLeftChild(node)->repair();
-		else if (node->data > data)
+		else if (compare > 0)
 			return right ? right->insertUnique(node) : setRightChild(node)->repair();
 		else
 			return this;
@@ -148,7 +155,7 @@ public:
 
 	/// Repair tree structure starting from this node
 	/// @return self
-	BinaryNode<T> * repair()
+	BinaryNode * repair()
 	{
 		// Case 0: I'm (g)root
 		if (parent == nullptr)
@@ -166,7 +173,7 @@ public:
 		else
 		{
 			// Get relatives
-			BinaryNode<T>
+			BinaryNode
 				* grand = parent->parent,
 				* uncle = grand ? (grand->left == parent ? grand->right : grand->left) : nullptr;
 			
@@ -241,7 +248,7 @@ protected:
 			parent->setRightChild(right);
 
 		// Set right-left as my right child
-		BinaryNode<T> * prevRight = right;
+		BinaryNode * prevRight = right;
 		setRightChild(right->left);
 		
 		// Set me as left child
@@ -260,7 +267,7 @@ protected:
 			parent->setRightChild(left);
 
 		// Set left-right as my left child
-		BinaryNode<T>* prevLeft = left;
+		BinaryNode* prevLeft = left;
 		setLeftChild(left->right);
 		
 		// Set me as right child
@@ -269,7 +276,8 @@ protected:
 };
 
 /// Node reference type
-template<typename T> using BinaryNodeRef = BinaryNode<T>*;
+template<typename T, typename CompareT = Compare>
+using BinaryNodeRef = BinaryNode<T, CompareT>*;
 
 /**
  * @class Tree containers/tree.h
@@ -277,22 +285,22 @@ template<typename T> using BinaryNodeRef = BinaryNode<T>*;
  * A templated red-black tree.
  * @see BinaryNode
  */
-template<typename T, typename AllocT = MallocAnsi>
+template<typename T, typename CompareT = Compare, typename AllocT = MallocAnsi>
 class GCC_ALIGN(32) BinaryTree
 {
-	template<typename, typename>			friend class BinaryTree;
-	template<typename, typename, typename>	friend class TreeMap;
+	template<typename, typename, typename>				friend class BinaryTree;
+	template<typename, typename, typename, typename>	friend class Map;
 
 public:
 	/// Node type
-	using Node		= BinaryNode<T>;
-	using NodeRef	= BinaryNodeRef<T>;
+	using Node		= BinaryNode<T, CompareT>;
+	using NodeRef	= BinaryNodeRef<T, CompareT>;
 
 	/// Node iterator
 	template<typename U>
 	struct GCC_ALIGN(32) NodeIterator
 	{
-		template<typename, typename> friend class BinaryTree;
+		template<typename, typename, typename> friend class BinaryTree;
 
 	private:
 		/// Current node
@@ -313,7 +321,7 @@ public:
 			search(_search)
 		{
 			// Find first node
-			node = node->find(search);
+			if (node) node = node->find(search);
 		}
 
 	public:
@@ -326,11 +334,11 @@ public:
 			return *this;
 		}
 
-		/// Recedes iterator
+		/// Backtrack iterator
 		FORCE_INLINE NodeIterator<U> & operator--()
 		{
 			while (node = node->parent)
-				if (!(node->data < search || node->data > search)) return *this;
+				if (CompareT().template operator()<decltype(node->data), decltype(search)>(node->data, search) == 0) return *this;
 			
 			return *this;
 		}

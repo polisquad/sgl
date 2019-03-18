@@ -4,6 +4,7 @@
 #include "containers.h"
 #include "templates/const_ref.h"
 #include "templates/is_trivially_copyable.h"
+#include "templates/functional.h"
 
 namespace Container
 {
@@ -28,7 +29,7 @@ namespace Container
 	template<SortingAlg = QUICKSORT>
 	struct SortingClass
 	{
-		template<typename It>
+		template<typename CompareT = Compare, typename It>
 		FORCE_INLINE static void sort(It begin, It end);
 	};
 
@@ -37,29 +38,29 @@ namespace Container
 	 * 
 	 * @param [in] begin,end begin and end iterators
 	 */
-	template<SortingAlg alg = QUICKSORT, typename It>
+	template<typename CompareT = Compare, SortingAlg alg = QUICKSORT, typename It>
 	FORCE_INLINE void sort(It begin, It end)
 	{
-		SortingClass<alg>::sort(begin, end);
+		SortingClass<alg>::template sort<CompareT, It>(begin, end);
 	}
 } // Container
 
 template<>
-template<typename It>
+template<typename CompareT, typename It>
 void Container::SortingClass<Container::QUICKSORT>::sort(It begin, It end)
 {
 	// Partition array around pivot value
-	It first = begin++; if (first == end | begin == end) return;
+	It first = begin; if (first == end | ++begin == end) return;
 
 	// Partition code was limiting me
 	It pivot = first;
 	for (It i = begin; i != end; ++i)
-		if (*i < *first) swap(*i, *(pivot = begin++));
+		if (CompareT().template operator()<decltype(*i), decltype(*first)>(*i, *first) < 0) swap(*i, *(pivot = begin)), ++begin;
 	
 	// Swap pivot
 	swap(*first, *pivot);
 
 	// Divide and conquer
-	sort(first, pivot);
-	sort(begin, end);
+	sort<CompareT, It>(first, pivot);
+	sort<CompareT, It>(begin, end);
 }
