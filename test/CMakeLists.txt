@@ -4,7 +4,7 @@ include(GoogleTest)
 enable_testing()
 
 ## Find required packages
-find_package(GTest REQUIRED)
+#find_package(GTest REQUIRED)
 find_package(Threads REQUIRED)
 
 ## Compile tests
@@ -25,7 +25,7 @@ add_executable(${PROJECT_NAME}_test
 target_link_libraries(${PROJECT_NAME}_test
 	
 	sgl
-	${GTEST_BOTH_LIBRARIES}
+	gtest_main
 	${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -34,7 +34,6 @@ target_include_directories(${PROJECT_NAME}_test
 
 	PUBLIC
 		public
-		${GTEST_INCLUDE_DIRS}
 )
 
 ## Discover tests
