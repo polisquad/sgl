@@ -51,7 +51,10 @@ void * MallocBinned::malloc(sizet n, uint32 alignment)
 
 void * MallocBinned::realloc(void * original, sizet n, uint32 alignment)
 {
+	// Nothing to reallocate, literally nothing
 	if (original == nullptr) return malloc(n, alignment);
+
+	void * out;
 
 	// Find pool that alloc'd this block
 
@@ -73,8 +76,14 @@ void * MallocBinned::realloc(void * original, sizet n, uint32 alignment)
 					return original;
 				else
 				{
+					// Allocate new and copy memory
+					out = malloc(n, alignment);
+					Memory::memcpy(out, original, n);
+
+					// Free original
 					pool->free(original);
-					return malloc(n, alignment);
+
+					return out;
 				}
 			}
 			else
@@ -82,13 +91,22 @@ void * MallocBinned::realloc(void * original, sizet n, uint32 alignment)
 		}
 	}
 
+	printf("backup\n");
+
 	// Memory was alloc'd by the backup allocator
 	if (n > MALLOC_BINNED_BLOCK_MAX_SIZE)
+		// Let the backup allocator handle realloc
 		return gMalloc->realloc(original, n, alignment);
 	else
 	{
+		// Allocate new out of pool
+		out = malloc(n);
+		Memory::memcpy(out, original, n);
+
+		// Free original with backup allocator
 		gMalloc->free(original);
-		return malloc(n);
+
+		return out;
 	}
 }
 

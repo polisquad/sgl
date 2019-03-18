@@ -23,18 +23,21 @@ public:
 	
 protected:
 	/// A protected constructor that initializes an empty buffer
-	FORCE_INLINE String(uint64 n) :
+	explicit FORCE_INLINE String(uint64 n) :
 		data(n) {}
 
 public:
 	/// String constructor
-	FORCE_INLINE String(const ansichar * string)
-		: data(PlatformString::strlen(string) + 1)
+	FORCE_INLINE String(const ansichar * string, uint32 len = 0)
+		: data((len ? len : PlatformString::strlen(string)) + 1)
 	{
 		if (string)
 		{
 			data.count = data.size - 1;
-			moveOrCopy(data.buffer, string, data.size);
+			moveOrCopy(data.buffer, string, data.count);
+
+			// Teminate string
+			data[data.count] = '\0';
 		}
 	}
 
@@ -151,6 +154,41 @@ public:
 	}
 	FORCE_INLINE String operator+(const ansichar * s) const	{ return concat(s, PlatformString::strlen(s)); }
 	FORCE_INLINE String operator+(const String & s) const	{ return concat(*s, s.data.count); }
+	/// @}
+
+	/**
+	 * Create an empty string with length len
+	 * 
+	 * @param [in] len string length
+	 * @return created string
+	 */
+	static FORCE_INLINE String createEmpty(uint32 len)
+	{
+		String out(len + 1);
+
+		// Null-terminate
+		out.data.count = len;
+		out.data[len] = '\0';
+
+		return out;
+	}
+
+	/**
+	 * Extract substring
+	 * 
+	 * @param [in] begin begin (inclusive) of substring
+	 * @param [in] end end (exclusive) of substring
+	 * @return new string
+	 * @{
+	 */
+	FORCE_INLINE String substring(uint32 begin, uint32 end)
+	{
+		return String(data.buffer + begin, end - begin);
+	}
+	FORCE_INLINE String substring(uint32 begin)
+	{
+		return substring(begin, data.count);
+	}
 	/// @}
 };
 
