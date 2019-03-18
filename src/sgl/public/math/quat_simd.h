@@ -30,6 +30,11 @@ public:
 	CONSTEXPR FORCE_INLINE Quat(T angle, const Vec3<T, bHVI> & axis) :
 		Vec4<T, true>(axis.getNormal() * PlatformMath::sin(angle / 2.f), PlatformMath::cos(angle / 2.f)) {}
 
+	/// Physics angular vector constructor
+	template<bool bHVI>
+	CONSTEXPR FORCE_INLINE Quat(const Vec3<T, bHVI> & axis) :
+		Quat<T, true>(axis.getSize(), axis.isNearlyZero() ? Vec3<T, true>::up : axis.getNormal()) {}
+
 	/// Returns angle and axis
 	template<bool bHVI>
 	FORCE_INLINE void getAngleAndAxis(T & angle, Vec3<T, bHVI> & axis) const
@@ -96,7 +101,7 @@ public:
 					),
 					VecOps::mul(
 						VecOps::template shuffle<2, 0, 1, 0>(this->data),
-						VecOps::template shuffle<1, 2, 0, 0>(this->data)
+						VecOps::template shuffle<1, 2, 0, 0>(q.data)
 					)
 				),
 				VecOps::add(
@@ -104,14 +109,14 @@ public:
 						VecT{0.f, 0.f, 0.f, -0.f},
 						VecOps::mul(
 							VecOps::template shuffle<1, 1, 0, 1>(this->data),
-							VecOps::template shuffle<2, 3, 1, 1>(this->data)
+							VecOps::template shuffle<2, 3, 1, 1>(q.data)
 						)
 					),
 					VecOps::bxor(
 						VecT{0.f, 0.f, 0.f, -0.f},
 						VecOps::mul(
 							VecOps::template shuffle<0, 2, 2, 2>(this->data),
-							VecOps::template shuffle<3, 0, 3, 2>(this->data)
+							VecOps::template shuffle<3, 0, 3, 2>(q.data)
 						)
 					)
 				)

@@ -269,7 +269,7 @@ public:
 	Mat4<T> & operator*=(const Mat4<T> & m)
 	{
 		// Transpose matrix for column access
-		*this = multiplyTransposed(m,getTranspose());
+		return *this = multiplyTransposed(m,getTranspose());
 	}
 
 	/**

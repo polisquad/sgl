@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core_types.h"
+#include "vec3.h"
 #include "vec4.h"
 #include "templates/is_void.h"
 #include "templates/simd.h"
@@ -13,7 +14,7 @@ struct Quat : public Vec4<T, false>
 {
 public:
 	/// Default constructor
-	CONSTEXPR FORCE_INLINE Quat() : Vec4<T, false>(T(1), T(0), T(0), T(0)) {};
+	CONSTEXPR FORCE_INLINE Quat() : Quat<T, false>(T(0), Vec3<T, false>::up) {};
 
 	/// Convert @ref Vec4
 	CONSTEXPR FORCE_INLINE Quat(const Vec4<T, false> & v) : Vec4<T, false>(v) {};
@@ -25,6 +26,11 @@ public:
 	template<bool bHVI>
 	CONSTEXPR FORCE_INLINE Quat(T angle, const Vec3<T, bHVI> & axis) :
 		Vec4<T, false>(axis.getNormal() * PlatformMath::sin(angle / 2.f), PlatformMath::cos(angle / 2.f)) {}
+
+	/// Physics angular vector constructor
+	template<bool bHVI>
+	CONSTEXPR FORCE_INLINE Quat(const Vec3<T, bHVI> & axis) :
+		Quat<T, false>(axis.getSize(), axis.isNearlyZero() ? Vec3<T, false>::up : axis.getNormal()) {}
 
 	/// Returns angle and axis
 	template<bool bHVI>
